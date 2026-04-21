@@ -1,0 +1,10 @@
+flask
+flask-login
+flask-wtf
+flask-restful
+sqlalchemy
+sqlalchemy-serializer
+werkzeug
+requests
+python-dotenv
+alembic

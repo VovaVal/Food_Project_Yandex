@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Leaflet Routing — Симуляция движения</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+    <style>
+        #map { height: 500px; width: 100%; }
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover { background: #0056b3; }
+        .status {
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="controls">
+        <button onclick="startWalking()">🚶 Начать движение</button>
+        <button onclick="stopWalking()">⏹️ Остановить</button>
+        <div class="status" id="status">Маршрут загружается...</div>
+    </div>
+
+    <script>
+        const map = L.map('map').setView([55.735, 37.58], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        let routeControl = null;
+        let routePoints = [];
+        let currentPointIndex = 0;
+        let driverMarker = null;
+        let simulationInterval = null;
+
+        // Точки маршрута
+        const startPoint = L.latLng(55.751244, 37.618423);  // Красная площадь
+        const endPoint = L.latLng(55.719, 37.556);          // Лужники
+
+        // Строим маршрут
+        routeControl = L.Routing.control({
+            waypoints: [startPoint, endPoint],
+            routeWhileDragging: false,
+            addWaypoints: false,
+            draggableWaypoints: false,
+            lineOptions: {
+                styles: [{ color: 'blue', weight: 5 }]
+            }
+        }).addTo(map);
+
+        // Получаем все точки маршрута для симуляции
+        routeControl.on('routesfound', function(e) {
+            routePoints = e.routes[0].coordinates;
+            document.getElementById('status').innerHTML = `✅ Маршрут готов (${routePoints.length} точек)`;
+
+            // Создаём маркер в начальной точке
+            driverMarker = L.marker(routePoints[0], {
+                icon: L.divIcon({ className: 'custom-div-icon', html: '🚶', iconSize: [30, 30] })
+            }).addTo(map);
+            driverMarker.bindTooltip('Старт').openTooltip();
+        });
+
+        function startWalking() {
+            if (routePoints.length === 0) {
+                document.getElementById('status').innerHTML = '⚠️ Подождите, маршрут ещё загружается...';
+                return;
+            }
+
+            if (simulationInterval) clearInterval(simulationInterval);
+
+            currentPointIndex = 0;
+            simulationInterval = setInterval(function() {
+                if (currentPointIndex >= routePoints.length) {
+                    clearInterval(simulationInterval);
+                    document.getElementById('status').innerHTML = '🏁 Прибыли на место!';
+                    driverMarker.bindTooltip('🏁 ФИНИШ').openTooltip();
+                    return;
+                }
+
+                const point = routePoints[currentPointIndex];
+                driverMarker.setLatLng(point);
+
+                const progress = Math.round((currentPointIndex / routePoints.length) * 100);
+                driverMarker.bindTooltip(`🚶 ${progress}%`).openTooltip();
+                document.getElementById('status').innerHTML = `📍 Движение... Пройдено ${progress}%`;
+
+                currentPointIndex++;
+            }, 1000); // 200 мс = быстрое движение, увеличьте для замедления
+        }
+
+        function stopWalking() {
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+                simulationInterval = null;
+                document.getElementById('status').innerHTML = '⏸️ Движение остановлено';
+            }
+        }
+    </script>
+</body>
+</html>
