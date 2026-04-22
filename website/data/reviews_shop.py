@@ -33,4 +33,4 @@ class ReviewsShop(SqlAlchemyBase, SerializerMixin):
     )
 
     shop = orm.relationship('Shops', back_populates='reviews')
-    user = orm.relationship('user', back_populates='shop_reviews')
+    user = orm.relationship('User', back_populates='shop_reviews')

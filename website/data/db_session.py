@@ -23,6 +23,8 @@ def global_init(db_file: str):
     engine = sa.create_engine(conn_str, echo=True)
     __factory = orm.sessionmaker(bind=engine)
 
+    import website.data.__all_models
+
     # Alembic сам додумает
     # SqlAlchemyBase.metadata.create_all(engine)
 
