@@ -29,4 +29,6 @@ def global_init(db_file: str):
 
 def create_session() -> Session:
     global __factory
+    if __factory is None:
+        raise Exception("База данных не инициализирована. Вызовите global_init()")
     return __factory()
