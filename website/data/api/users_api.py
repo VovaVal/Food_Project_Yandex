@@ -15,6 +15,13 @@ parser_post_args.add_argument('user_bonuses', type=int, default=0)
 parser_post_args.add_argument('email', required=True)
 parser_post_args.add_argument('password', required=True)
 
+parser_patch_args = reqparse.RequestParser()
+parser_patch_args.add_argument('name')
+parser_patch_args.add_argument('img')
+parser_patch_args.add_argument('user_bonuses', type=int)
+parser_patch_args.add_argument('email')
+parser_patch_args.add_argument('password')
+
 
 def abort_if_user_not_found(user_id: int):
     with db_session.create_session() as sess:
@@ -42,6 +49,28 @@ class UsersResource(Resource):
 
         with db_session.create_session() as sess:
             sess.delete(user)
+            sess.commit()
+
+        return jsonify(
+            {
+                'success': 'OK'
+            }
+        )
+
+    def patch(self, user_id: int):
+        user = abort_if_user_not_found(user_id)
+        args = parser_patch_args.parse_args()
+
+        with db_session.create_session() as sess:
+            for key, value in args.items():
+                if key == 'password' and value is not None:
+                    key = 'hashed_password'
+                    value = generate_password_hash(value)
+
+                if value is not None:
+                    setattr(user, key, value)
+
+            sess.add(user)
             sess.commit()
 
         return jsonify(
