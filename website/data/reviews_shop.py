@@ -28,8 +28,8 @@ class ReviewsShop(SqlAlchemyBase, SerializerMixin):
         sqlalchemy.String
     )
     created_date = sqlalchemy.Column(
-        sqlalchemy.DateTime,
-        default=datetime.datetime.now
+        sqlalchemy.Date,
+        default=datetime.date.today
     )
 
     shop = orm.relationship('Shops', back_populates='reviews')
