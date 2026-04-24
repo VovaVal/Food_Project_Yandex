@@ -40,7 +40,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     )
     created_date = sqlalchemy.Column(
         sqlalchemy.Date,
-        default=datetime.datetime.now
+        default=datetime.date.today
     )
 
     orders = orm.relationship('Orders', back_populates='user')

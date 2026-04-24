@@ -54,8 +54,8 @@ class Shops(SqlAlchemyBase, SerializerMixin):
         sqlalchemy.String
     )
     created_date = sqlalchemy.Column(
-        sqlalchemy.DateTime,
-        default=datetime.datetime.now
+        sqlalchemy.Date,
+        default=datetime.date.today
     )
 
     products = orm.relationship('Products', back_populates='shop')
