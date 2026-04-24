@@ -26,7 +26,7 @@ def global_init(db_file: str):
     import website.data.__all_models
 
     # Alembic сам додумает
-    # SqlAlchemyBase.metadata.create_all(engine)
+    SqlAlchemyBase.metadata.create_all(engine)  # убрать при деплое в сеть!!!
 
 
 def create_session() -> Session:

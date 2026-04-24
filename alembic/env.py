@@ -12,7 +12,6 @@ from website.config import DATABASE_URL
 # access to the values within the .ini file in use.
 config = context.config
 
-
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
@@ -22,7 +21,6 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from website.data.db_session import SqlAlchemyBase
 

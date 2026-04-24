@@ -39,7 +39,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
         nullable=True
     )
     created_date = sqlalchemy.Column(
-        sqlalchemy.DateTime,
+        sqlalchemy.Date,
         default=datetime.datetime.now
     )
 

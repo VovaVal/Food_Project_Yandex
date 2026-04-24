@@ -13,7 +13,7 @@ def create_app():
 
     api = Api(app)
     api.add_resource(users_api.UsersResource, '/api/users/<int:user_id>')
-    api.add_resource(users_api.UsersListResource, '/api/users')
+    api.add_resource(users_api.UsersListResource, '/api/users/')
 
     # инициализируем базу данных
     db_session.global_init(app.config['SQLALCHEMY_DATABASE_URI'])

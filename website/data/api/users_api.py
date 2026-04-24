@@ -2,10 +2,18 @@ from flask_restful import Resource, reqparse, abort
 from flask import jsonify
 
 from werkzeug.security import generate_password_hash
-import datetime
+from datetime import date
 
 from website.data.users import User
 from website.data import db_session
+
+
+parser_post_args = reqparse.RequestParser()
+parser_post_args.add_argument('name', required=True)
+parser_post_args.add_argument('img', default='website/static/imgs/icon_user_account.png')
+parser_post_args.add_argument('user_bonuses', type=int, default=0)
+parser_post_args.add_argument('email', required=True)
+parser_post_args.add_argument('password', required=True)
 
 
 def abort_if_user_not_found(user_id: int):
@@ -29,6 +37,19 @@ class UsersResource(Resource):
             }
         )
 
+    def delete(self, user_id: int):
+        user = abort_if_user_not_found(user_id)
+
+        with db_session.create_session() as sess:
+            sess.delete(user)
+            sess.commit()
+
+        return jsonify(
+            {
+                'success': 'OK'
+            }
+        )
+
 
 class UsersListResource(Resource):
     def get(self):
@@ -43,5 +64,34 @@ class UsersListResource(Resource):
                         )
                         for item in users
                     ]
+            }
+        )
+
+    def post(self):
+        args = parser_post_args.parse_args()
+        hashed_password = generate_password_hash(args['password'])
+        user_id = None
+
+        with db_session.create_session() as sess:
+            user_exist = sess.query(User).filter(User.email == args['email']).first()
+            if user_exist:
+                abort(400, message=f'User with email {args['email']} already exists')
+
+            user = User(
+                name=args['name'],
+                img=args['img'],
+                user_bonuses=args['user_bonuses'],
+                email=args['email'],
+                hashed_password=hashed_password,
+                created_date=date.today()
+            )
+            sess.add(user)
+            sess.commit()
+
+            user_id = user.id
+
+        return jsonify(
+            {
+                'id': user_id
             }
         )
