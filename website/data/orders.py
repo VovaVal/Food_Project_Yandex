@@ -57,6 +57,12 @@ class Orders(SqlAlchemyBase, SerializerMixin):
         sqlalchemy.String,
         default='cash'
     )
+    address = sqlalchemy.Column(
+        sqlalchemy.String
+    )
+    coords = sqlalchemy.Column(
+        sqlalchemy.String
+    )
 
     order_items = orm.relationship('OrderItems', back_populates='order')
     shop = orm.relationship('Shops', back_populates='orders')
