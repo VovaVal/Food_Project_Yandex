@@ -1,22 +1,19 @@
 from flask_restful import Resource, reqparse, abort
 from flask import jsonify
+from flask_login import current_user, login_required
 
 from datetime import date
 
 from website.data.shops import Shops
 from website.data.reviews_shop import ReviewsShop
 from website.data import db_session
-from website.data.users import User
 
 
 parser_post_args = reqparse.RequestParser()
-parser_post_args.add_argument('user_id', type=int, required=True)
 parser_post_args.add_argument('shop_id', type=int, required=True)
 parser_post_args.add_argument('review_text', required=True)
 
 parser_patch_args = reqparse.RequestParser()
-parser_patch_args.add_argument('user_id', type=int)
-parser_patch_args.add_argument('shop_id', type=int)
 parser_patch_args.add_argument('review_text')
 
 
@@ -27,6 +24,11 @@ def abort_if_review_shop_not_found(review_shop_id: int):
     if not review_shop:
         abort(404, message=f"Shops' Review with id {review_shop_id} not found")
     return review_shop
+
+
+def is_users_review_or_admin(review: ReviewsShop):
+    if current_user.id != review.user_id and current_user.role != 'admin':
+        abort(403, message='Access denied: you can only delete/add/edit your own reviews')
 
 
 class ReviewsShopResource(Resource):
@@ -40,8 +42,10 @@ class ReviewsShopResource(Resource):
             }
         )
 
+    @login_required
     def delete(self, review_shop_id: int):
         review_shop = abort_if_review_shop_not_found(review_shop_id)
+        is_users_review_or_admin(review_shop)
 
         with db_session.create_session() as sess:
             sess.delete(review_shop)
@@ -53,22 +57,15 @@ class ReviewsShopResource(Resource):
             }
         )
 
+    @login_required
     def patch(self, review_shop_id: int):
         review_shop = abort_if_review_shop_not_found(review_shop_id)
+        is_users_review_or_admin(review_shop)
+
         args = parser_patch_args.parse_args()
 
         with db_session.create_session() as sess:
             for key, value in args.items():
-                if key == 'user_id' and value is not None:
-                    user = sess.get(User, value)
-                    if not user:
-                        abort(404, message=f'User with id {args["user_id"]} not found')
-
-                if key == 'shop_id' and value is not None:
-                    shop = sess.get(Shops, value)
-                    if not shop:
-                        abort(404, message=f'Shop with id {args["shop_id"]} not found')
-
                 if value is not None:
                     setattr(review_shop, key, value)
 
@@ -98,29 +95,29 @@ class ReviewsShopListResource(Resource):
             }
         )
 
+    @login_required
     def post(self):
+        if current_user.role == 'shop':
+            abort(403, message='Access denied: shop owner can not write reviews to shops')
+
         args = parser_post_args.parse_args()
         reviews_shop_id = None
 
         with db_session.create_session() as sess:
-            user = sess.get(User, args['user_id'])
-            if not user:
-                abort(404, message=f'User with id {args["user_id"]} not found')
-
             shop = sess.get(Shops, args['shop_id'])
             if not shop:
                 abort(404, message=f'Shop with id {args["shop_id"]} not found')
 
             # в случае если пользователь уже оставил комментарий магазину(отзыв можно будет только редактировать)
-            no_review_before = sess.query(ReviewsShop).filter(ReviewsShop.user_id == args['user_id'],
+            no_review_before = sess.query(ReviewsShop).filter(ReviewsShop.user_id == current_user.id,
                                                               ReviewsShop.shop_id == args['shop_id']).first()
             if no_review_before:
                 abort(404, message=f'Review for Shop with id: {args['shop_id']};'
-                                   f' by the user with id: {args['user_id']} has already been written')
+                                   f' by the user with id: {current_user.id} has already been written')
 
             reviews_shop = ReviewsShop(
                 shop_id=args['shop_id'],
-                user_id=args['user_id'],
+                user_id=current_user.id,
                 review_text=args['review_text'],
                 created_date=date.today()
             )
