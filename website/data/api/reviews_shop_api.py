@@ -8,6 +8,7 @@ from website.data.reviews_shop import ReviewsShop
 from website.data import db_session
 from website.data.users import User
 
+
 parser_post_args = reqparse.RequestParser()
 parser_post_args.add_argument('user_id', type=int, required=True)
 parser_post_args.add_argument('shop_id', type=int, required=True)

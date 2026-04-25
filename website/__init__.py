@@ -3,7 +3,7 @@ from flask_restful import Api
 
 from website.config import SECRET_KEY, DATABASE_URL
 from website.data import db_session
-from website.data.api import users_api, shops_api, products_api, orders_api, order_items_api, reviews_shop_api
+from website.data.api import users_api, shops_api, products_api, orders_api, order_items_api, reviews_shop_api, reviews_product_api
 
 
 def create_app():
@@ -24,6 +24,8 @@ def create_app():
     api.add_resource(order_items_api.OrderItemsListResource, '/api/order_items/')
     api.add_resource(reviews_shop_api.ReviewsShopResource, '/api/reviews_shop/<int:review_shop_id>')
     api.add_resource(reviews_shop_api.ReviewsShopListResource, '/api/reviews_shop/')
+    api.add_resource(reviews_product_api.ReviewsProductResource, '/api/reviews_product/<int:review_product_id>')
+    api.add_resource(reviews_product_api.ReviewsProductListResource, '/api/reviews_product/')
 
     # инициализируем базу данных
     db_session.global_init(app.config['SQLALCHEMY_DATABASE_URI'])
