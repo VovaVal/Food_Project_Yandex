@@ -1,5 +1,6 @@
 from flask_restful import Resource, reqparse, abort
 from flask import jsonify
+from flask_login import login_required, current_user
 
 from werkzeug.security import generate_password_hash
 from datetime import date
@@ -37,8 +38,22 @@ def abort_if_user_not_found(user_id: int):
     return user
 
 
+def is_admin_or_user(user_id: int):
+    # Дополнительная проверка: пользователь может смотреть только себя
+    if current_user.id != user_id and current_user.role != 'admin':
+        abort(403, message='Access denied: you can only view/delete/edit your own profile')
+
+
+def is_admin():
+    if current_user.role != 'admin':
+        abort(403, message='Access denied: you can only view/delete/edit your own profile')
+
+
 class UsersResource(Resource):
+    @login_required
     def get(self, user_id: int):
+        is_admin_or_user(user_id)
+
         user = abort_if_user_not_found(user_id)
         return jsonify(
             {
@@ -49,7 +64,10 @@ class UsersResource(Resource):
             }
         )
 
+    @login_required
     def delete(self, user_id: int):
+        is_admin_or_user(user_id)
+
         user = abort_if_user_not_found(user_id)
 
         with db_session.create_session() as sess:
@@ -62,13 +80,19 @@ class UsersResource(Resource):
             }
         )
 
+    @login_required
     def patch(self, user_id: int):
+        is_admin_or_user(user_id)
+
         user = abort_if_user_not_found(user_id)
         args = parser_patch_args.parse_args()
 
         with db_session.create_session() as sess:
             for key, value in args.items():
                 if key == 'password' and value is not None:
+                    if len(value) < 6:
+                        abort(400, message='Password must be at least 6 characters')
+
                     key = 'hashed_password'
                     value = generate_password_hash(value)
 
@@ -86,7 +110,10 @@ class UsersResource(Resource):
 
 
 class UsersListResource(Resource):
+    @login_required
     def get(self):
+        is_admin()
+
         with db_session.create_session() as sess:
             users = sess.query(User).all()
         return jsonify(
@@ -111,6 +138,9 @@ class UsersListResource(Resource):
             user_exist = sess.query(User).filter(User.email == args['email']).first()
             if user_exist:
                 abort(400, message=f'User with email {args['email']} already exists')
+
+            if len(args['password']) < 6:
+                abort(400, message='Password must be at least 6 characters')
 
             user = User(
                 name=args['name'],

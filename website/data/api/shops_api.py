@@ -1,11 +1,13 @@
 from flask_restful import Resource, reqparse, abort
 from flask import jsonify
+from flask_login import current_user, login_required
 
 from datetime import date
 
 from website.data.shops import Shops
 from website.data import db_session
 from website.data.users import User
+
 
 parser_post_args = reqparse.RequestParser()
 parser_post_args.add_argument('name', required=True)
@@ -37,6 +39,12 @@ def abort_if_shop_not_found(shop_id: int):
     return shop
 
 
+def is_shop_owner_or_admin(shop: Shops):
+    """Проверка, что текущий пользователь владелец магазина или админ"""
+    if current_user.id != shop.user_id and current_user.role != 'admin':
+        abort(403, message='Access denied: you can only access your own shop')
+
+
 class ShopsResource(Resource):
     def get(self, shop_id: int):
         shop = abort_if_shop_not_found(shop_id)
@@ -49,8 +57,10 @@ class ShopsResource(Resource):
             }
         )
 
+    @login_required
     def delete(self, shop_id: int):
         shop = abort_if_shop_not_found(shop_id)
+        is_shop_owner_or_admin(shop)
 
         with db_session.create_session() as sess:
             sess.delete(shop)
@@ -62,8 +72,11 @@ class ShopsResource(Resource):
             }
         )
 
+    @login_required
     def patch(self, shop_id: int):
         shop = abort_if_shop_not_found(shop_id)
+        is_shop_owner_or_admin(shop)
+
         args = parser_patch_args.parse_args()
 
         with db_session.create_session() as sess:
@@ -103,7 +116,11 @@ class ShopsListResource(Resource):
             }
         )
 
+    @login_required
     def post(self):
+        if current_user.role != 'shop':
+            abort(403, message='Only users with shop role can create a shop')
+
         args = parser_post_args.parse_args()
         shop_id = None
 

@@ -1,5 +1,6 @@
 from flask_restful import Resource, reqparse, abort
 from flask import jsonify
+from flask_login import current_user, login_required
 
 from website.data.products import Products
 from website.data import db_session
@@ -38,6 +39,11 @@ def abort_if_product_not_found(product_id: int):
     return product
 
 
+def is_shop_owner(shop: Shops):
+    if current_user.id != shop.user_id and current_user.role != 'admin':
+        abort(403, message='Access denied: you can only delete/add/edit products from your own shop')
+
+
 class ProductsResource(Resource):
     def get(self, product_id: int):
         product = abort_if_product_not_found(product_id)
@@ -50,10 +56,14 @@ class ProductsResource(Resource):
             }
         )
 
+    @login_required
     def delete(self, product_id: int):
         product = abort_if_product_not_found(product_id)
 
         with db_session.create_session() as sess:
+            shop = sess.get(Shops, product.shop_id)
+            is_shop_owner(shop)
+
             sess.delete(product)
             sess.commit()
 
@@ -63,16 +73,22 @@ class ProductsResource(Resource):
             }
         )
 
+    @login_required
     def patch(self, product_id: int):
         product = abort_if_product_not_found(product_id)
         args = parser_patch_args.parse_args()
 
         with db_session.create_session() as sess:
+            shop = sess.get(Shops, product.shop_id)
+            is_shop_owner(shop)
+
             for key, value in args.items():
                 if key == 'shop_id' and value is not None:
                     shop = sess.get(Shops, args['shop_id'])
                     if not shop:
                         abort(404, message=f'Shop with id {args["shop_id"]} not found')
+
+                    is_shop_owner(shop)
 
                 if value is not None:
                     setattr(product, key, value)
@@ -104,7 +120,11 @@ class ProductsListResource(Resource):
             }
         )
 
+    @login_required
     def post(self):
+        if current_user.role != 'shop':
+            abort(403, message='Only shops can create products')
+
         args = parser_post_args.parse_args()
         product_id = None
 
@@ -112,6 +132,8 @@ class ProductsListResource(Resource):
             shop = sess.get(Shops, args['shop_id'])
             if not shop:
                 abort(404, message=f'Shop with id {args["shop_id"]} not found')
+
+            is_shop_owner(shop)
 
             product = Products(
                 name=args['name'],
