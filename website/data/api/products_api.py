@@ -13,7 +13,8 @@ parser_post_args.add_argument('quantity', type=int, default=0)
 parser_post_args.add_argument('rate', type=float, default=0)
 parser_post_args.add_argument('price', type=int, required=True)
 parser_post_args.add_argument('description')
-parser_post_args.add_argument('product_type', choices=['drink', 'bakery', 'dessert', 'other'], default='other')
+parser_post_args.add_argument('product_type', choices=['drink', 'bakery', 'dessert', 'other'], default='other',
+                              help='Allowed product types: "drink", "bakery", "dessert" and "other"')
 
 parser_patch_args = reqparse.RequestParser()
 parser_patch_args.add_argument('name')
@@ -23,7 +24,8 @@ parser_patch_args.add_argument('quantity', type=int)
 parser_patch_args.add_argument('rate', type=float)
 parser_patch_args.add_argument('price', type=int)
 parser_patch_args.add_argument('description')
-parser_patch_args.add_argument('product_type', choices=['drink', 'bakery', 'dessert', 'other'])
+parser_patch_args.add_argument('product_type', choices=['drink', 'bakery', 'dessert', 'other'],
+                               help='Allowed product types: "drink", "bakery", "dessert" and "other"')
 
 
 def abort_if_product_not_found(product_id: int):
