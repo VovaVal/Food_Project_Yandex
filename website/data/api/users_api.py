@@ -14,6 +14,8 @@ parser_post_args.add_argument('img', default='website/static/imgs/icon_user_acco
 parser_post_args.add_argument('user_bonuses', type=int, default=0)
 parser_post_args.add_argument('email', required=True)
 parser_post_args.add_argument('password', required=True)
+parser_post_args.add_argument('role', choices=['customer', 'shop'],
+                              default='customer', help='Allowed roles: "customer" and "shop"')
 
 parser_patch_args = reqparse.RequestParser()
 parser_patch_args.add_argument('name')
@@ -21,6 +23,8 @@ parser_patch_args.add_argument('img')
 parser_patch_args.add_argument('user_bonuses', type=int)
 parser_patch_args.add_argument('email')
 parser_patch_args.add_argument('password')
+parser_patch_args.add_argument('role', choices=['customer', 'shop'],
+                               help='Allowed roles: "customer" and "shop"')
 
 
 def abort_if_user_not_found(user_id: int):
@@ -39,7 +43,8 @@ class UsersResource(Resource):
         return jsonify(
             {
                 'user': user.to_dict(
-                    only=('id', 'name', 'img', 'user_bonuses', 'email', 'hashed_password', 'created_date')
+                    only=('id', 'name', 'img', 'user_bonuses', 'email',
+                          'hashed_password', 'created_date', 'role')
                 )
             }
         )
@@ -89,7 +94,8 @@ class UsersListResource(Resource):
                 'users':
                     [
                         item.to_dict(
-                            only=('id', 'name', 'img', 'user_bonuses', 'email', 'hashed_password', 'created_date')
+                            only=('id', 'name', 'img', 'user_bonuses', 'email',
+                                  'hashed_password', 'created_date', 'role')
                         )
                         for item in users
                     ]
@@ -112,7 +118,8 @@ class UsersListResource(Resource):
                 user_bonuses=args['user_bonuses'],
                 email=args['email'],
                 hashed_password=hashed_password,
-                created_date=date.today()
+                created_date=date.today(),
+                role=args['role']
             )
             sess.add(user)
             sess.commit()

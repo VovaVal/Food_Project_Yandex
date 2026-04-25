@@ -18,10 +18,9 @@ class Shops(SqlAlchemyBase, SerializerMixin):
     name = sqlalchemy.Column(
         sqlalchemy.String
     )
-    email = sqlalchemy.Column(
-        sqlalchemy.String,
-        index=True,
-        unique=True
+    user_id = sqlalchemy.Column(
+        sqlalchemy.Integer,
+        sqlalchemy.ForeignKey('users.id')
     )
     address = sqlalchemy.Column(
         sqlalchemy.String
@@ -50,9 +49,6 @@ class Shops(SqlAlchemyBase, SerializerMixin):
     coords = sqlalchemy.Column(
         sqlalchemy.String
     )
-    hashed_password = sqlalchemy.Column(
-        sqlalchemy.String
-    )
     created_date = sqlalchemy.Column(
         sqlalchemy.Date,
         default=datetime.date.today
@@ -61,3 +57,4 @@ class Shops(SqlAlchemyBase, SerializerMixin):
     products = orm.relationship('Products', back_populates='shop')
     orders = orm.relationship('Orders', back_populates='shop')
     reviews = orm.relationship('ReviewsShop', back_populates='shop')
+    user = orm.relationship('User', back_populates='shops')
