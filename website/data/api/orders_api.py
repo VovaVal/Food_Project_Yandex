@@ -1,3 +1,5 @@
+import datetime
+
 from flask_restful import Resource, reqparse, abort
 from flask import jsonify
 
@@ -19,8 +21,9 @@ parser_post_args.add_argument('status', choices=['active', 'finished'], default=
                               help='Allowed status types: "active" and "finished"')
 parser_post_args.add_argument('type_of_payment', choices=['cash', 'card', 'bonus'], default='cash',
                               help='Allowed payment types: "cash", "card" and "bonus"')
-parser_post_args.add_argument('address', required=True)
-parser_post_args.add_argument('coords', required=True)
+# если пользователь выбрал самовывоз, то ему не нужно указывать свой адрес
+parser_post_args.add_argument('address')
+parser_post_args.add_argument('coords')
 
 parser_patch_args = reqparse.RequestParser()
 parser_patch_args.add_argument('user_id', type=int)
@@ -140,10 +143,10 @@ class OrdersListResource(Resource):
                 price=args['price'],
                 delivery_type=args['delivery_type'],
                 status=args['status'],
-                created_date=args['created_date'],
                 type_of_payment=args['type_of_payment'],
                 address=args['address'],
-                coords=args['coords']
+                coords=args['coords'],
+                created_date=datetime.datetime.now()
             )
             sess.add(order)
             sess.commit()
