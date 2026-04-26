@@ -25,9 +25,6 @@ class OrderItems(SqlAlchemyBase, SerializerMixin):
     quantity = sqlalchemy.Column(
         sqlalchemy.Integer
     )
-    price = sqlalchemy.Column(
-        sqlalchemy.Float
-    )
 
     order = orm.relationship('Orders', back_populates='order_items')
     product = orm.relationship('Products', back_populates='order_items')

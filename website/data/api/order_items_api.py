@@ -78,7 +78,7 @@ class OrderItemsResource(Resource):
         return jsonify(
             {
                 'order_item': order_item.to_dict(
-                    only=('id', 'product_id', 'order_id', 'quantity', 'price')
+                    only=('id', 'product_id', 'order_id', 'quantity')
                 )
             }
         )
@@ -137,7 +137,7 @@ class OrderItemsListResource(Resource):
                 'order_items':
                     [
                         item.to_dict(
-                            only=('id', 'product_id', 'order_id', 'quantity', 'price')
+                            only=('id', 'product_id', 'order_id', 'quantity')
                         )
                         for item in order_items
                     ]
@@ -192,8 +192,7 @@ class OrderItemsListResource(Resource):
                 order_items = OrderItems(
                     product_id=args['product_id'],
                     order_id=args['order_id'],
-                    quantity=args['quantity'],
-                    price=product.price
+                    quantity=args['quantity']
                 )
 
             product.quantity -= args['quantity']
