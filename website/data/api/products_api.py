@@ -39,9 +39,15 @@ def abort_if_product_not_found(product_id: int):
     return product
 
 
-def is_shop_owner(shop: Shops):
-    if current_user.id != shop.user_id and current_user.role != 'admin':
-        abort(403, message='Access denied: you can only delete/add/edit products from your own shop')
+def check_shop_ownership(shop_id: int):
+    """Проверка, что текущий пользователь владеет магазином или админ"""
+    with db_session.create_session() as sess:
+        shop = sess.get(Shops, shop_id)
+        if not shop:
+            abort(404, message=f'Shop with id {shop_id} not found')
+        if current_user.id != shop.user_id and current_user.role != 'admin':
+            abort(403, message='Access denied: you can only manage products from your own shop')
+        return shop
 
 
 class ProductsResource(Resource):
@@ -59,11 +65,9 @@ class ProductsResource(Resource):
     @login_required
     def delete(self, product_id: int):
         product = abort_if_product_not_found(product_id)
+        check_shop_ownership(product.shop_id)
 
         with db_session.create_session() as sess:
-            shop = sess.get(Shops, product.shop_id)
-            is_shop_owner(shop)
-
             sess.delete(product)
             sess.commit()
 
@@ -76,19 +80,21 @@ class ProductsResource(Resource):
     @login_required
     def patch(self, product_id: int):
         product = abort_if_product_not_found(product_id)
+        check_shop_ownership(product.shop_id)
+
         args = parser_patch_args.parse_args()
 
+        if args.get('quantity') is not None and args['quantity'] < 0:
+            abort(400, message='Quantity cannot be negative')
+        if args.get('price') is not None and args['price'] < 0:
+            abort(400, message='Price cannot be negative')
+        if args.get('rate') is not None and (args['rate'] < 0 or args['rate'] > 5):
+            abort(400, message='Rate cannot be negative or more than 5')
+
         with db_session.create_session() as sess:
-            shop = sess.get(Shops, product.shop_id)
-            is_shop_owner(shop)
-
             for key, value in args.items():
-                if key == 'shop_id' and value is not None:
-                    shop = sess.get(Shops, args['shop_id'])
-                    if not shop:
-                        abort(404, message=f'Shop with id {args["shop_id"]} not found')
-
-                    is_shop_owner(shop)
+                if key == 'shop_id' and value is not None and args['shop_id'] != product.shop_id:
+                    check_shop_ownership(args['shop_id'])
 
                 if value is not None:
                     setattr(product, key, value)
@@ -122,18 +128,21 @@ class ProductsListResource(Resource):
 
     @login_required
     def post(self):
-        if current_user.role != 'shop':
+        if current_user.role == 'customer':
             abort(403, message='Only shops can create products')
 
         args = parser_post_args.parse_args()
         product_id = None
 
-        with db_session.create_session() as sess:
-            shop = sess.get(Shops, args['shop_id'])
-            if not shop:
-                abort(404, message=f'Shop with id {args["shop_id"]} not found')
+        if args.get('quantity') is not None and args['quantity'] < 0:
+            abort(400, message='Quantity cannot be negative')
+        if args.get('price') is not None and args['price'] < 0:
+            abort(400, message='Price cannot be negative')
+        if args.get('rate') is not None and (args['rate'] < 0 or args['rate'] > 5):
+            abort(400, message='Rate cannot be negative or more than 5')
 
-            is_shop_owner(shop)
+        with db_session.create_session() as sess:
+            check_shop_ownership(args['shop_id'])
 
             product = Products(
                 name=args['name'],
