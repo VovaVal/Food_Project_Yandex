@@ -43,7 +43,7 @@ class Orders(SqlAlchemyBase, SerializerMixin):
         sqlalchemy.String,
         default='pickup'
     )
-    # статус заказа(active или finished)
+    # статус заказа(active, cooking, cancelled или finished)
     status = sqlalchemy.Column(
         sqlalchemy.String,
         default='active'
