@@ -25,7 +25,6 @@ def create_app():
             user = sess.get(User, user_id)
         return user
 
-
     api = Api(app)
     api.add_resource(users_api.UsersResource, '/api/users/<int:user_id>')
     api.add_resource(users_api.UsersListResource, '/api/users/')
