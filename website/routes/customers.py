@@ -13,12 +13,31 @@ def check_role():
     if not current_user.is_authenticated or current_user.role != 'customer':
         return redirect(url_for('auth.login'))
 
-@customer_bp.route('/dashboard')
 @login_required
+@customer_bp.route('/dashboard')
 def dashboard():
     return render_template('customer/dashboard.html', user=current_user)
 
-@customer_bp.route('/orders')
 @login_required
+@customer_bp.route('/orders')
 def orders():
     return render_template('customer/orders.html')
+
+
+@login_required
+@customer_bp.route('/')
+def index():
+    return redirect(url_for('shop.dashboard'))
+
+
+@login_required
+@customer_bp.route('/settings')
+def user_settings():
+    '''Настройки пользователя, а также его персональный данные'''
+    return render_template('customer/settings.html', title='Настройки')
+
+
+@login_required
+@customer_bp.route('/edit_settings')
+def edit_settings():
+    ...

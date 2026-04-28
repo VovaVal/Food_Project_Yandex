@@ -11,12 +11,12 @@ def check_role():
     if not current_user.is_authenticated or current_user.role != 'shop':
         return redirect(url_for('auth.login'))
 
-@shop_bp.route('/dashboard')
 @login_required
+@shop_bp.route('/dashboard')
 def dashboard():
     return render_template('shop/dashboard.html', user=current_user)
 
-@shop_bp.route('/products')
 @login_required
+@shop_bp.route('/products')
 def products():
     return render_template('shop/products.html')
