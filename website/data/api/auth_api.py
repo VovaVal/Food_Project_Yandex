@@ -20,7 +20,7 @@ class LoginResource(Resource):
             user = sess.query(User).filter(User.email == args['email']).first()
 
             if not user or not check_password_hash(user.hashed_password, args['password']):
-                abort(401, message='Invalid email or password')
+                abort(401, message='Неправильный пароль или почта')
 
         login_user(user, remember=True)
 
