@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+          crossorigin="anonymous">
+    <title>{{ title }}</title>
+    <style>
+    /* Настройка контейнера алерта */
+    .alert {
+        display: flex !important;
+        align-items: center !important;
+        gap: 15px !important;
+    }
+
+    /* Крестик */
+    .alert .closebtn,
+    .alert span.closebtn,
+    div.alert span.closebtn {
+        color: black !important;
+        font-weight: bold !important;
+        font-size: 28px !important;
+        line-height: 1 !important;
+        cursor: pointer !important;
+        transition: 0.2s !important;
+        text-decoration: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        opacity: 0.7 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        flex-shrink: 0 !important;
+        width: auto !important;
+        height: auto !important;
+        order: 2 !important;  /* крестик после текста */
+    }
+
+    /* Текст сообщения */
+    .alert .closebtn + * {
+        order: 1 !important;  /* текст перед крестиком */
+        margin-right: 0 !important;
+    }
+
+    .alert .closebtn:hover,
+    .alert span.closebtn:hover {
+        color: black !important;
+        opacity: 1 !important;
+        transform: scale(1.1) !important;
+        cursor: pointer !important;
+        background: transparent !important;
+    }
+</style>
+</head>
+<body>
+<header>
+    <nav class="navbar navbar-light bg-light d-flex">
+        <a class="navbar-brand" href=""><h1>Миссия Колонизация Марса</h1></a>
+        {% if current_user.is_authenticated %}
+    <a class="navbar-brand" href="/logout">{{ current_user.name }}</a>
+{% else %}
+    <p>
+        <a class="btn btn-primary" href="register">Зарегистрироваться</a>
+        <a class="btn btn-success" href="login">Войти</a>
+    </p>
+{% endif %}
+    </nav>
+</header>
+<!-- Блок для flash-сообщений -->
+<div id="flash-messages">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    <span class="closebtn" onclick="closeAlert(this)">&times;</span>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+<!-- Begin page content -->
+<main role="main" class="container">
+    {% block content %}{% endblock %}
+</main>
+<script>
+    // Функция закрытия алерта по крестику
+    function closeAlert(element) {
+        const alert = element.parentElement;
+        alert.style.opacity = '0';
+        alert.style.transform = 'translateY(-20px)';
+        setTimeout(() => {
+            alert.remove();
+        }, 300);
+    }
+
+    // Автоматическое исчезновение через 5 секунд
+    document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            setTimeout(function() {
+                if (alert) {
+                    alert.style.transition = 'opacity 0.3s, transform 0.3s';
+                    alert.style.opacity = '0';
+                    alert.style.transform = 'translateY(-20px)';
+                    setTimeout(function() {
+                        if (alert && alert.parentElement) {
+                            alert.remove();
+                        }
+                    }, 300);
+                }
+            }, 5000);  // 5 секунд
+        });
+    });
+</script>
+</body>
+</html>

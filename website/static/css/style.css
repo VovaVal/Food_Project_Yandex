@@ -1,13 +1,73 @@
-html, body {
-			height: 100%;
-			margin: 0;
-		}
-.leaflet-container {
-	    	height: 400px;
-			width: 600px;
-			max-width: 100%;
-			max-height: 100%;
-		}
-.leaflet-attribution-flag {
-            display: none !important;
-            }
+/* Стили для flash-сообщений */
+.alert {
+    padding: 20px;
+    background-color: green;
+    color: white;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    position: relative;
+    animation: slideIn 0.5s ease-out;
+}
+
+/* Анимация появления */
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Крестик — увеличенная версия с !important */
+.closebtn {
+    margin-left: 15px;
+    color: white !important;
+    font-weight: bold !important;
+    float: right;
+    font-size: 36px !important;      /* Ещё больше */
+    line-height: 36px !important;
+    cursor: pointer !important;       /* Принудительно курсор-рука */
+    transition: 0.3s;
+    width: 40px !important;
+    height: 40px !important;
+    text-align: center;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none !important;
+}
+
+/* Эффект при наведении на крестик */
+.closebtn:hover {
+    color: #ffcccc !important;
+    background: rgba(0, 0, 0, 0.4);
+    transform: scale(1.15);
+    cursor: pointer !important;
+}
+
+/* Разные цвета для разных категорий */
+.alert-success {
+    background-color: #28a745;
+    border-left: 5px solid #155724;
+}
+
+.alert-danger {
+    background-color: #dc3545;
+    border-left: 5px solid #721c24;
+}
+
+.alert-warning {
+    background-color: #ffc107;
+    color: #333;
+    border-left: 5px solid #8a6d3b;
+}
+
+.alert-info {
+    background-color: #17a2b8;
+    border-left: 5px solid #0c5460;
+}

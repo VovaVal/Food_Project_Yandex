@@ -10,7 +10,7 @@ from website.data import db_session
 
 
 parser_post_args = reqparse.RequestParser()
-parser_post_args.add_argument('name', required=True)
+parser_post_args.add_argument('name', default='')
 parser_post_args.add_argument('img', default='website/static/imgs/icon_user_account.png')
 parser_post_args.add_argument('user_bonuses', type=int, default=0)
 parser_post_args.add_argument('email', required=True)
@@ -137,10 +137,10 @@ class UsersListResource(Resource):
         with db_session.create_session() as sess:
             user_exist = sess.query(User).filter(User.email == args['email']).first()
             if user_exist:
-                abort(400, message=f'User with email {args['email']} already exists')
+                abort(400, message=f'Пользователь с почтой {args['email']} уже существует!')
 
             if len(args['password']) < 6:
-                abort(400, message='Password must be at least 6 characters')
+                abort(400, message='Пароль должен быть не менее 6 символов длиной!')
 
             user = User(
                 name=args['name'],

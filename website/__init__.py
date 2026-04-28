@@ -18,12 +18,24 @@ def create_app():
 
     login_manager = LoginManager()
     login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
+    login_manager.login_message = 'Пожалуйста, войдите в систему'
 
     @login_manager.user_loader
     def load_user(user_id):
         with db_session.create_session() as sess:
             user = sess.get(User, user_id)
         return user
+
+    from website.routes.auth import auth_bp
+    from website.routes.common_routes import bp_common
+    from website.routes.customers import customer_bp
+    from website.routes.shops import shop_bp
+
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(bp_common)
+    app.register_blueprint(customer_bp, url_prefix='/customer')
+    app.register_blueprint(shop_bp, url_prefix='/shop')
 
     api = Api(app)
     api.add_resource(users_api.UsersResource, '/api/users/<int:user_id>')
