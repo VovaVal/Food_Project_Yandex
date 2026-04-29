@@ -10,7 +10,7 @@ from website.data.shops import Shops
 parser_post_args = reqparse.RequestParser()
 parser_post_args.add_argument('name', required=True)
 parser_post_args.add_argument('shop_id', type=int, required=True)
-parser_post_args.add_argument('imgs', default='website/static/imgs/product_img_default.png')
+parser_post_args.add_argument('imgs', default='products/imgs/product_img_default.png')
 parser_post_args.add_argument('quantity', type=int, default=0)
 parser_post_args.add_argument('rate', type=float, default=0)
 parser_post_args.add_argument('price', type=int, required=True)
@@ -95,6 +95,9 @@ class ProductsResource(Resource):
             for key, value in args.items():
                 if key == 'shop_id' and value is not None and args['shop_id'] != product.shop_id:
                     check_shop_ownership(args['shop_id'])
+
+                if key == 'imgs' and value is not None and value.strip() == '':
+                    value = 'products/imgs/product_img_default.png'
 
                 if value is not None:
                     setattr(product, key, value)
