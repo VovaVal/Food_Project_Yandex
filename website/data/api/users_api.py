@@ -11,7 +11,7 @@ from website.data import db_session
 
 parser_post_args = reqparse.RequestParser()
 parser_post_args.add_argument('name', default='')
-parser_post_args.add_argument('img', default='website/static/imgs/icon_user_account.png')
+parser_post_args.add_argument('img', default='users/imgs/default_icon_user_account.png')
 parser_post_args.add_argument('user_bonuses', type=int, default=0)
 parser_post_args.add_argument('email', required=True)
 parser_post_args.add_argument('password', required=True)
@@ -95,6 +95,9 @@ class UsersResource(Resource):
 
                     key = 'hashed_password'
                     value = generate_password_hash(value)
+
+                if key == 'img' and value is not None and value.strip() == '':
+                    value = 'users/imgs/default_icon_user_account.png'
 
                 if value is not None:
                     setattr(user, key, value)
