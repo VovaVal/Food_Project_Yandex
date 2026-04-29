@@ -20,3 +20,9 @@ def dashboard():
 @shop_bp.route('/products')
 def products():
     return render_template('shop/products.html')
+
+
+@login_required
+@shop_bp.route('/')
+def index():
+    return redirect(url_for('shop.dashboard'))

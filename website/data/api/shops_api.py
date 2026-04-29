@@ -10,7 +10,7 @@ from website.data import db_session
 
 parser_post_args = reqparse.RequestParser()
 parser_post_args.add_argument('name', required=True)
-parser_post_args.add_argument('imgs', default='website/static/imgs/shop_img_default.jpg')
+parser_post_args.add_argument('imgs', default='shops/imgs/shop_img_default.jpg')
 parser_post_args.add_argument('address', required=True)
 parser_post_args.add_argument('rate', type=float, default=0)
 parser_post_args.add_argument('description')
@@ -78,6 +78,9 @@ class ShopsResource(Resource):
 
         with db_session.create_session() as sess:
             for key, value in args.items():
+                if key == 'imgs' and value is not None and value.strip() == '':
+                    value = 'shops/imgs/shop_img_default.jpg'
+
                 if value is not None:
                     setattr(shop, key, value)
 
