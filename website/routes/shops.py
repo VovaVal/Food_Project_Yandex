@@ -26,3 +26,15 @@ def products():
 @shop_bp.route('/')
 def index():
     return redirect(url_for('shop.dashboard'))
+
+
+@login_required
+@shop_bp.route('/settings')
+def shop_settings():
+    return render_template('shop/settings.html')
+
+
+@login_required
+@shop_bp.route('/edit_settings')
+def edit_settings():
+    return render_template('shop/edit_settings.html')
