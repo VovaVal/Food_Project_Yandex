@@ -1,0 +1,6 @@
+{% extends "base.html"%}
+{% block content %}
+<h1>{{ error_code }}</h1>
+<h3>{{ error_message }}</h3>
+<a href="{{ url_for('common.index') }}"><h4>Перейти на главную страницу</h4></a>
+{% endblock%}

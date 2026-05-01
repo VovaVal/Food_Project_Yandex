@@ -1,6 +1,7 @@
-from flask import Flask
+from flask import Flask, request, jsonify, render_template
 from flask_restful import Api
 from flask_login import LoginManager
+from werkzeug.exceptions import HTTPException
 
 from website.config import SECRET_KEY, DATABASE_URL
 from website.data import db_session
@@ -55,5 +56,48 @@ def create_app():
     api.add_resource(auth_api.LoginResource, '/api/login/')
     api.add_resource(auth_api.LogoutResource, '/api/logout/')
     api.add_resource(auth_api.CurrentUserResource, '/api/current_user/')
+
+    # 404 - Страница не найдена
+    @app.errorhandler(404)
+    def not_found_error(error):
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'Resource not found'}), 404
+        return render_template('errors/error.html', title='Ошибка',
+                               error_code=404, error_message='Resource not found'), 404
+
+    # 403 - Доступ запрещён
+    @app.errorhandler(403)
+    def forbidden_error(error):
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'Access forbidden'}), 403
+        return render_template('errors/error.html', title='Ошибка',
+                               error_code=403, error_message='Access forbidden'), 403
+
+    # 500 - Внутренняя ошибка сервера
+    @app.errorhandler(500)
+    def internal_error(error):
+        # Логируем ошибку для отладки
+        app.logger.error(f'Server Error: {error}')
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'Internal server error'}), 500
+        return render_template('errors/error.html', title='Ошибка',
+                               error_code=500, error_message='Internal server error'), 500
+
+    # Перехват всех HTTP исключений
+    @app.errorhandler(HTTPException)
+    def handle_http_exception(error):
+        if request.path.startswith('/api/'):
+            return jsonify({'error': error.description}), error.code
+        return render_template(f'errors/error.html', title='Ошибка',
+                               error_code=error.code, error_message=error.description), error.code
+
+    # Перехват любых других исключений
+    @app.errorhandler(Exception)
+    def handle_exception(error):
+        app.logger.error(f'Unhandled Exception: {error}')
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'Something went wrong'}), 500
+        return render_template('errors/error.html', title='Ошибка',
+                               error_code=500, error_message='Something went wrong'), 500
 
     return app
