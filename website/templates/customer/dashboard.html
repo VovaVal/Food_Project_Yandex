@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
+<a href="{{ url_for('customer.user_settings') }}" class="btn btn-primary">Settings</a>
 <h1> Hello, {{ current_user.role }}</h1>
 {% endblock %}

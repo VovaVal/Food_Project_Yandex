@@ -96,6 +96,12 @@ class UsersResource(Resource):
                     key = 'hashed_password'
                     value = generate_password_hash(value)
 
+                if key == 'email' and value is not None:
+                    email_exist = sess.query(User).filter(User.email == value.strip()).first()
+
+                    if email_exist:
+                        abort(400, message='Пользователь с такой почтой уже существует!')
+
                 if key == 'img' and value is not None and value.strip() == '':
                     value = 'users/imgs/default_icon_user_account.png'
 

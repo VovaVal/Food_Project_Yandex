@@ -3,6 +3,7 @@
 {% block content %}
 <a href="{{ url_for('customer.dashboard') }}" class="btn btn-primary">На главную страницу</a>
 <h1>Настройки</h1>
+<h3>Аватар:  <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ current_user.img }}" alt="Изображение аватара"></h3>
 
 <h3>Имя пользователя: {{ current_user.name }}</h3>
 <h3>Почта: {{ current_user.email }}</h3>

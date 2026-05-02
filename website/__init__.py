@@ -3,7 +3,7 @@ from flask_restful import Api
 from flask_login import LoginManager
 from werkzeug.exceptions import HTTPException
 
-from website.config import SECRET_KEY, DATABASE_URL
+from website.config import SECRET_KEY, DATABASE_URL, BUCKET_NAME, BUCKET_CLIENT
 from website.data import db_session
 from website.data.api import users_api, shops_api, products_api, orders_api, order_items_api, reviews_shop_api, reviews_product_api, auth_api
 from website.data.users import User
@@ -13,6 +13,8 @@ def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = SECRET_KEY
     app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+    app.config['BUCKET_NAME'] = BUCKET_NAME
+    app.config['BUCKET_CLIENT'] = BUCKET_CLIENT
 
     # инициализируем базу данных
     db_session.global_init(app.config['SQLALCHEMY_DATABASE_URI'])
