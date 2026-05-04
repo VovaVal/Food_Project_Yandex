@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1></h1>
+<a href="/shop/{{ shop_id }}" class="btn btn-primary">Назад</a>
+
+    <h1>Редактирование</h1>
+    <form action="" method="post" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.shop_name.label }}<br>
+            {{ form.shop_name(class="form-control") }}<br>
+            {% for error in form.shop_name.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.address.label }}<br>
+            {{ form.address(class="form-control") }}<br>
+            {% for error in form.address.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.description.label }}<br>
+            {{ form.description(class="form-control") }}<br>
+            {% for error in form.description.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+         <p>
+            {{ form.logo.label }}<br>
+            {{ form.logo(class="form-control",
+                   accept="image/png, image/jpeg, image/jpg, image/gif, image/webp",
+                   capture="environment", id="logo") }}<br>
+            <small class="text-muted">Поддерживаются: PNG, JPEG, JPG, GIF, WEBP. Максимум 5 МБ.</small>
+            {% for error in form.logo.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <div id="logo-preview" class="mt-2"></div>
+         <p>
+            {{ form.imgs.label }}<br>
+            {{ form.imgs(class="form-control",
+                   accept="image/png, image/jpeg, image/jpg, image/gif, image/webp",
+                   capture="environment", multiple=True, id="imgs") }}<br>
+            <small class="text-muted">Поддерживаются: PNG, JPEG, JPG, GIF, WEBP. Максимум 5 МБ.</small>
+            {% for error in form.imgs.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <div id="preview" class="d-flex flex-wrap gap-2 mt-2"></div>
+        <p>{{ form.save(type="submit", class="btn btn-primary") }}</p>
+    </form>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const imgsInput = document.getElementById('imgs');
+const preview = document.getElementById('preview');
+
+let selectedFiles = [];
+
+function renderPreview() {
+    preview.innerHTML = '';
+    selectedFiles.forEach((file, index) => {
+        const container = document.createElement('div');
+        container.style.position = 'relative';
+        container.style.display = 'inline-block';
+        container.style.marginRight = '5px';
+        container.style.marginBottom = '5px';
+
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.style.width = '100px';
+        img.style.height = '100px';
+        img.style.objectFit = 'cover';
+        img.style.border = '1px solid #ccc';
+        img.style.borderRadius = '5px';
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.innerText = '✖';
+        btn.style.position = 'absolute';
+        btn.style.top = '0';
+        btn.style.left = '0';
+        btn.style.border = 'none';
+        btn.style.borderRadius = '50%';
+        btn.style.cursor = 'pointer';
+        btn.style.width = '0px';
+        btn.style.height = '0px';
+        btn.onclick = () => {
+            selectedFiles.splice(index, 1);
+            renderPreview();
+        };
+
+        container.appendChild(img);
+        container.appendChild(btn);
+        preview.appendChild(container);
+    });
+}
+
+imgsInput.addEventListener('change', (e) => {
+    const newFiles = Array.from(e.target.files);
+
+    newFiles.forEach(file => {
+        const isDuplicate = selectedFiles.some(f => f.name === file.name && f.size === file.size);
+        if (!isDuplicate) {
+            selectedFiles.push(file);
+        }
+    });
+
+    renderPreview();
+
+    e.target.value = '';
+});
+
+document.querySelector('form').addEventListener('submit', (e) => {
+    const dataTransfer = new DataTransfer();
+    selectedFiles.forEach(file => dataTransfer.items.add(file));
+    imgsInput.files = dataTransfer.files;
+});
+</script>
+
+<script>
+const logoInput = document.getElementById('logo');
+const logoPreview = document.getElementById('logo-preview');
+
+logoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+
+    if (!file) {
+        logoPreview.innerHTML = '';
+        return;
+    }
+
+    const container = document.createElement('div');
+    container.style.position = 'relative';
+    container.style.display = 'inline-block';
+
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    img.style.width = '120px';
+    img.style.height = '120px';
+    img.style.objectFit = 'cover';
+    img.style.border = '1px solid #ccc';
+    img.style.borderRadius = '5px';
+
+    const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.innerText = '✖';
+        btn.style.position = 'absolute';
+        btn.style.top = '0';
+        btn.style.left = '0';
+        btn.style.border = 'none';
+        btn.style.borderRadius = '50%';
+        btn.style.cursor = 'pointer';
+        btn.style.width = '0px';
+        btn.style.height = '0px';
+        btn.onclick = () => {
+            selectedFiles.splice(index, 1);
+            renderPreview();
+        };
+
+    btn.onclick = () => {
+        logoInput.value = '';
+        logoPreview.innerHTML = '';
+    };
+
+    container.appendChild(img);
+    container.appendChild(btn);
+
+    logoPreview.innerHTML = '';
+    logoPreview.appendChild(container);
+});
+</script>
+{% endblock %}

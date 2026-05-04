@@ -6,6 +6,7 @@ from website.bucket_requests import upload_logo_shop
 from website.data import db_session
 from website.data.shops import Shops
 from website.forms.add_shop import AddShop
+from website.forms.edit_shop import EditShop
 
 shop_bp = Blueprint(
     'shop',
@@ -68,13 +69,33 @@ def shop_id_settings(shop_id: int):
         redirect(url_for('shop.dashboard'))
 
     shop_data = shop_data.json()['shop']
-    return render_template('shop/shop_settings.html', title='', shop=shop_data)
+    return render_template('shop/shop_settings.html', title=shop_data['name'], shop=shop_data)
 
 
 @login_required
-@shop_bp.route('/edit_settings_shop/<int:shop_id>')
+@shop_bp.route('/edit_settings_shop/<int:shop_id>', methods=['GET', 'POST'])
 def edit_settings_shop(shop_id: int):
-    return 'ger'
+    with db_session.create_session() as sess:
+        shop = sess.get(Shops, shop_id)
+
+    form = EditShop(
+        shop_name=shop.name,
+        address=shop.address,
+        description=shop.description
+    )
+
+    if form.validate_on_submit():
+        shop_name = form.shop_name.data
+        address = form.address.data
+        description = form.description.data
+        logo = form.logo.data
+        imgs = form.imgs.data
+
+
+
+        return redirect(url_for('shop.shop_id_settings', shop_id=shop_id))
+
+    return render_template('shop/edit_shop_settings.html', title='Редактирование', form=form, shop_id=shop_id)
 
 
 @login_required
