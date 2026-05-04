@@ -12,6 +12,7 @@ class EditShop(FlaskForm):
                                 Length(max=100, message='Максимум 100 символов')
                             ])
     address = StringField('Адрес магазина', validators=[DataRequired(message='Адрес обязателен')])
+    coords = StringField('Координаты магазина', validators=[DataRequired(message='Координаты обязательны')])
     description = StringField('Описание магазина',
                               validators=[
                                   Optional(),

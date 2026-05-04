@@ -4,99 +4,122 @@
 <h1></h1>
 <a href="/shop/{{ shop_id }}" class="btn btn-primary">Назад</a>
 
-    <h1>Редактирование</h1>
-    <form action="" method="post" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
-        <p>
-            {{ form.shop_name.label }}<br>
-            {{ form.shop_name(class="form-control") }}<br>
-            {% for error in form.shop_name.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.address.label }}<br>
-            {{ form.address(class="form-control") }}<br>
-            {% for error in form.address.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.description.label }}<br>
-            {{ form.description(class="form-control") }}<br>
-            {% for error in form.description.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
-        </p>
-         <p>
-            {{ form.logo.label }}<br>
-            {{ form.logo(class="form-control",
-                   accept="image/png, image/jpeg, image/jpg, image/gif, image/webp",
-                   capture="environment", id="logo") }}<br>
-            <small class="text-muted">Поддерживаются: PNG, JPEG, JPG, GIF, WEBP. Максимум 5 МБ.</small>
-            {% for error in form.logo.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
-        </p>
-        <div id="logo-preview" class="mt-2"></div>
-         <p>
-            {{ form.imgs.label }}<br>
-            {{ form.imgs(class="form-control",
-                   accept="image/png, image/jpeg, image/jpg, image/gif, image/webp",
-                   capture="environment", multiple=True, id="imgs") }}<br>
-            <small class="text-muted">Поддерживаются: PNG, JPEG, JPG, GIF, WEBP. Максимум 5 МБ.</small>
-            {% for error in form.imgs.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
-        </p>
-        <div id="preview" class="d-flex flex-wrap gap-2 mt-2"></div>
-        <p>{{ form.save(type="submit", class="btn btn-primary") }}</p>
-    </form>
+<h1>Редактирование</h1>
+<form action="" method="post" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+
+    <p>
+        {{ form.shop_name.label }}<br>
+        {{ form.shop_name(class="form-control") }}<br>
+        {% for error in form.shop_name.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+
+    <p>
+        {{ form.address.label }}<br>
+        {{ form.address(class="form-control", readonly=True) }}<br>
+        {% for error in form.address.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+
+    <p>
+        {{ form.coords.label }}<br>
+        {{ form.coords(class="form-control", readonly=True) }}<br>
+        {% for error in form.coords.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+
+    <div id="map" style="height: 400px;" class="mb-3"></div>
+
+    <p>
+        {{ form.description.label }}<br>
+        {{ form.description(class="form-control") }}<br>
+        {% for error in form.description.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+
+    <p>
+        {{ form.logo.label }}<br>
+        {{ form.logo(class="form-control",
+               accept="image/png, image/jpeg, image/jpg, image/gif, image/webp",
+               capture="environment", id="logo") }}<br>
+        <small class="text-muted">Поддерживаются: PNG, JPEG, JPG, GIF, WEBP. Максимум 5 МБ.</small>
+        {% for error in form.logo.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+    <div id="logo-preview" class="mt-2"></div>
+
+    <p>
+        {{ form.imgs.label }}<br>
+        {{ form.imgs(class="form-control",
+               accept="image/png, image/jpeg, image/jpg, image/gif, image/webp",
+               capture="environment", multiple=True, id="imgs") }}<br>
+        <small class="text-muted">Поддерживаются: PNG, JPEG, JPG, GIF, WEBP. Максимум 5 МБ.</small>
+        {% for error in form.imgs.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+
+    <div id="preview" class="d-flex flex-wrap gap-2 mt-2"></div>
+
+    <p>{{ form.save(type="submit", class="btn btn-primary") }}</p>
+</form>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-const imgsInput = document.getElementById('imgs');
-const preview = document.getElementById('preview');
-
 let selectedFiles = [];
 
 function renderPreview() {
+    const preview = document.getElementById('preview');
+    if (!preview) return;
+
     preview.innerHTML = '';
+
     selectedFiles.forEach((file, index) => {
         const container = document.createElement('div');
         container.style.position = 'relative';
         container.style.display = 'inline-block';
-        container.style.marginRight = '5px';
-        container.style.marginBottom = '5px';
+        container.style.margin = '5px';
 
         const img = document.createElement('img');
+
         img.src = URL.createObjectURL(file);
+
         img.style.width = '100px';
         img.style.height = '100px';
         img.style.objectFit = 'cover';
-        img.style.border = '1px solid #ccc';
         img.style.borderRadius = '5px';
+        img.style.border = '1px solid #ccc';
 
         const btn = document.createElement('button');
-        btn.type = 'button';
         btn.innerText = '✖';
         btn.style.position = 'absolute';
-        btn.style.top = '0';
-        btn.style.left = '0';
-        btn.style.border = 'none';
+        btn.style.top = '0px';
+        btn.style.left = '0px';
         btn.style.borderRadius = '50%';
-        btn.style.cursor = 'pointer';
+        btn.style.border = 'none';
+        btn.style.color = 'white';
         btn.style.width = '0px';
         btn.style.height = '0px';
+        btn.style.cursor = 'pointer';
+
         btn.onclick = () => {
             selectedFiles.splice(index, 1);
             renderPreview();
@@ -108,26 +131,45 @@ function renderPreview() {
     });
 }
 
-imgsInput.addEventListener('change', (e) => {
-    const newFiles = Array.from(e.target.files);
+document.addEventListener('DOMContentLoaded', function() {
+    const imgsInput = document.getElementById('imgs');
+    if (imgsInput) {
+        imgsInput.addEventListener('change', (e) => {
+            const newFiles = Array.from(e.target.files);
 
-    newFiles.forEach(file => {
-        const isDuplicate = selectedFiles.some(f => f.name === file.name && f.size === file.size);
-        if (!isDuplicate) {
-            selectedFiles.push(file);
-        }
+            newFiles.forEach(file => {
+                const isDuplicate = selectedFiles.some(f =>
+                    f.name === file.name && f.size === file.size
+                );
+                if (!isDuplicate) {
+                    selectedFiles.push(file);
+                }
+            });
+
+            renderPreview();
+            e.target.value = '';
+        });
+    }
+});
+
+    // Находим форму (она у вас одна на странице)
+const formElement = document.querySelector('form');
+
+formElement.onsubmit = (e) => {
+    // Создаем "хранилище" для файлов
+    const dataTransfer = new DataTransfer();
+
+    // Переносим в него все файлы из нашего JS-массива selectedFiles
+    selectedFiles.forEach(file => {
+        dataTransfer.items.add(file);
     });
 
-    renderPreview();
-
-    e.target.value = '';
-});
-
-document.querySelector('form').addEventListener('submit', (e) => {
-    const dataTransfer = new DataTransfer();
-    selectedFiles.forEach(file => dataTransfer.items.add(file));
+    // Находим скрытый/пустой инпут и подменяем его содержимое нашим набором
+    const imgsInput = document.getElementById('imgs');
     imgsInput.files = dataTransfer.files;
-});
+
+    // Теперь форма отправится с файлами
+};
 </script>
 
 <script>
@@ -166,14 +208,9 @@ logoInput.addEventListener('change', (e) => {
         btn.style.width = '0px';
         btn.style.height = '0px';
         btn.onclick = () => {
-            selectedFiles.splice(index, 1);
-            renderPreview();
+            logoInput.value = '';
+            logoPreview.innerHTML = '';
         };
-
-    btn.onclick = () => {
-        logoInput.value = '';
-        logoPreview.innerHTML = '';
-    };
 
     container.appendChild(img);
     container.appendChild(btn);
@@ -182,4 +219,51 @@ logoInput.addEventListener('change', (e) => {
     logoPreview.appendChild(container);
 });
 </script>
+
+<script>
+const map = L.map('map').setView([55.751244, 37.618423], 10); // Москва по умолчанию
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+let marker = null;
+
+map.on('click', async function(e) {
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+
+    // Удаляем старый маркер
+    if (marker) {
+        map.removeLayer(marker);
+    }
+
+    // Добавляем новый маркер
+    marker = L.marker([lat, lng]).addTo(map);
+
+    // Получаем адрес через Nominatim
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+        const data = await response.json();
+
+        const addressInput = document.getElementById("{{ form.address.id }}");
+        const coordsInput  = document.getElementById("{{ form.coords.id }}");
+
+        if (data && data.display_name) {
+            addressInput.value = data.display_name; // полное название улицы/места
+        } else {
+            addressInput.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`; // fallback
+        }
+
+        // Записываем координаты в поле coords
+        coordsInput.value = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+    } catch (err) {
+        console.error('Ошибка геокодирования:', err);
+        const addressInput = document.getElementById("{{ form.address.id }}");
+        const coordsInput  = document.getElementById("{{ form.coords.id }}");
+        addressInput.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        coordsInput.value = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+    }
+});
+</script>
+
 {% endblock %}

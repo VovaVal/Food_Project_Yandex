@@ -7,6 +7,7 @@ from website.data import db_session
 from website.data.shops import Shops
 from website.forms.add_shop import AddShop
 from website.forms.edit_shop import EditShop
+from website.config import BUCKET_CLIENT
 
 shop_bp = Blueprint(
     'shop',
@@ -87,15 +88,41 @@ def edit_settings_shop(shop_id: int):
     if form.validate_on_submit():
         shop_name = form.shop_name.data
         address = form.address.data
+        coords = form.coords.data
         description = form.description.data
         logo = form.logo.data
-        imgs = form.imgs.data
+        imgs = request.files.getlist('imgs')
+
+        print(f"request.files: {request.files}")
+        print(f"request.files.getlist('imgs'): {request.files.getlist('imgs')}")
+
+        data = {
+            'name': shop_name,
+            'address': address,
+            'coords': coords,
+            'description': description
+        }
+
+        if logo:
+            img_name = upload_logo_shop(logo, shop)
+            if img_name:
+                data['logo'] = img_name
 
 
+        for img in imgs:
+            print('name: ', img)
 
         return redirect(url_for('shop.shop_id_settings', shop_id=shop_id))
 
-    return render_template('shop/edit_shop_settings.html', title='Редактирование', form=form, shop_id=shop_id)
+    imgs = shop.imgs
+    if imgs:
+        imgs = imgs.split(',')
+    else:
+        imgs = []
+
+    print(imgs)
+    return render_template('shop/edit_shop_settings.html', title='Редактирование',
+                           form=form, shop_id=shop_id, images=imgs, BUCKET_CLIENT=BUCKET_CLIENT)
 
 
 @login_required
