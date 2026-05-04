@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<a href="{{ url_for('shop.dashboard') }}" class="btn btn-primary">На главную страницу</a>
+<h1>Настройки</h1>
+
+<h3>Название магазина: {{ shop['name'] }}</h3>
+<h3>Лого: <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ shop['logo'] }}" alt="Изображение аватара" style="max-width: 200px; max-height: 200px; width: auto; height: auto; border-radius: 8px;"></h3>
+<h3>Рейтинг: {{ shop['rate'] }}</h3>
+<h3>Адрес: {{ shop['address'] }}</h3>
+<h3>Описание: {{ shop['description'] }}</h3>
+<h3>Расписание: {{ shop['timetable'] }}</h3>
+
+<a href="{{ url_for('shop.edit_settings') }}" class="btn btn-primary">Редактировать</a>
+
+{% endblock %}

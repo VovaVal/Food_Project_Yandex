@@ -42,7 +42,7 @@ def index():
 @customer_bp.route('/settings')
 def user_settings():
     '''Настройки пользователя, а также его персональный данные'''
-    return render_template('customer/settings.html', title='Настройки')
+    return render_template('customer/owner_settings.html', title='Настройки')
 
 
 @login_required
@@ -88,7 +88,6 @@ def edit_settings():
             json=change_data,
             cookies=request.cookies
         )
-        print(resp.json())
 
         if resp.status_code == 200:
             flash(message='Вы изменили данные аккаунта!', category='success')

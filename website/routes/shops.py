@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, redirect, url_for
+import requests
+from flask import Blueprint, render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 
 from website.bucket_requests import upload_logo_shop
@@ -59,6 +60,18 @@ def add_shop():
 
 
 @login_required
+@shop_bp.route('/<int:shop_id>')
+def shop_id_settings(shop_id: int):
+    api_url = request.url_root + f'api/shops/{shop_id}'
+    shop_data = requests.get(api_url, cookies=request.cookies)
+    if shop_data.status_code != 200:
+        redirect(url_for('shop.dashboard'))
+
+    shop_data = shop_data.json()['shop']
+    return render_template('shop/shop_settings.html', title='', shop=shop_data)
+
+
+@login_required
 @shop_bp.route('/products')
 def products():
     return render_template('shop/products.html')
@@ -72,8 +85,8 @@ def index():
 
 @login_required
 @shop_bp.route('/settings')
-def shop_settings():
-    return render_template('shop/settings.html')
+def shop_owner_settings():
+    return render_template('shop/owner_settings.html')
 
 
 @login_required

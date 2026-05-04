@@ -47,11 +47,13 @@ def is_shop_owner_or_admin(shop: Shops):
 class ShopsResource(Resource):
     def get(self, shop_id: int):
         shop = abort_if_shop_not_found(shop_id)
+        is_shop_owner_or_admin(shop)
+
         return jsonify(
             {
                 'shop': shop.to_dict(
                     only=('id', 'name', 'imgs', 'address', 'rate', 'description',
-                          'timetable', 'coords', 'created_date', 'user_id')
+                          'timetable', 'coords', 'created_date', 'user_id', 'logo')
                 )
             }
         )
@@ -109,7 +111,7 @@ class ShopsListResource(Resource):
                     [
                         item.to_dict(
                             only=('id', 'name', 'imgs', 'address', 'rate', 'description',
-                                  'timetable', 'coords', 'user_id', 'created_date')
+                                  'timetable', 'coords', 'user_id', 'created_date', 'logo')
                         )
                         for item in shops
                     ]
