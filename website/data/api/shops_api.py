@@ -11,6 +11,7 @@ from website.data import db_session
 parser_post_args = reqparse.RequestParser()
 parser_post_args.add_argument('name', required=True)
 parser_post_args.add_argument('imgs', default='shops/imgs/shop_img_default.jpg')
+parser_post_args.add_argument('logo', default='shops/logos/default_logo.svg')
 parser_post_args.add_argument('address', required=True)
 parser_post_args.add_argument('rate', type=float, default=0)
 parser_post_args.add_argument('description')
@@ -20,6 +21,7 @@ parser_post_args.add_argument('coords', required=True)
 parser_patch_args = reqparse.RequestParser()
 parser_patch_args.add_argument('name')
 parser_patch_args.add_argument('imgs')
+parser_patch_args.add_argument('logo')
 parser_patch_args.add_argument('address')
 parser_patch_args.add_argument('rate', type=float)
 parser_patch_args.add_argument('description')
@@ -81,6 +83,9 @@ class ShopsResource(Resource):
                 if key == 'imgs' and value is not None and value.strip() == '':
                     value = 'shops/imgs/shop_img_default.jpg'
 
+                if key == 'logo' and value is not None and value.strip() == '':
+                    value = 'shops/logos/default_logo.svg'
+
                 if value is not None:
                     setattr(shop, key, value)
 
@@ -123,6 +128,7 @@ class ShopsListResource(Resource):
             shop = Shops(
                 name=args['name'],
                 imgs=args['imgs'],
+                logo=args['logo'],
                 address=args['address'],
                 rate=args['rate'],
                 user_id=current_user.id,

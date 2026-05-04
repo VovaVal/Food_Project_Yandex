@@ -1,4 +1,38 @@
 {% extends "base.html" %}
-{% block content%}
-<h1>Hello, {{ current_user.role }}</h1>
+
+{% block content %}
+<a href="/shop/add_shop" class="btn btn-primary">Добавить магазин</a>
+
+<div class="container mt-4">
+    <h1 class="mb-4">Здравствуйте, {{ current_user.name }}!</h1>
+
+    <div class="row">
+        {% for shop in shops %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ shop.logo }}" class="card-img-top" alt="{{ shop.name }}" style="height: 200px; object-fit: cover;">
+
+                <div class="card-body">
+                    <h5 class="card-title">{{ shop.name }}</h5>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="bi bi-geo-alt"></i> {{ shop.address[:50] }}{% if shop.address|length > 50 %}...{% endif %}
+                        </small>
+                    </p>
+                    <p class="card-text">
+                        <span class="badge bg-warning text-dark">
+                            <i class="bi bi-star-fill"></i> {{ shop.rate or 'Нет' }}
+                        </span>
+                    </p>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="/shop/{{ shop.id }}" class="btn btn-primary w-100">
+                        <i class="bi bi-box-arrow-up-right"></i> Открыть магазин
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}

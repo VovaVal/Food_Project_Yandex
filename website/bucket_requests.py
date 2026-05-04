@@ -77,6 +77,28 @@ def upload_img_user(img):
     return img_name
 
 
+def upload_logo_shop(img, shop):
+    if shop.logo != 'shops/logos/default_logo.svg':
+        resp = delete_by_key(shop.logo)
+
+        if not resp:
+            return False
+
+    if not img:
+        return None
+
+    img_name = f'shops/logos/shop_logo_{shop.id}'
+
+    s3 = create_bucket_session()
+    s3.upload_fileobj(
+        img,
+        BUCKET_NAME,
+        img_name
+    )
+
+    return img_name
+
+
 def delete_by_key(key: str) -> bool:
     """Удаляет файл из S3 по ключу (пути внутри бакета)"""
     if not key:

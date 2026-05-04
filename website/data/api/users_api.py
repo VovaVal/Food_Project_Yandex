@@ -10,7 +10,7 @@ from website.data import db_session
 
 
 parser_post_args = reqparse.RequestParser()
-parser_post_args.add_argument('name', default='')
+parser_post_args.add_argument('name', default='Пользователь')
 parser_post_args.add_argument('img', default='users/imgs/default_icon_user_account.png')
 parser_post_args.add_argument('user_bonuses', type=int, default=0)
 parser_post_args.add_argument('email', required=True)

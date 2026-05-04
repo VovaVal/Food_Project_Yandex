@@ -23,7 +23,8 @@ class Shops(SqlAlchemyBase, SerializerMixin):
         sqlalchemy.ForeignKey('users.id')
     )
     address = sqlalchemy.Column(
-        sqlalchemy.String
+        sqlalchemy.String,
+        default=''
     )
     # рейтинг магазина
     rate = sqlalchemy.Column(
@@ -35,10 +36,15 @@ class Shops(SqlAlchemyBase, SerializerMixin):
         sqlalchemy.String,
         nullable=True
     )
+    # Логотип магазина
+    logo = sqlalchemy.Column(
+        sqlalchemy.String,
+        default='shops/logos/default_logo.svg'
+    )
     # описание магазина(может быть пустым)
     description = sqlalchemy.Column(
         sqlalchemy.String,
-        nullable=True
+        default=''
     )
     # расписание работы магазина
     timetable = sqlalchemy.Column(
