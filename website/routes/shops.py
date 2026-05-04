@@ -72,6 +72,12 @@ def shop_id_settings(shop_id: int):
 
 
 @login_required
+@shop_bp.route('/edit_settings_shop/<int:shop_id>')
+def edit_settings_shop(shop_id: int):
+    return 'ger'
+
+
+@login_required
 @shop_bp.route('/products')
 def products():
     return render_template('shop/products.html')
