@@ -8,13 +8,25 @@
 <div class="row">
     <div class="col-md-4">
         <div class="card mb-4">
-            <div class="card-body text-center">
-                <h5 class="card-title">Логотип</h5>
-                <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ shop['logo'] }}"
-                     alt="Логотип"
-                     class="img-fluid rounded"
-                     style="max-width: 200px; max-height: 200px; object-fit: contain;">
-            </div>
+            <input type="file" id="uploadLogo" accept="image/*" style="display:none;">
+            <div class="card-body">
+    <h5 class="card-title text-center">Логотип</h5>
+
+    <div style="position: relative; width: 200px; height: 200px; margin: 0 auto;">
+
+        <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ shop['logo'] }}"
+             class="img-fluid rounded"
+             style="max-width: 200px; max-height: 200px; object-fit: contain; display:block;">
+
+        <button type="button"
+                class="btn btn-primary btn-sm"
+                style="position:absolute; top:0px; right:5px; z-index:10;"
+                onclick="document.getElementById('uploadLogo').click()">
+            ✏️
+        </button>
+
+    </div>
+</div>
         </div>
     </div>
 
@@ -168,6 +180,30 @@ document.getElementById('uploadImages').addEventListener('change', function() {
         }
     })
     .catch(() => alert('Ошибка сети'));
+});
+</script>
+
+<script>
+document.getElementById('uploadLogo').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('logo', file);
+
+    fetch("{{ url_for('shop.upload_logo', shop_id=shop['id']) }}", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert("Ошибка загрузки логотипа");
+        }
+    })
+    .catch(() => alert("Ошибка сети"));
 });
 </script>
 {% endblock %}

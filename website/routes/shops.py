@@ -187,6 +187,29 @@ def upload_shop_images(shop_id):
     return {"success": True}
 
 
+@shop_bp.route('/upload_logo/<int:shop_id>', methods=['POST'])
+@login_required
+def upload_logo(shop_id):
+    file = request.files.get('logo')
+
+    if not file:
+        return {"success": False}, 400
+
+    with db_session.create_session() as sess:
+        shop = sess.get(Shops, shop_id)
+
+        if not shop:
+            return {"success": False}, 404
+
+        img_name = upload_logo_shop(file, shop)
+
+        if img_name:
+            shop.logo = img_name
+            sess.commit()
+
+    return {"success": True}
+
+
 @login_required
 @shop_bp.route('/products')
 def products():
