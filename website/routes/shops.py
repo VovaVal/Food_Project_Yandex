@@ -2,7 +2,7 @@ import requests
 from flask import Blueprint, render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 
-from website.bucket_requests import upload_logo_shop, upload_img_shop
+from website.bucket_requests import upload_logo_shop, upload_img_shop, delete_by_key
 from website.data import db_session
 from website.data.shops import Shops
 from website.forms.add_shop import AddShop
@@ -136,6 +136,33 @@ def edit_settings_shop(shop_id: int):
     print(imgs)
     return render_template('shop/edit_shop_settings.html', title='Редактирование',
                            form=form, shop_id=shop_id, images=imgs, BUCKET_CLIENT=BUCKET_CLIENT)
+
+
+@shop_bp.route('/delete_image/<int:shop_id>', methods=['POST'])
+@login_required
+def delete_shop_image(shop_id):
+    img = request.form.get('img')
+
+    with db_session.create_session() as sess:
+        shop = sess.get(Shops, shop_id)
+
+        if not shop or not img:
+            return redirect(url_for('shop.shop_id_settings', shop_id=shop_id))
+
+        # удаляем из S3
+        if img != 'shops/imgs/shop_img_default.jpg':
+            delete_by_key(img)
+
+        imgs = shop.imgs.split(',') if shop.imgs else []
+
+        if img in imgs:
+            imgs.remove(img)
+
+        shop.imgs = ','.join(imgs) if imgs else None
+
+        sess.commit()
+
+    return redirect(url_for('shop.shop_id_settings', shop_id=shop_id))
 
 
 @login_required

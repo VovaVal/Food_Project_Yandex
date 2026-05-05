@@ -1,17 +1,125 @@
 {% extends "base.html" %}
 
 {% block content %}
-<a href="{{ url_for('shop.dashboard') }}" class="btn btn-primary">На главную страницу</a>
-<h1>Настройки</h1>
+<a href="{{ url_for('shop.dashboard') }}" class="btn btn-primary mb-3">← На главную страницу</a>
 
-<h3>Название магазина: {{ shop['name'] }}</h3>
-<h3>Лого: <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ shop['logo'] }}" alt="Изображение логотипа"
-               style="max-width: 200px; max-height: 200px; width: auto; height: auto; border-radius: 8px;"></h3>
-<h3>Рейтинг: {{ shop['rate'] }}</h3>
-<h3>Адрес: {{ shop['address'] }}</h3>
-<h3>Описание: {{ shop['description'] }}</h3>
-<h3>Расписание: {{ shop['timetable'] }}</h3>
+<h1 class="mb-4">Настройки магазина</h1>
 
-<a href="{{ url_for('shop.edit_settings_shop', shop_id=shop['id']) }}" class="btn btn-primary">Редактировать</a>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <h5 class="card-title">Логотип</h5>
+                <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ shop['logo'] }}"
+                     alt="Логотип"
+                     class="img-fluid rounded"
+                     style="max-width: 200px; max-height: 200px; object-fit: contain;">
+            </div>
+        </div>
+    </div>
 
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Информация</h5>
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 120px;">Название:</th>
+                        <td>{{ shop['name'] }}</td>
+                    </tr>
+                    <tr>
+                        <th>Рейтинг:</th>
+                        <td>
+                            {% set rating = shop['rate']|float %}
+                            {% for i in range(5) %}
+                                {% if i < rating|int %}
+                                    <span class="text-warning">★</span>
+                                {% else %}
+                                    <span class="text-muted">☆</span>
+                                {% endif %}
+                            {% endfor %}
+                            ({{ shop['rate'] or '0' }})
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Адрес:</th>
+                        <td>{{ shop['address'] }}</td>
+                    </tr>
+                    <tr>
+                        <th>Описание:</th>
+                        <td>{{ shop['description'] or 'Нет описания' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Расписание:</th>
+                        <td>{{ shop['timetable'] or 'Не указано' }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ КАРУСЕЛЬ ИЗОБРАЖЕНИЙ -->
+{% if shop['imgs'] %}
+{% set images = shop['imgs'].split(',') if shop['imgs'] else shop['imgs'] %}
+<h3 class="mt-4 mb-3">Фотографии заведения</h3>
+<div id="shopCarousel" class="carousel slide carousel-dark" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        {% for img in images %}
+        <button type="button" data-bs-target="#shopCarousel" data-bs-slide-to="{{ loop.index0 }}"
+                {% if loop.first %}class="active"{% endif %} aria-label="Slide {{ loop.index }}"></button>
+        {% endfor %}
+    </div>
+
+    <div class="carousel-inner">
+        {% for img in images %}
+        <div class="carousel-item {% if loop.first %}active{% endif %}">
+            <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ img }}"
+                 class="d-block w-100"
+                 alt="Фото {{ loop.index }}"
+                 style="height: 400px; object-fit: contain; background-color: #f8f9fa;">
+
+        </div>
+        {% endfor %}
+    </div>
+
+    <button class="carousel-control-prev" type="button" data-bs-target="#shopCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+        <span class="visually-hidden">Предыдущий</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#shopCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+        <span class="visually-hidden">Следующий</span>
+    </button>
+</div>
+{% else %}
+<div class="alert alert-info mt-3">
+    <i class="bi bi-image"></i> Нет добавленных фотографий.
+    <a href="{{ url_for('shop.edit_settings_shop', shop_id=shop['id']) }}" class="alert-link">Добавить фото</a>
+</div>
+{% endif %}
+
+<a href="{{ url_for('shop.edit_settings_shop', shop_id=shop['id']) }}" class="btn btn-primary mt-4">
+    ✏️ Редактировать
+</a>
+
+<style>
+.carousel-item img {
+    background-color: #f8f9fa;
+}
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: rgba(0,0,0,0.5);
+    border-radius: 50%;
+    padding: 20px;
+}
+.carousel-item {
+    pointer-events: auto;
+}
+@media (max-width: 768px) {
+    .carousel-item img {
+        height: 250px !important;
+    }
+}
+</style>
 {% endblock %}
