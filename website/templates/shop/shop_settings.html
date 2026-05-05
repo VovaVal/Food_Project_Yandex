@@ -74,11 +74,23 @@
     <div class="carousel-inner">
         {% for img in images %}
         <div class="carousel-item {% if loop.first %}active{% endif %}">
+            <div style="position: relative;">
             <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ img }}"
                  class="d-block w-100"
                  alt="Фото {{ loop.index }}"
                  style="height: 400px; object-fit: contain; background-color: #f8f9fa;">
 
+                <!-- ❌ КНОПКА УДАЛЕНИЯ -->
+                <form method="post"
+                    action="{{ url_for('shop.delete_shop_image', shop_id=shop['id']) }}"
+                    style="position:absolute; top:10px; right:10px; z-index:10;">
+
+                    <input type="hidden" name="img" value="{{ img }}">
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        ✖
+                    </button>
+                </form>
+            </div>
         </div>
         {% endfor %}
     </div>
