@@ -64,13 +64,7 @@ def upload_logo_shop(img, shop):
     return img_name
 
 
-def upload_img_shop(img, shop, filename):
-    # if shop.logo != 'shops/logos/default_logo.svg':
-    #     resp = delete_by_key(shop.logo)
-    #
-    #     if not resp:
-    #         return False
-
+def upload_img_shop(img):
     if not img:
         return None
 

@@ -63,6 +63,7 @@
 {% if shop['imgs'] %}
 {% set images = shop['imgs'].split(',') if shop['imgs'] else shop['imgs'] %}
 <h3 class="mt-4 mb-3">Фотографии заведения</h3>
+<input type="file" id="uploadImages" multiple accept="image/*" style="display:none;">
 <div id="shopCarousel" class="carousel slide carousel-dark" data-bs-ride="carousel">
     <div class="carousel-indicators">
         {% for img in images %}
@@ -79,6 +80,13 @@
                  class="d-block w-100"
                  alt="Фото {{ loop.index }}"
                  style="height: 400px; object-fit: contain; background-color: #f8f9fa;">
+
+                <button type="button"
+                        class="btn btn-success btn-sm"
+                        style="position:absolute; top:10px; left:10px; z-index:10;"
+                        onclick="document.getElementById('uploadImages').click()">
+                    ➕
+                </button>
 
                 <!-- ❌ КНОПКА УДАЛЕНИЯ -->
                 <form method="post"
@@ -134,4 +142,32 @@
     }
 }
 </style>
+
+<script>
+document.getElementById('uploadImages').addEventListener('change', function() {
+    const files = this.files;
+
+    if (!files.length) return;
+
+    const formData = new FormData();
+
+    for (let file of files) {
+        formData.append('imgs', file);
+    }
+
+    fetch("{{ url_for('shop.upload_shop_images', shop_id=shop['id']) }}", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка загрузки');
+        }
+    })
+    .catch(() => alert('Ошибка сети'));
+});
+</script>
 {% endblock %}

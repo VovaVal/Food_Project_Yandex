@@ -113,7 +113,7 @@ def edit_settings_shop(shop_id: int):
         img_names = []
         for img in imgs:
             print('name: ', img)
-            img_name = upload_img_shop(img, shop, img.filename)
+            img_name = upload_img_shop(img)
             if img_name:
                 img_names.append(img_name)
 
@@ -163,6 +163,28 @@ def delete_shop_image(shop_id):
         sess.commit()
 
     return redirect(url_for('shop.shop_id_settings', shop_id=shop_id))
+
+
+@shop_bp.route('/upload_images/<int:shop_id>', methods=['POST'])
+@login_required
+def upload_shop_images(shop_id):
+    files = request.files.getlist('imgs')
+
+    with db_session.create_session() as sess:
+        shop = sess.get(Shops, shop_id)
+
+        imgs = shop.imgs.split(',') if shop.imgs else []
+
+        for file in files:
+            if file and file.filename:
+                img_name = upload_img_shop(file)
+                if img_name:
+                    imgs.append(img_name)
+
+        shop.imgs = ','.join(imgs)
+        sess.commit()
+
+    return {"success": True}
 
 
 @login_required
