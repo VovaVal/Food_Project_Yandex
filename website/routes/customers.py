@@ -42,7 +42,7 @@ def index():
 @customer_bp.route('/settings')
 def user_settings():
     '''Настройки пользователя, а также его персональный данные'''
-    return render_template('customer/owner_settings.html', title='Настройки')
+    return render_template('customer/settings.html', title='Настройки')
 
 
 @login_required
