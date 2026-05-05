@@ -222,12 +222,21 @@ logoInput.addEventListener('change', (e) => {
 
 <script>
 const map = L.map('map').setView([55.751244, 37.618423], 10); // Москва по умолчанию
-map.attributionControl.remove();
+map.attributionControl.remove(); // Убирает флаг
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
+const coordsInput = document.getElementById("{{ form.coords.id }}");
+
 let marker = null;
+
+if (coordsInput.value) {
+    const [lat, lng] = coordsInput.value.split(',');
+
+    marker = L.marker([lat, lng]).addTo(map);
+    map.setView([lat, lng], 14);
+}
 
 map.on('click', async function(e) {
     const lat = e.latlng.lat;
