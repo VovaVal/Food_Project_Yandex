@@ -59,6 +59,10 @@ class Shops(SqlAlchemyBase, SerializerMixin):
         sqlalchemy.Date,
         default=datetime.date.today
     )
+    updated_date = sqlalchemy.Column(
+        sqlalchemy.DateTime,
+        default=datetime.datetime.now
+    )
 
     products = orm.relationship('Products', back_populates='shop')
     orders = orm.relationship('Orders', back_populates='shop')

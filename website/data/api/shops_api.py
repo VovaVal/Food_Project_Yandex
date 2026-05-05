@@ -1,3 +1,5 @@
+import datetime
+
 from flask_restful import Resource, reqparse, abort
 from flask import jsonify
 from flask_login import current_user, login_required
@@ -53,7 +55,7 @@ class ShopsResource(Resource):
             {
                 'shop': shop.to_dict(
                     only=('id', 'name', 'imgs', 'address', 'rate', 'description',
-                          'timetable', 'coords', 'created_date', 'user_id', 'logo')
+                          'timetable', 'coords', 'created_date', 'user_id', 'logo', 'updated_date')
                 )
             }
         )
@@ -91,6 +93,8 @@ class ShopsResource(Resource):
                 if value is not None:
                     setattr(shop, key, value)
 
+            shop.updated_date = datetime.datetime.now()
+
             sess.add(shop)
             sess.commit()
 
@@ -111,7 +115,7 @@ class ShopsListResource(Resource):
                     [
                         item.to_dict(
                             only=('id', 'name', 'imgs', 'address', 'rate', 'description',
-                                  'timetable', 'coords', 'user_id', 'created_date', 'logo')
+                                  'timetable', 'coords', 'user_id', 'created_date', 'logo', 'updated_date')
                         )
                         for item in shops
                     ]
@@ -137,7 +141,8 @@ class ShopsListResource(Resource):
                 description=args['description'],
                 timetable=args['timetable'],
                 coords=args['coords'],
-                created_date=date.today()
+                created_date=date.today(),
+                updated_date = datetime.datetime.now()
             )
             sess.add(shop)
             sess.commit()

@@ -10,7 +10,7 @@
         {% for shop in shops %}
         <div class="col-md-4 mb-4">
             <div class="card h-100">
-                <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ shop.logo }}" class="card-img-top" alt="{{ shop.name }}" style="height: 200px; object-fit: cover;">
+                <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ shop.logo }}?v={{ shop['updated_date']|default(0) }}" class="card-img-top" alt="{{ shop.name }}" style="height: 200px; object-fit: cover;">
 
                 <div class="card-body">
                     <h5 class="card-title">{{ shop.name }}</h5>

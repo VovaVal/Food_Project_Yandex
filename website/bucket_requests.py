@@ -45,6 +45,7 @@ def upload_img_user(img):
 def upload_logo_shop(img, shop):
     if shop.logo != 'shops/logos/default_logo.svg':
         resp = delete_by_key(shop.logo)
+        print('resp:', resp)
 
         if not resp:
             return False

@@ -1,3 +1,5 @@
+import datetime
+
 import requests
 from flask import Blueprint, render_template, redirect, url_for, request
 from flask_login import login_required, current_user
@@ -159,6 +161,7 @@ def delete_shop_image(shop_id):
             imgs.remove(img)
 
         shop.imgs = ','.join(imgs) if imgs else None
+        shop.updated_date = datetime.datetime.now()
 
         sess.commit()
 
@@ -182,6 +185,7 @@ def upload_shop_images(shop_id):
                     imgs.append(img_name)
 
         shop.imgs = ','.join(imgs)
+        shop.updated_date = datetime.datetime.now()
         sess.commit()
 
     return {"success": True}
@@ -205,6 +209,7 @@ def upload_logo(shop_id):
 
         if img_name:
             shop.logo = img_name
+            shop.updated_date = datetime.datetime.now()
             sess.commit()
 
     return {"success": True}

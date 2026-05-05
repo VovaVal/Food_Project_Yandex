@@ -14,13 +14,13 @@
 
     <div style="position: relative; width: 200px; height: 200px; margin: 0 auto;">
 
-        <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ shop['logo'] }}"
+        <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ shop['logo'] }}?v={{ shop['updated_date']|default(0) }}"
              class="img-fluid rounded"
              style="max-width: 200px; max-height: 200px; object-fit: contain; display:block;">
 
         <button type="button"
                 class="btn btn-primary btn-sm"
-                style="position:absolute; top:0px; right:5px; z-index:10;"
+                style="position:absolute; top:0px; right:0px; z-index:10;"
                 onclick="document.getElementById('uploadLogo').click()">
             ✏️
         </button>
@@ -88,7 +88,7 @@
         {% for img in images %}
         <div class="carousel-item {% if loop.first %}active{% endif %}">
             <div style="position: relative;">
-            <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ img }}"
+            <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ img }}?v={{ shop['updated_date']|default(0) }}"
                  class="d-block w-100"
                  alt="Фото {{ loop.index }}"
                  style="height: 400px; object-fit: contain; background-color: #f8f9fa;">
@@ -117,11 +117,9 @@
 
     <button class="carousel-control-prev" type="button" data-bs-target="#shopCarousel" data-bs-slide="prev">
         <span class="carousel-control-prev-icon"></span>
-        <span class="visually-hidden">Предыдущий</span>
     </button>
     <button class="carousel-control-next" type="button" data-bs-target="#shopCarousel" data-bs-slide="next">
         <span class="carousel-control-next-icon"></span>
-        <span class="visually-hidden">Следующий</span>
     </button>
 </div>
 {% else %}
