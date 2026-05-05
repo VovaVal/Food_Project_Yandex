@@ -1,12 +1,17 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 import boto3
+import random
 
 from website.config import BUCKET_NAME
 from flask_login import current_user
 
 
 __factory = None
+letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
+           'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
+           's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '#', '$',
+           '%', '&', '*', '+', '.', ':', ';', '<', '=', '>', '?', '@', '_']
 
 
 def create_bucket_session():
@@ -63,17 +68,17 @@ def upload_logo_shop(img, shop):
     return img_name
 
 
-def upload_img_shop(img, shop):
-    if shop.logo != 'shops/logos/default_logo.svg':
-        resp = delete_by_key(shop.logo)
-
-        if not resp:
-            return False
+def upload_img_shop(img, shop, filename):
+    # if shop.logo != 'shops/logos/default_logo.svg':
+    #     resp = delete_by_key(shop.logo)
+    #
+    #     if not resp:
+    #         return False
 
     if not img:
         return None
 
-    img_name = f'shops/logos/shop_logo_{shop.id}'
+    img_name = f'shops/imgs/shop_img_{''.join(random.choices(letters, k=20))}'
 
     s3 = create_bucket_session()
     s3.upload_fileobj(

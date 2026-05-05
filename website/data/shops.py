@@ -34,7 +34,7 @@ class Shops(SqlAlchemyBase, SerializerMixin):
     # изображения магазина(их могут и не быть)
     imgs = sqlalchemy.Column(
         sqlalchemy.String,
-        nullable=True
+        default='shops/imgs/shop_img_default.jpg'
     )
     # Логотип магазина
     logo = sqlalchemy.Column(

@@ -2,7 +2,7 @@ import requests
 from flask import Blueprint, render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 
-from website.bucket_requests import upload_logo_shop
+from website.bucket_requests import upload_logo_shop, upload_img_shop
 from website.data import db_session
 from website.data.shops import Shops
 from website.forms.add_shop import AddShop
@@ -82,7 +82,8 @@ def edit_settings_shop(shop_id: int):
     form = EditShop(
         shop_name=shop.name,
         address=shop.address,
-        description=shop.description
+        description=shop.description,
+        coords=shop.coords
     )
 
     if form.validate_on_submit():
@@ -109,8 +110,20 @@ def edit_settings_shop(shop_id: int):
                 data['logo'] = img_name
 
 
+        img_names = []
         for img in imgs:
             print('name: ', img)
+            img_name = upload_img_shop(img, shop, img.filename)
+            if img_name:
+                img_names.append(img_name)
+
+        if img_names:
+            data['imgs'] = (','.join('' if not shop.imgs or shop.imgs is None else shop.imgs.split(',')) + ',' + ','.join(img_names)).strip(',')
+
+        api_url = request.url_root + f'api/shops/{shop_id}'
+        shop_data = requests.patch(api_url, json=data, cookies=request.cookies)
+        if shop_data.status_code != 200:
+            print('Ошибка при изменении данных!!!')
 
         return redirect(url_for('shop.shop_id_settings', shop_id=shop_id))
 
