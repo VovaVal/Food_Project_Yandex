@@ -6,6 +6,7 @@ from flask_login import login_required, current_user
 from PIL import Image
 
 from website.data.shops import Shops
+from website.data.users import User
 from website.forms.edit_user_settings import EditFormUser
 from website.data import db_session
 from website.bucket_requests import upload_img_user
@@ -53,6 +54,10 @@ def shop_page(shop_id: int):
 
     if resp.status_code == 200:
         shop = resp.json()['shop']
+
+        with db_session.create_session() as sess:
+            user = sess.get(User, shop['user_id'])
+
         if shop.get('coords'):
             try:
                 coords = shop['coords'].split(',')
@@ -65,7 +70,8 @@ def shop_page(shop_id: int):
             shop['lat'] = 55.751244
             shop['lng'] = 37.618423
 
-        return render_template('customer/shop_page.html', title=shop['name'], shop=shop)
+        return render_template('customer/shop_page.html', title=shop['name'],
+                               shop=shop, email=user.email)
     else:
         print('Error occurred!!!')
         print(resp.status_code)
