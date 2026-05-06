@@ -135,7 +135,8 @@ def edit_settings_shop(shop_id: int):
             'address': address,
             'coords': coords,
             'description': description,
-            'delivery_radius': int(delivery_radius) if delivery_radius.is_integer() else 0
+            'delivery_radius': int(delivery_radius) if delivery_radius.is_integer() else 0,
+            'timetable': schedule
         }
 
         if logo:
@@ -166,7 +167,6 @@ def edit_settings_shop(shop_id: int):
     else:
         imgs = []
 
-    print(imgs)
     return render_template('shop/edit_shop_settings.html', title='Редактирование',
                            form=form, shop_id=shop_id, images=imgs, BUCKET_CLIENT=BUCKET_CLIENT, shop=shop)
 

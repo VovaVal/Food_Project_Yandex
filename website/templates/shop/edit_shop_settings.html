@@ -30,50 +30,64 @@
 
     <div class="day-row mb-2">
         Понедельник<br>
-        От: <input type="time" name="monday_from" class="form-control d-inline w-auto" />
-        До: <input type="time" name="monday_to" class="form-control d-inline w-auto" />
+        От: <input type="time" name="monday_from" class="form-control d-inline w-auto"
+                   value="{{shop.timetable.monday.from if shop.timetable else '' }}"/>
+        До: <input type="time" name="monday_to" class="form-control d-inline w-auto"
+                   value="{{shop.timetable.monday.to if shop.timetable else '' }}"/>
         <button type="button" class="btn btn-sm btn-secondary btn-off">Выходной</button>
         <button type="button" class="btn btn-sm btn-success btn-24h">Круглосуточно</button>
     </div>
     <div class="day-row mb-2">
         Вторник<br>
-        От: <input type="time" name="tuesday_from" class="form-control d-inline w-auto" />
-        До: <input type="time" name="tuesday_to" class="form-control d-inline w-auto" />
+        От: <input type="time" name="tuesday_from" class="form-control d-inline w-auto"
+                   value="{{shop.timetable.tuesday.from if shop.timetable else '' }}" />
+        До: <input type="time" name="tuesday_to" class="form-control d-inline w-auto"
+                   value="{{shop.timetable.tuesday.to if shop.timetable else '' }}"/>
         <button type="button" class="btn btn-sm btn-secondary btn-off">Выходной</button>
         <button type="button" class="btn btn-sm btn-success btn-24h">Круглосуточно</button>
     </div>
     <div class="day-row mb-2">
         Среда<br>
-        От: <input type="time" name="wednesday_from" class="form-control d-inline w-auto" />
-        До: <input type="time" name="wednesday_to" class="form-control d-inline w-auto" />
+        От: <input type="time" name="wednesday_from" class="form-control d-inline w-auto"
+                   value="{{shop.timetable.wednesday.from if shop.timetable else '' }}" />
+        До: <input type="time" name="wednesday_to" class="form-control d-inline w-auto"
+                   value="{{shop.timetable.wednesday.to if shop.timetable else '' }}" />
         <button type="button" class="btn btn-sm btn-secondary btn-off">Выходной</button>
         <button type="button" class="btn btn-sm btn-success btn-24h">Круглосуточно</button>
     </div>
     <div class="day-row mb-2">
         Четверг<br>
-        От: <input type="time" name="thursday_from" class="form-control d-inline w-auto" />
-        До: <input type="time" name="thursday_to" class="form-control d-inline w-auto" />
+        От: <input type="time" name="thursday_from" class="form-control d-inline w-auto"
+                   value="{{shop.timetable.thursday.from if shop.timetable else '' }}" />
+        До: <input type="time" name="thursday_to" class="form-control d-inline w-auto"
+                   value="{{shop.timetable.thursday.to if shop.timetable else '' }}"/>
         <button type="button" class="btn btn-sm btn-secondary btn-off">Выходной</button>
         <button type="button" class="btn btn-sm btn-success btn-24h">Круглосуточно</button>
     </div>
     <div class="day-row mb-2">
         Пятница<br>
-        От: <input type="time" name="friday_from" class="form-control d-inline w-auto" />
-        До: <input type="time" name="friday_to" class="form-control d-inline w-auto" />
+        От: <input type="time" name="friday_from" class="form-control d-inline w-auto"
+                   value="{{shop.timetable.friday.from if shop.timetable else '' }}" />
+        До: <input type="time" name="friday_to" class="form-control d-inline w-auto"
+                   value="{{shop.timetable.friday.to if shop.timetable else '' }}" />
         <button type="button" class="btn btn-sm btn-secondary btn-off">Выходной</button>
         <button type="button" class="btn btn-sm btn-success btn-24h">Круглосуточно</button>
     </div>
     <div class="day-row mb-2">
         Суббота<br>
-        От: <input type="time" name="saturday_from" class="form-control d-inline w-auto" />
-        До: <input type="time" name="saturday_to" class="form-control d-inline w-auto" />
+        От: <input type="time" name="saturday_from" class="form-control d-inline w-auto"
+                   value="{{shop.timetable.saturday.from if shop.timetable else '' }}" />
+        До: <input type="time" name="saturday_to" class="form-control d-inline w-auto"
+                   value="{{shop.timetable.saturday.to if shop.timetable else '' }}" />
         <button type="button" class="btn btn-sm btn-secondary btn-off">Выходной</button>
         <button type="button" class="btn btn-sm btn-success btn-24h">Круглосуточно</button>
     </div>
     <div class="day-row mb-2">
         Воскресенье<br>
-        От: <input type="time" name="sunday_from" class="form-control d-inline w-auto" />
-        До: <input type="time" name="sunday_to" class="form-control d-inline w-auto" />
+        От: <input type="time" name="sunday_from" class="form-control d-inline w-auto"
+                   value="{{shop.timetable.sunday.from if shop.timetable else '' }}" />
+        До: <input type="time" name="sunday_to" class="form-control d-inline w-auto"
+                   value="{{shop.timetable.sunday.to if shop.timetable else '' }}" />
         <button type="button" class="btn btn-sm btn-secondary btn-off">Выходной</button>
         <button type="button" class="btn btn-sm btn-success btn-24h">Круглосуточно</button>
     </div>
