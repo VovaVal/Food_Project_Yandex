@@ -94,7 +94,7 @@
 
     <p>
         {{ form.address.label }}<br>
-        {{ form.address(class="form-control", readonly=True) }}<br>
+        {{ form.address(class="form-control", readOnly=True) }}<br>
         {% for error in form.address.errors %}
             <div class="alert alert-danger" role="alert">
                 {{ error }}
@@ -103,7 +103,7 @@
     </p>
     <p>
         {{ form.coords.label }}<br>
-        {{ form.coords(class="form-control", readonly=True) }}<br>
+        {{ form.coords(class="form-control", readOnly=True) }}<br>
         {% for error in form.coords.errors %}
             <div class="alert alert-danger" role="alert">
                 {{ error }}
@@ -362,12 +362,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (schedule) {
             if (fromInput.value === '' && toInput.value === '') {
                 offBtn.classList.add('active');
-                fromInput.readonly = true;
-                toInput.readonly = true;
+                fromInput.readOnly = true;
+                toInput.readOnly = true;
             } else if (fromInput.value === '00:00' && toInput.value === '23:59') {
                 fullBtn.classList.add('active');
-                fromInput.readonly = true;
-                toInput.readonly = true;
+                fromInput.readOnly = true;
+                toInput.readOnly = true;
             }
         }
 
