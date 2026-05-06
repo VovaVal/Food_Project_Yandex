@@ -27,21 +27,23 @@
                 <div class="carousel-inner">
                     {% for img in images %}
                     <div class="carousel-item {% if loop.first %}active{% endif %}">
-                        <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ img | urlencode }}"
-                             class="d-block w-100"
-                             alt="Фото {{ shop.name }}"
-                             style="height: 400px; object-fit: cover; border-radius: 12px;"
-                             onerror="this.src='{{ url_for('static', filename='imgs/no-image.png') }}'">
+                        <div class="carousel-image-container" style="height: 400px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border-radius: 12px;">
+                            <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ img | urlencode }}"
+                                 class="d-block"
+                                 alt="Фото {{ shop.name }}"
+                                 style="max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;"
+                                 onerror="this.src='{{ url_for('static', filename='imgs/no-image.png') }}'">
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
                 <button class="carousel-control-prev" type="button" data-bs-target="#shopCarousel" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon"></span>
-                    <span class="visually-hidden">Предыдущий</span>
+                    <span class="visually-hidden"></span>
                 </button>
                 <button class="carousel-control-next" type="button" data-bs-target="#shopCarousel" data-bs-slide="next">
                     <span class="carousel-control-next-icon"></span>
-                    <span class="visually-hidden">Следующий</span>
+                    <span class="visually-hidden"></span>
                 </button>
             </div>
             {% else %}
