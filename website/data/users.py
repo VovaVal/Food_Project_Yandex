@@ -45,6 +45,15 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
         nullable=False,
         default='customer'
     )
+    address = sqlalchemy.Column(
+        sqlalchemy.String,
+        default=''
+    )
+
+    # координаты разделены запятой(широта и долгота)
+    coords = sqlalchemy.Column(
+        sqlalchemy.String
+    )
 
     # только для пользователя
     # баллы пользователя(их можно использовать для оплаты покупок)

@@ -177,7 +177,7 @@
 </style>
 
 <script>
-// Передаём данные магазинов из Jinja2 в JavaScript
+// Передаём данные магазинов
 const shopsData = {{ shops | tojson | safe }};
 
 // Переменные
@@ -188,7 +188,7 @@ let currentView = 'list';
 
 // Инициализация карты
 function initMap() {
-    let center = [55.704556, 37.323389]; // дефолт
+    let center = [55.750536, 37.616913]; // дефолт
     if (shopsData.length > 0 && shopsData[0].lat && shopsData[0].lng) {
         center = [shopsData[0].lat, shopsData[0].lng];
     }

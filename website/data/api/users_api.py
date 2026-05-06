@@ -17,6 +17,8 @@ parser_post_args.add_argument('email', required=True)
 parser_post_args.add_argument('password', required=True)
 parser_post_args.add_argument('role', choices=['customer', 'shop'],
                               default='customer', help='Allowed roles: "customer" and "shop"')
+parser_post_args.add_argument('address', default='')
+parser_post_args.add_argument('coords', default='')
 
 parser_patch_args = reqparse.RequestParser()
 parser_patch_args.add_argument('name')
@@ -26,6 +28,8 @@ parser_patch_args.add_argument('email')
 parser_patch_args.add_argument('password')
 parser_patch_args.add_argument('role', choices=['customer', 'shop'],
                                help='Allowed roles: "customer" and "shop"')
+parser_post_args.add_argument('address')
+parser_post_args.add_argument('coords')
 
 
 def abort_if_user_not_found(user_id: int):
@@ -59,7 +63,7 @@ class UsersResource(Resource):
             {
                 'user': user.to_dict(
                     only=('id', 'name', 'img', 'user_bonuses', 'email',
-                          'hashed_password', 'created_date', 'role')
+                          'hashed_password', 'created_date', 'role', 'address', 'coords')
                 )
             }
         )
@@ -131,7 +135,7 @@ class UsersListResource(Resource):
                     [
                         item.to_dict(
                             only=('id', 'name', 'img', 'user_bonuses', 'email',
-                                  'hashed_password', 'created_date', 'role')
+                                  'hashed_password', 'created_date', 'role', 'address', 'coords')
                         )
                         for item in users
                     ]
