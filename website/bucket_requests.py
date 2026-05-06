@@ -30,7 +30,7 @@ def upload_img_user(img):
     if not img:
         return None
 
-    img_name = f'users/imgs/user_img_{current_user.id}'
+    img_name = f'users/imgs/user_img_{uuid.uuid4().hex}'
 
     s3 = create_bucket_session()
     s3.upload_fileobj(
@@ -53,7 +53,7 @@ def upload_logo_shop(img, shop):
     if not img:
         return None
 
-    img_name = f'shops/logos/shop_logo_{shop.id}'
+    img_name = f'shops/logos/shop_logo_{uuid.uuid4().hex}'
 
     s3 = create_bucket_session()
     s3.upload_fileobj(

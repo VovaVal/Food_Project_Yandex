@@ -19,6 +19,7 @@ parser_post_args.add_argument('rate', type=float, default=0)
 parser_post_args.add_argument('description')
 parser_post_args.add_argument('timetable')
 parser_post_args.add_argument('coords', required=True)
+parser_post_args.add_argument('delivery_radius', type=int, default=0)
 
 parser_patch_args = reqparse.RequestParser()
 parser_patch_args.add_argument('name')
@@ -29,6 +30,7 @@ parser_patch_args.add_argument('rate', type=float)
 parser_patch_args.add_argument('description')
 parser_patch_args.add_argument('timetable')
 parser_patch_args.add_argument('coords')
+parser_post_args.add_argument('delivery_radius', type=int)
 
 
 def abort_if_shop_not_found(shop_id: int):
@@ -53,7 +55,7 @@ class ShopsResource(Resource):
         return jsonify(
             {
                 'shop': shop.to_dict(
-                    only=('id', 'name', 'imgs', 'address', 'rate', 'description',
+                    only=('id', 'name', 'imgs', 'address', 'rate', 'description', 'delivery_radius',
                           'timetable', 'coords', 'created_date', 'user_id', 'logo', 'updated_date')
                 )
             }
@@ -113,7 +115,7 @@ class ShopsListResource(Resource):
                 'shops':
                     [
                         item.to_dict(
-                            only=('id', 'name', 'imgs', 'address', 'rate', 'description',
+                            only=('id', 'name', 'imgs', 'address', 'rate', 'description', 'delivery_radius',
                                   'timetable', 'coords', 'user_id', 'created_date', 'logo', 'updated_date')
                         )
                         for item in shops
@@ -141,7 +143,8 @@ class ShopsListResource(Resource):
                 timetable=args['timetable'],
                 coords=args['coords'],
                 created_date=date.today(),
-                updated_date = datetime.datetime.now()
+                updated_date = datetime.datetime.now(),
+                delivery_radius=args['delivery_radius']
             )
             sess.add(shop)
             sess.commit()

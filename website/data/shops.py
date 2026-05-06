@@ -31,6 +31,10 @@ class Shops(SqlAlchemyBase, SerializerMixin):
         sqlalchemy.Float,
         default=0
     )
+    delivery_radius = sqlalchemy.Column(
+        sqlalchemy.Integer,
+        default=0
+    )
     # изображения магазина(их могут и не быть)
     imgs = sqlalchemy.Column(
         sqlalchemy.String,
