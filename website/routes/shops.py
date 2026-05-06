@@ -98,9 +98,37 @@ def edit_settings_shop(shop_id: int):
         logo = form.logo.data
         imgs = request.files.getlist('imgs')
 
-        print(f"request.files: {request.files}")
-        print(f"request.files.getlist('imgs'): {request.files.getlist('imgs')}")
-        print(delivery_radius)
+        schedule = {
+            'monday': {
+                'from': request.form.get('monday_from'),  # '08:00', '00:00' или ''
+                'to': request.form.get('monday_to')
+            },
+            'tuesday': {
+                'from': request.form.get('tuesday_from'),
+                'to': request.form.get('tuesday_to')
+            },
+            'wednesday': {
+                'from': request.form.get('wednesday_from'),
+                'to': request.form.get('wednesday_to')
+            },
+            'thursday': {
+                'from': request.form.get('thursday_from'),
+                'to': request.form.get('thursday_to')
+            },
+            'friday': {
+                'from': request.form.get('friday_from'),
+                'to': request.form.get('friday_to')
+            },
+            'saturday': {
+                'from': request.form.get('saturday_from'),
+                'to': request.form.get('saturday_to')
+            },
+            'sunday': {
+                'from': request.form.get('sunday_from'),
+                'to': request.form.get('sunday_to')
+            },
+        }
+        print(schedule)
 
         data = {
             'name': shop_name,

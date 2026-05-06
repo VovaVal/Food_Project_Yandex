@@ -28,15 +28,6 @@
         {% endfor %}
     </p>
 
-    <p>
-        {{ form.address.label }}<br>
-        {{ form.address(class="form-control", readonly=True) }}<br>
-        {% for error in form.address.errors %}
-            <div class="alert alert-danger" role="alert">
-                {{ error }}
-            </div>
-        {% endfor %}
-    </p>
     <div class="day-row mb-2">
         Понедельник<br>
         От: <input type="time" name="monday_from" class="form-control d-inline w-auto" />
@@ -86,6 +77,16 @@
         <button type="button" class="btn btn-sm btn-secondary btn-off">Выходной</button>
         <button type="button" class="btn btn-sm btn-success btn-24h">Круглосуточно</button>
     </div>
+
+    <p>
+        {{ form.address.label }}<br>
+        {{ form.address(class="form-control", readonly=True) }}<br>
+        {% for error in form.address.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
     <p>
         {{ form.coords.label }}<br>
         {{ form.coords(class="form-control", readonly=True) }}<br>
@@ -345,22 +346,22 @@ document.addEventListener('DOMContentLoaded', () => {
         function resetButtons() {
             offBtn.classList.remove('active');
             fullBtn.classList.remove('active');
-            fromInput.disabled = false;
-            toInput.disabled = false;
+            fromInput.readOnly = false;
+            toInput.readOnly = false;
         }
 
         offBtn.addEventListener('click', () => {
             if (offBtn.classList.contains('active')) {
                 // снять блокировку
-                fromInput.disabled = false;
-                toInput.disabled = false;
+                fromInput.readOnly = false;
+                toInput.readOnly = false;
                 offBtn.classList.remove('active');
             } else {
                 // активировать выходной
                 fromInput.value = '';
                 toInput.value = '';
-                fromInput.disabled = true;
-                toInput.disabled = true;
+                fromInput.readOnly = true;
+                toInput.readOnly = true;
                 offBtn.classList.add('active');
                 fullBtn.classList.remove('active');
             }
@@ -369,15 +370,15 @@ document.addEventListener('DOMContentLoaded', () => {
         fullBtn.addEventListener('click', () => {
             if (fullBtn.classList.contains('active')) {
                 // снять блокировку
-                fromInput.disabled = false;
-                toInput.disabled = false;
+                fromInput.readOnly = false;
+                toInput.readOnly = false;
                 fullBtn.classList.remove('active');
             } else {
                 // активировать круглосуточно
                 fromInput.value = '00:00';
                 toInput.value   = '23:59';
-                fromInput.disabled = true;
-                toInput.disabled = true;
+                fromInput.readOnly = true;
+                toInput.readOnly = true;
                 fullBtn.classList.add('active');
                 offBtn.classList.remove('active');
             }

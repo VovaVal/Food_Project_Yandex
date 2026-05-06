@@ -53,7 +53,7 @@ class Shops(SqlAlchemyBase, SerializerMixin):
     )
     # расписание работы магазина
     timetable = sqlalchemy.Column(
-        sqlalchemy.String,
+        sqlalchemy.JSON,
         nullable=True
     )
     # координаты разделены запятой(широта и долгота)
