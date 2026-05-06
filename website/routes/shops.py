@@ -85,11 +85,13 @@ def edit_settings_shop(shop_id: int):
         shop_name=shop.name,
         address=shop.address,
         description=shop.description,
-        coords=shop.coords
+        coords=shop.coords,
+        delivery_radius=shop.delivery_radius
     )
 
     if form.validate_on_submit():
         shop_name = form.shop_name.data
+        delivery_radius = form.delivery_radius.data
         address = form.address.data
         coords = form.coords.data
         description = form.description.data
@@ -98,19 +100,20 @@ def edit_settings_shop(shop_id: int):
 
         print(f"request.files: {request.files}")
         print(f"request.files.getlist('imgs'): {request.files.getlist('imgs')}")
+        print(delivery_radius)
 
         data = {
             'name': shop_name,
             'address': address,
             'coords': coords,
-            'description': description
+            'description': description,
+            'delivery_radius': int(delivery_radius) if delivery_radius.is_integer() else 0
         }
 
         if logo:
             img_name = upload_logo_shop(logo, shop)
             if img_name:
                 data['logo'] = img_name
-
 
         img_names = []
         for img in imgs:

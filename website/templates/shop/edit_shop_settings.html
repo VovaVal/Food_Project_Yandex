@@ -19,6 +19,16 @@
     </p>
 
     <p>
+        {{ form.delivery_radius.label }}<br>
+        {{ form.delivery_radius(class="form-control") }}<br>
+        {% for error in form.delivery_radius.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+
+    <p>
         {{ form.address.label }}<br>
         {{ form.address(class="form-control", readonly=True) }}<br>
         {% for error in form.address.errors %}

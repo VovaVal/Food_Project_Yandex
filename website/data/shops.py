@@ -31,9 +31,10 @@ class Shops(SqlAlchemyBase, SerializerMixin):
         sqlalchemy.Float,
         default=0
     )
+    # в метрах
     delivery_radius = sqlalchemy.Column(
         sqlalchemy.Integer,
-        default=0
+        default=3000
     )
     # изображения магазина(их могут и не быть)
     imgs = sqlalchemy.Column(

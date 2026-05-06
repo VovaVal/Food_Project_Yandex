@@ -19,7 +19,7 @@ parser_post_args.add_argument('rate', type=float, default=0)
 parser_post_args.add_argument('description')
 parser_post_args.add_argument('timetable')
 parser_post_args.add_argument('coords', required=True)
-parser_post_args.add_argument('delivery_radius', type=int, default=0)
+parser_post_args.add_argument('delivery_radius', type=int, default=3000)
 
 parser_patch_args = reqparse.RequestParser()
 parser_patch_args.add_argument('name')
@@ -30,7 +30,7 @@ parser_patch_args.add_argument('rate', type=float)
 parser_patch_args.add_argument('description')
 parser_patch_args.add_argument('timetable')
 parser_patch_args.add_argument('coords')
-parser_post_args.add_argument('delivery_radius', type=int)
+parser_patch_args.add_argument('delivery_radius', type=int)
 
 
 def abort_if_shop_not_found(shop_id: int):
