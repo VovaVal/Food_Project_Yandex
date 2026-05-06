@@ -334,19 +334,23 @@ function toggleView(view) {
     currentView = view;
 
     if (view === 'list') {
-        listContainer.style.display = '';
+        listContainer.style.display = 'block';
         cardsContainer.style.display = 'none';
-        listBtn.classList.add('active');
+
+        listBtn.classList.add('btn-primary', 'active');
         listBtn.classList.remove('btn-outline-primary');
-        cardBtn.classList.remove('active');
+
         cardBtn.classList.add('btn-outline-primary');
+        cardBtn.classList.remove('btn-primary', 'active');
     } else {
         listContainer.style.display = 'none';
-        cardsContainer.style.display = '';
-        cardBtn.classList.add('active');
+        cardsContainer.style.display = 'block';
+
+        cardBtn.classList.add('btn-primary', 'active');
         cardBtn.classList.remove('btn-outline-primary');
-        listBtn.classList.remove('active');
+
         listBtn.classList.add('btn-outline-primary');
+        listBtn.classList.remove('btn-primary', 'active');
     }
 }
 
