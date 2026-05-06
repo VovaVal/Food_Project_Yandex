@@ -37,7 +37,55 @@
             </div>
         {% endfor %}
     </p>
-
+    <div class="day-row mb-2">
+        Понедельник<br>
+        От: <input type="time" name="monday_from" class="form-control d-inline w-auto" />
+        До: <input type="time" name="monday_to" class="form-control d-inline w-auto" />
+        <button type="button" class="btn btn-sm btn-secondary btn-off">Выходной</button>
+        <button type="button" class="btn btn-sm btn-success btn-24h">Круглосуточно</button>
+    </div>
+    <div class="day-row mb-2">
+        Вторник<br>
+        От: <input type="time" name="tuesday_from" class="form-control d-inline w-auto" />
+        До: <input type="time" name="tuesday_to" class="form-control d-inline w-auto" />
+        <button type="button" class="btn btn-sm btn-secondary btn-off">Выходной</button>
+        <button type="button" class="btn btn-sm btn-success btn-24h">Круглосуточно</button>
+    </div>
+    <div class="day-row mb-2">
+        Среда<br>
+        От: <input type="time" name="wednesday_from" class="form-control d-inline w-auto" />
+        До: <input type="time" name="wednesday_to" class="form-control d-inline w-auto" />
+        <button type="button" class="btn btn-sm btn-secondary btn-off">Выходной</button>
+        <button type="button" class="btn btn-sm btn-success btn-24h">Круглосуточно</button>
+    </div>
+    <div class="day-row mb-2">
+        Четверг<br>
+        От: <input type="time" name="thursday_from" class="form-control d-inline w-auto" />
+        До: <input type="time" name="thursday_to" class="form-control d-inline w-auto" />
+        <button type="button" class="btn btn-sm btn-secondary btn-off">Выходной</button>
+        <button type="button" class="btn btn-sm btn-success btn-24h">Круглосуточно</button>
+    </div>
+    <div class="day-row mb-2">
+        Пятница<br>
+        От: <input type="time" name="friday_from" class="form-control d-inline w-auto" />
+        До: <input type="time" name="friday_to" class="form-control d-inline w-auto" />
+        <button type="button" class="btn btn-sm btn-secondary btn-off">Выходной</button>
+        <button type="button" class="btn btn-sm btn-success btn-24h">Круглосуточно</button>
+    </div>
+    <div class="day-row mb-2">
+        Суббота<br>
+        От: <input type="time" name="saturday_from" class="form-control d-inline w-auto" />
+        До: <input type="time" name="saturday_to" class="form-control d-inline w-auto" />
+        <button type="button" class="btn btn-sm btn-secondary btn-off">Выходной</button>
+        <button type="button" class="btn btn-sm btn-success btn-24h">Круглосуточно</button>
+    </div>
+    <div class="day-row mb-2">
+        Воскресенье<br>
+        От: <input type="time" name="sunday_from" class="form-control d-inline w-auto" />
+        До: <input type="time" name="sunday_to" class="form-control d-inline w-auto" />
+        <button type="button" class="btn btn-sm btn-secondary btn-off">Выходной</button>
+        <button type="button" class="btn btn-sm btn-success btn-24h">Круглосуточно</button>
+    </div>
     <p>
         {{ form.coords.label }}<br>
         {{ form.coords(class="form-control", readonly=True) }}<br>
@@ -283,6 +331,62 @@ map.on('click', async function(e) {
         addressInput.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
         coordsInput.value = `${lat.toFixed(6)},${lng.toFixed(6)}`;
     }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.day-row').forEach(row => {
+        const fromInput = row.querySelector('input[name$="_from"]');
+        const toInput   = row.querySelector('input[name$="_to"]');
+        const offBtn    = row.querySelector('.btn-off');
+        const fullBtn   = row.querySelector('.btn-24h');
+
+        function resetButtons() {
+            offBtn.classList.remove('active');
+            fullBtn.classList.remove('active');
+            fromInput.disabled = false;
+            toInput.disabled = false;
+        }
+
+        offBtn.addEventListener('click', () => {
+            if (offBtn.classList.contains('active')) {
+                // снять блокировку
+                fromInput.disabled = false;
+                toInput.disabled = false;
+                offBtn.classList.remove('active');
+            } else {
+                // активировать выходной
+                fromInput.value = '';
+                toInput.value = '';
+                fromInput.disabled = true;
+                toInput.disabled = true;
+                offBtn.classList.add('active');
+                fullBtn.classList.remove('active');
+            }
+        });
+
+        fullBtn.addEventListener('click', () => {
+            if (fullBtn.classList.contains('active')) {
+                // снять блокировку
+                fromInput.disabled = false;
+                toInput.disabled = false;
+                fullBtn.classList.remove('active');
+            } else {
+                // активировать круглосуточно
+                fromInput.value = '00:00';
+                toInput.value   = '23:59';
+                fromInput.disabled = true;
+                toInput.disabled = true;
+                fullBtn.classList.add('active');
+                offBtn.classList.remove('active');
+            }
+        });
+
+        // если пользователь вручную редактирует поле, кнопки сбрасываются
+        fromInput.addEventListener('input', resetButtons);
+        toInput.addEventListener('input', resetButtons);
+    });
 });
 </script>
 

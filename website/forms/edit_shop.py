@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, MultipleFileField
 from wtforms import SubmitField, FileField
+from wtforms.fields.datetime import TimeField
 from wtforms.fields.numeric import IntegerField
 from wtforms.fields.simple import StringField
 from wtforms.validators import Optional, DataRequired, Length
@@ -23,6 +24,27 @@ class EditShop(FlaskForm):
                                   Optional(),
                                   Length(max=500, message='Максимум 500 символов')
                               ])
+    monday_from = TimeField('Понедельник: с', validators=[Optional()])
+    monday_to = TimeField('Понедельник: до', validators=[Optional()])
+
+    tuesday_from = TimeField('Вторник: с', validators=[Optional()])
+    tuesday_to = TimeField('Вторник: до', validators=[Optional()])
+
+    wednesday_from = TimeField('Среда: с', validators=[Optional()])
+    wednesday_to = TimeField('Среда: до', validators=[Optional()])
+
+    thursday_from = TimeField('Четверг: с', validators=[Optional()])
+    thursday_to = TimeField('Четверг: до', validators=[Optional()])
+
+    friday_from = TimeField('Пятница: с', validators=[Optional()])
+    friday_to = TimeField('Пятница: до', validators=[Optional()])
+
+    saturday_from = TimeField('Суббота: с', validators=[Optional()])
+    saturday_to = TimeField('Суббота: до', validators=[Optional()])
+
+    sunday_from = TimeField('Воскресенье: с', validators=[Optional()])
+    sunday_to = TimeField('Воскресенье: до', validators=[Optional()])
+
     logo = FileField('Лого',
                      validators=[
                          Optional(),
