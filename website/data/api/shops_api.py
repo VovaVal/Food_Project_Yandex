@@ -49,7 +49,6 @@ def is_shop_owner_or_admin(shop: Shops):
 class ShopsResource(Resource):
     def get(self, shop_id: int):
         shop = abort_if_shop_not_found(shop_id)
-        is_shop_owner_or_admin(shop)
 
         return jsonify(
             {

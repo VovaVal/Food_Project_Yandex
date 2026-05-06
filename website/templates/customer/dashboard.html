@@ -27,7 +27,7 @@
                     <h5 class="shop-name">{{ shop.name }}</h5>
                     <p class="shop-address">{{ shop.address }}</p>
                     <small class="shop-meta">⭐ {{ shop.rate or 'Новое' }} | 📍 {{ shop.distance or '?' }} км</small>
-                    <a href="/shop/{{ shop.id }}" class="btn btn-sm btn-outline-primary mt-2">Подробнее</a>
+                    <a href="/customer/shop_page/{{ shop.id }}" class="btn btn-sm btn-outline-primary mt-2">Подробнее</a>
                 </div>
                 {% else %}
                 <div class="alert alert-info">Нет доступных магазинов</div>
@@ -42,7 +42,7 @@
                     <h5>{{ shop.name }}</h5>
                     <p>{{ shop.address[:80] }}{% if shop.address|length > 80 %}...{% endif %}</p>
                     <div class="shop-rating">⭐ {{ shop.rate or 'Новое' }}</div>
-                    <a href="/shop/{{ shop.id }}" class="btn btn-sm btn-primary">Перейти</a>
+                    <a href="/customer/shop_page/{{ shop.id }}" class="btn btn-sm btn-primary">Перейти</a>
                 </div>
                 {% endfor %}
             </div>
@@ -239,7 +239,7 @@ function addMarkers() {
             <strong>${escapeHtml(shop.name)}</strong><br>
             📍 ${escapeHtml(shop.address)}<br>
             ⭐ Рейтинг: ${shop.rate || 'Новый'}<br>
-            <a href="/shop/${shop.id}" class="btn btn-sm btn-primary mt-2">Перейти в магазин →</a>
+            <a href="/customer/shop_page/${shop.id}" class="btn btn-sm btn-primary mt-2">Перейти в магазин →</a>
         `);
 
         // При наведении на маркер
@@ -268,7 +268,7 @@ function addMarkers() {
 
         // При клике на маркер — переход на страницу магазина
         marker.on('click', function() {
-            window.location.href = `/shop/${shop.id}`;
+            window.location.href = `/customer/shop_page/${shop.id}`;
         });
 
         markers.push(marker);

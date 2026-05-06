@@ -42,6 +42,44 @@ def dashboard():
 
 
 @login_required
+@customer_bp.route('/shop_page/<int:shop_id>')
+def shop_page(shop_id: int):
+    api_url = request.url_root + f'api/shops/{shop_id}'
+    resp = requests.get(
+        api_url,
+        cookies=request.cookies
+    )
+    print(resp)
+
+    if resp.status_code == 200:
+        shop = resp.json()['shop']
+        if shop.get('coords'):
+            try:
+                coords = shop['coords'].split(',')
+                shop['lat'] = float(coords[0].strip())
+                shop['lng'] = float(coords[1].strip())
+            except:
+                shop['lat'] = 55.751244
+                shop['lng'] = 37.618423
+        else:
+            shop['lat'] = 55.751244
+            shop['lng'] = 37.618423
+
+        return render_template('customer/shop_page.html', title=shop['name'], shop=shop)
+    else:
+        print('Error occurred!!!')
+        print(resp.status_code)
+        print(resp.reason)
+        return redirect('customer.dashboard')
+
+
+@login_required
+@customer_bp.route('/shop_products/<int:shop_id>')
+def shop_products(shop_id: int):
+    ...
+
+
+@login_required
 @customer_bp.route('/orders')
 def orders():
     return render_template('customer/orders.html')
