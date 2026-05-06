@@ -12,7 +12,7 @@ class EditShop(FlaskForm):
                                 DataRequired(message='Название обязательно'),
                                 Length(max=100, message='Максимум 100 символов')
                             ])
-    delivery_radius = IntegerField('Радиус доставки магазина',
+    delivery_radius = IntegerField('Радиус доставки магазина(в метрах)',
                           validators=[
                               DataRequired(message='Введите радиус доставки')
                           ])
