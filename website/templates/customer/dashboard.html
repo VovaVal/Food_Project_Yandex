@@ -179,6 +179,7 @@
 <script>
 // Передаём данные магазинов
 const shopsData = {{ shops | tojson | safe }};
+const userCoords = {% if current_user.coords %}{{ current_user.coords | tojson }}{% else %}null{% endif %};
 
 // Переменные
 let map;
@@ -209,6 +210,36 @@ function initMap() {
         }
     });
 
+    if (userCoords) {
+    const [userLat, userLng] = userCoords.split(',').map(parseFloat);
+
+    shopsData.forEach(shop => {
+        if (shop.lat && shop.lng) {
+            shop.distance = getDistance(userLat, userLng, shop.lat, shop.lng);
+        } else {
+            shop.distance = '?';
+        }
+    });
+
+    // Обновляем отображение
+    document.querySelectorAll('.shop-item').forEach(el => {
+        const shopId = el.dataset.id;
+        const shop = shopsData.find(s => s.id == shopId);
+        if (shop && shop.distance) {
+            el.querySelector('.shop-meta').textContent = `⭐ ${shop.rate || 'Новое'} | 📍 ${shop.distance} км`;
+        }
+    });
+
+    document.querySelectorAll('.shop-card').forEach(el => {
+        const shopId = el.dataset.id;
+        const shop = shopsData.find(s => s.id == shopId);
+        if (shop && shop.distance) {
+            const ratingEl = el.querySelector('.shop-rating');
+            ratingEl.textContent = `⭐ ${shop.rate || 'Новое'} | 📍 ${shop.distance} км`;
+        }
+    });
+}
+
     // Добавляем маркеры для всех магазинов
     addMarkers();
 }
@@ -216,6 +247,18 @@ function initMap() {
 // Добавление маркеров на карту
 function addMarkers() {
     markers = [];
+
+    if (userCoords) {
+        const [userLat, userLng] = userCoords.split(',').map(parseFloat);
+        const homeMarker = L.marker([userLat, userLng], {
+            icon: L.icon({
+                iconUrl: 'https://cdn-icons-png.flaticon.com/512/25/25694.png', // домик
+                iconSize: [30, 30],
+                iconAnchor: [15, 30]
+            })
+        }).addTo(map);
+        homeMarker.bindPopup("🏠 Ваш дом");
+    }
 
     shopsData.forEach(shop => {
         if (!shop.lat || !shop.lng) return;
@@ -324,6 +367,21 @@ function filterShops(searchTerm) {
         map.fitBounds(group.getBounds());
     }
 }
+
+
+function getDistance(lat1, lng1, lat2, lng2) {
+    function toRad(x) { return x * Math.PI / 180; }
+
+    const R = 6371; // Радиус Земли в км
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return (R * c).toFixed(1); // километры с одной цифрой после запятой
+}
+
 
 // Переключение между видами (список/карточки)
 function toggleView(view) {
