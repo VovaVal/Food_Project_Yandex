@@ -188,21 +188,25 @@ let currentView = 'list';
 
 // Инициализация карты
 function initMap() {
-    // Центр карты (первый магазин или координаты по умолчанию)
-    let centerLat = 55.751244;
-    let centerLng = 37.618423;
-
-    if (shopsData.length > 0) {
-        centerLat = shopsData[0].lat || 55.751244;
-        centerLng = shopsData[0].lng || 37.618423;
+    let center = [55.704556, 37.323389]; // дефолт
+    if (shopsData.length > 0 && shopsData[0].lat && shopsData[0].lng) {
+        center = [shopsData[0].lat, shopsData[0].lng];
     }
 
-    map = L.map('map').setView([centerLat, centerLng], 12);
+    map = L.map('map').setView(center, 12);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19
     }).addTo(map);
+
+    // Преобразуем coords из строки в массив чисел
+    shopsData.forEach(shop => {
+        if (shop.coords) {
+            shop.lat = parseFloat(shop.coords.split(',')[0].trim());
+            shop.lng = parseFloat(shop.coords.split(',')[1].trim());
+        }
+    });
 
     // Добавляем маркеры для всех магазинов
     addMarkers();
@@ -210,6 +214,8 @@ function initMap() {
 
 // Добавление маркеров на карту
 function addMarkers() {
+    markers = [];
+
     shopsData.forEach(shop => {
         if (!shop.lat || !shop.lng) return;
 

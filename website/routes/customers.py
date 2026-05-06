@@ -35,7 +35,7 @@ def dashboard():
         data = resp.json()
         shops = data.get('shops', [])
 
-        return render_template('customer/dashboard.html', user=current_user, shops=shops)
+        return render_template('customer/dashboard.html', title='Главно окно', user=current_user, shops=shops)
     else:
         return render_template('errors/error.html', title='Ошибка',
                                error_code=500, error_message='Internal server error'), 500
