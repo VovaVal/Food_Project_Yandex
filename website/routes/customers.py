@@ -5,6 +5,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from PIL import Image
 
+from website.data.shops import Shops
 from website.forms.edit_user_settings import EditFormUser
 from website.data import db_session
 from website.bucket_requests import upload_img_user
@@ -24,7 +25,21 @@ def check_role():
 @login_required
 @customer_bp.route('/dashboard')
 def dashboard():
-    return render_template('customer/dashboard.html', user=current_user)
+    api_url = request.url_root + f'api/shops/'
+    resp = requests.get(
+        api_url,
+        cookies=request.cookies
+    )
+
+    if resp.status_code == 200:
+        data = resp.json()
+        shops = data.get('shops', [])
+
+        return render_template('customer/dashboard.html', user=current_user, shops=shops)
+    else:
+        return render_template('errors/error.html', title='Ошибка',
+                               error_code=500, error_message='Internal server error'), 500
+
 
 @login_required
 @customer_bp.route('/orders')
