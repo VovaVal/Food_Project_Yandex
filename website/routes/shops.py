@@ -100,7 +100,7 @@ def edit_settings_shop(shop_id: int):
 
         schedule = {
             'monday': {
-                'from': request.form.get('monday_from'),  # '08:00', '00:00' или ''
+                'from': request.form.get('monday_from'),
                 'to': request.form.get('monday_to')
             },
             'tuesday': {
@@ -168,7 +168,7 @@ def edit_settings_shop(shop_id: int):
 
     print(imgs)
     return render_template('shop/edit_shop_settings.html', title='Редактирование',
-                           form=form, shop_id=shop_id, images=imgs, BUCKET_CLIENT=BUCKET_CLIENT)
+                           form=form, shop_id=shop_id, images=imgs, BUCKET_CLIENT=BUCKET_CLIENT, shop=shop)
 
 
 @shop_bp.route('/delete_image/<int:shop_id>', methods=['POST'])

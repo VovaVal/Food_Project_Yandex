@@ -343,6 +343,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const offBtn    = row.querySelector('.btn-off');
         const fullBtn   = row.querySelector('.btn-24h');
 
+        const schedule = {{ shop.timetable|tojson }};
+
+        if (schedule) {
+            if (fromInput.value === '' && toInput.value === '') {
+                offBtn.classList.add('active');
+                fromInput.readonly = true;
+                toInput.readonly = true;
+            } else if (fromInput.value === '00:00' && toInput.value === '23:59') {
+                fullBtn.classList.add('active');
+                fromInput.readonly = true;
+                toInput.readonly = true;
+            }
+        }
+
         function resetButtons() {
             offBtn.classList.remove('active');
             fullBtn.classList.remove('active');
