@@ -173,6 +173,7 @@ function initShopMap() {
     const lng = parseFloat("{{ shop.lng or shop.coords.split(',')[1] if shop.coords else 37.618423 }}");
 
     const map = L.map('shopMap').setView([lat, lng], 15);
+    map.attributionControl.remove(); // Убирает флаг
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',

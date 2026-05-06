@@ -194,6 +194,7 @@ function initMap() {
     }
 
     map = L.map('map').setView(center, 12);
+    map.attributionControl.remove(); // Убирает флаг
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
