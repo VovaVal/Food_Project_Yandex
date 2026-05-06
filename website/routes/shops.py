@@ -71,8 +71,140 @@ def shop_id_settings(shop_id: int):
     if shop_data.status_code != 200:
         redirect(url_for('shop.dashboard'))
 
+    days_ru = {
+        'monday': 'Понедельник',
+        'tuesday': 'Вторник',
+        'wednesday': 'Среда',
+        'thursday': 'Четверг',
+        'friday': 'Пятница',
+        'saturday': 'Суббота',
+        'sunday': 'Воскресенье'
+    }
+
     shop_data = shop_data.json()['shop']
-    return render_template('shop/shop_settings.html', title=shop_data['name'], shop=shop_data)
+    return render_template('shop/shop_settings.html', title=shop_data['name'],
+                           shop=shop_data, days_ru=days_ru, is_shop_open=is_shop_open, get_next_closing_time=get_next_closing_time,
+                           get_next_opening_time=get_next_opening_time)
+
+
+def get_current_day_name():
+    """Возвращает название текущего дня недели на английском"""
+    days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+    return days[datetime.datetime.now().weekday()]
+
+
+def is_shop_open(shop):
+    """Проверяет, открыт ли магазин прямо сейчас"""
+    if not shop['timetable']:
+        return False
+
+    try:
+        import json
+        if isinstance(shop['timetable'], str):
+            timetable = json.loads(shop['timetable'])
+        else:
+            timetable = shop['timetable']
+    except:
+        return False
+
+    current_day = get_current_day_name()
+    current_time = datetime.datetime.now().strftime('%H:%M')
+
+    day_schedule = timetable.get(current_day, {})
+    from_time = day_schedule.get('from', '')
+    to_time = day_schedule.get('to', '')
+
+    if not from_time or not to_time:
+        return False
+    if from_time == '' and to_time == '':
+        return False
+    if from_time == '00:00' and to_time == '23:59':
+        return True
+
+    return from_time <= current_time <= to_time
+
+
+def get_next_closing_time(shop):
+    """Возвращает время закрытия магазина"""
+    if not shop['timetable']:
+        return None
+
+    try:
+        import json
+        if isinstance(shop['timetable'], str):
+            timetable = json.loads(shop['timetable'])
+        else:
+            timetable = shop['timetable']
+    except:
+        return None
+
+    current_day = get_current_day_name()
+    day_schedule = timetable.get(current_day, {})
+    return day_schedule.get('to', None)
+
+
+def get_next_opening_time(shop):
+    """Возвращает время следующего открытия"""
+    if not shop['timetable']:
+        return None
+
+    try:
+        import json
+        if isinstance(shop['timetable'], str):
+            timetable = json.loads(shop['timetable'])
+        else:
+            timetable = shop['timetable']
+    except:
+        return None
+
+    days_order = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+    current_day_index = datetime.datetime.now().weekday()
+
+    # Проверяем сегодняшний день
+    for i in range(7):
+        check_index = (current_day_index + i) % 7
+        day = days_order[check_index]
+        day_schedule = timetable.get(day, {})
+        from_time = day_schedule.get('from', '')
+
+        if from_time and from_time != '':
+            if i == 0:
+                return f"сегодня в {from_time}"
+            elif i == 1:
+                return f"завтра в {from_time}"
+            else:
+                days_ru = ['понедельник', 'вторник', 'среду', 'четверг', 'пятницу', 'субботу', 'воскресенье']
+                return f"в {days_ru[check_index]} в {from_time}"
+
+    return None
+
+
+@shop_bp.context_processor
+def utility_processor():
+    def is_open_now(day, from_time, to_time):
+        """Проверяет, открыт ли магазин прямо сейчас для конкретного дня"""
+        if not from_time or not to_time:
+            return False
+        if from_time == '' and to_time == '':
+            return False
+
+        now = datetime.datetime.now()
+        current_time = now.strftime('%H:%M')
+
+        weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+        current_day = weekdays[now.weekday()]
+
+        if current_day != day:
+            return False
+
+        return from_time <= current_time <= to_time
+
+    return dict(
+        is_open_now=is_open_now,
+        is_shop_open=is_shop_open,
+        get_next_closing_time=get_next_closing_time,
+        get_next_opening_time=get_next_opening_time
+    )
 
 
 @login_required

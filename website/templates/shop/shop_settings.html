@@ -35,6 +35,29 @@
             <div class="card-body">
                 <h5 class="card-title">Информация</h5>
                 <table class="table table-borderless">
+                    {% if shop['timetable'] %}
+                    <tr>
+                        <th>Статус:</th>
+                        <td>
+                            {% if is_shop_open(shop) %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle-fill"></i> Открыто
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle-fill"></i> Закрыто
+                                </span>
+                            {% endif %}
+                            <span class="text-muted ms-2">
+                                {% if is_shop_open(shop) %}
+                                    до {{ get_next_closing_time(shop) }}
+                                {% else %}
+                                    откроется {{'не скоро' if get_next_opening_time(shop) == None or get_next_opening_time(shop) == '' else get_next_opening_time(shop) }}
+                                {% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endif %}
                     <tr>
                         <th style="width: 120px;">Название:</th>
                         <td>{{ shop['name'] }}</td>
@@ -67,7 +90,27 @@
                     </tr>
                     <tr>
                         <th>Расписание:</th>
-                        <td>{{ shop['timetable'] or 'Не указано' }}</td>
+                        {% if shop['timetable'] %}
+                            {% for day, name in days_ru.items() %}
+                                <tr>
+                                    <td>{{ name }}</td>
+                                    <td>
+                                        {% set from_time = shop['timetable'][day]['from'] %}
+                                        {% set to_time = shop['timetable'][day]['to'] %}
+
+                                        {% if from_time == '' and to_time == '' %}
+                                            Выходной
+                                        {% elif from_time == '00:00' and to_time == '23:59' %}
+                                            Круглосуточно
+                                        {% else %}
+                                            {{ from_time }} – {{ to_time if to_time else '…' }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <td>'Не указано'</td>
+                        {% endif %}
                     </tr>
                 </table>
             </div>
