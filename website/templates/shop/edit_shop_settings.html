@@ -28,7 +28,53 @@
         {% endfor %}
     </p>
 
-    <div class="day-row mb-2">
+    <p>
+        {{ form.address.label }}<br>
+        {{ form.address(class="form-control", readOnly=True) }}<br>
+        {% for error in form.address.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.coords.label }}<br>
+        {{ form.coords(class="form-control", readOnly=True) }}<br>
+        {% for error in form.coords.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+
+    <div id="map" style="height: 400px;" class="mb-3"></div>
+
+    <div class="mb-2">
+        <button type="button" class="btn btn-info mb-2" id="toggle-description-btn">
+            Описание заведения
+        </button>
+    </div>
+
+    <div id="description-field" class="d-none">
+        <p>
+            {{ form.description.label }}<br>
+            {{ form.description(class="form-control") }}<br>
+            {% for error in form.description.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+    </div>
+
+    <div class="mb-2">
+        <button type="button" class="btn btn-warning mb-2" id="toggle-schedule-btn">
+            ⏰ Расписание
+        </button>
+    </div>
+
+    <div id="datetime-field" class="d-none">
+        <div class="day-row mb-2">
         Понедельник<br>
         От: <input type="time" name="monday_from" class="form-control d-inline w-auto"
                    value="{{shop.timetable.monday.from if shop.timetable else '' }}"/>
@@ -91,39 +137,16 @@
         <button type="button" class="btn btn-sm btn-secondary btn-off">Выходной</button>
         <button type="button" class="btn btn-sm btn-success btn-24h">Круглосуточно</button>
     </div>
+    </div>
 
-    <p>
-        {{ form.address.label }}<br>
-        {{ form.address(class="form-control", readOnly=True) }}<br>
-        {% for error in form.address.errors %}
-            <div class="alert alert-danger" role="alert">
-                {{ error }}
-            </div>
-        {% endfor %}
-    </p>
-    <p>
-        {{ form.coords.label }}<br>
-        {{ form.coords(class="form-control", readOnly=True) }}<br>
-        {% for error in form.coords.errors %}
-            <div class="alert alert-danger" role="alert">
-                {{ error }}
-            </div>
-        {% endfor %}
-    </p>
+    <div class="mb-2">
+        <button type="button" class="btn btn-success mb-2" id="toggle-logo-btn">
+            Изменить лого
+        </button>
+    </div>
 
-    <div id="map" style="height: 400px;" class="mb-3"></div>
-
-    <p>
-        {{ form.description.label }}<br>
-        {{ form.description(class="form-control") }}<br>
-        {% for error in form.description.errors %}
-            <div class="alert alert-danger" role="alert">
-                {{ error }}
-            </div>
-        {% endfor %}
-    </p>
-
-    <p>
+    <div id="logo-field" class="d-none">
+        <p>
         {{ form.logo.label }}<br>
         {{ form.logo(class="form-control",
                accept="image/png, image/jpeg, image/jpg, image/gif, image/webp",
@@ -136,8 +159,16 @@
         {% endfor %}
     </p>
     <div id="logo-preview" class="mt-2"></div>
+    </div>
 
-    <p>
+    <div class="mb-2">
+        <button type="button" class="btn btn-secondary mb-2" id="toggle-imgs-btn">
+            Добавить изображения
+        </button>
+    </div>
+
+    <div id="imgs-field" class="d-none">
+        <p>
         {{ form.imgs.label }}<br>
         {{ form.imgs(class="form-control",
                accept="image/png, image/jpeg, image/jpg, image/gif, image/webp",
@@ -151,6 +182,7 @@
     </p>
 
     <div id="preview" class="d-flex flex-wrap gap-2 mt-2"></div>
+    </div>
 
     <p>{{ form.save(type="submit", class="btn btn-primary") }}</p>
 </form>
@@ -419,4 +451,39 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<script>
+const toggleScheduleBtn = document.getElementById('toggle-schedule-btn');
+const scheduleField = document.getElementById('datetime-field');
+
+toggleScheduleBtn.addEventListener('click', () => {
+    scheduleField.classList.toggle('d-none');
+});
+</script>
+
+<script>
+const toggleDescriptionBtn = document.getElementById('toggle-description-btn');
+const descriptionField = document.getElementById('description-field');
+
+toggleDescriptionBtn.addEventListener('click', () => {
+    descriptionField.classList.toggle('d-none');
+});
+</script>
+
+<script>
+const toggleLogoBtn = document.getElementById('toggle-logo-btn');
+const logoField = document.getElementById('logo-field');
+
+toggleLogoBtn.addEventListener('click', () => {
+    logoField.classList.toggle('d-none');
+});
+</script>
+
+<script>
+const toggleImgsBtn = document.getElementById('toggle-imgs-btn');
+const imgsField = document.getElementById('imgs-field');
+
+toggleImgsBtn.addEventListener('click', () => {
+    imgsField.classList.toggle('d-none');
+});
+</script>
 {% endblock %}

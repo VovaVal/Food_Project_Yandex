@@ -218,12 +218,12 @@ def edit_settings_shop(shop_id: int):
         address=shop.address,
         description=shop.description,
         coords=shop.coords,
-        delivery_radius=shop.delivery_radius
+        delivery_radius=abs(shop.delivery_radius)
     )
 
     if form.validate_on_submit():
         shop_name = form.shop_name.data
-        delivery_radius = form.delivery_radius.data
+        delivery_radius = abs(form.delivery_radius.data)
         address = form.address.data
         coords = form.coords.data
         description = form.description.data

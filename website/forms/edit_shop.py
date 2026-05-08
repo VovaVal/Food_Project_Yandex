@@ -4,7 +4,7 @@ from wtforms import SubmitField, FileField
 from wtforms.fields.datetime import TimeField
 from wtforms.fields.numeric import IntegerField
 from wtforms.fields.simple import StringField
-from wtforms.validators import Optional, DataRequired, Length
+from wtforms.validators import Optional, DataRequired, Length, NumberRange
 
 
 class EditShop(FlaskForm):
@@ -15,7 +15,8 @@ class EditShop(FlaskForm):
                             ])
     delivery_radius = IntegerField('Радиус доставки магазина(в метрах)',
                           validators=[
-                              DataRequired(message='Введите радиус доставки')
+                              DataRequired(message='Введите радиус доставки'),
+                              NumberRange(min=0, message='Радиус не может быть отрицательным')
                           ])
     address = StringField('Адрес магазина', validators=[DataRequired(message='Адрес обязателен')])
     coords = StringField('Координаты магазина', validators=[DataRequired(message='Координаты обязательны')])
