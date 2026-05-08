@@ -302,6 +302,7 @@ def utility_processor():
 @customer_bp.route('/upload_avatar', methods=['POST'])
 @login_required
 def upload_avatar():
+    '''Загружает аватар'''
     file = request.files.get('avatar')
 
     if not file:
