@@ -7,6 +7,7 @@
 
 <h3>Имя пользователя: {{ current_user.name }}</h3>
 <h3>Почта: {{ current_user.email }}</h3>
+<h3>Адрес проживания: {{ current_user.address or 'Не указан' }}</h3>
 <h3>Бонусов: {{ current_user.user_bonuses }}</h3>
 
 <a href="{{ url_for('customer.edit_settings') }}" class="btn btn-primary">Редактировать</a>
