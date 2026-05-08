@@ -169,7 +169,7 @@ def edit_settings():
 
         if resp.status_code == 200:
             flash(message='Вы изменили данные аккаунта!', category='success')
-            return redirect(url_for('customer.index'))
+            return redirect(url_for('customer.user_settings'))
 
         else:
             error = resp.json().get('message', 'Ошибка регистрации')

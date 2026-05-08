@@ -60,23 +60,36 @@
             {% endfor %}
         </p>
         <p>
-            {{ form.password.label }}<br>
-            {{ form.password(class="form-control", type="password") }}<br>
-            {% for error in form.password.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
-        </p>
-      <p>
-            {{ form.repeat_password.label }}<br>
-            {{ form.repeat_password(class="form-control", type="password") }}<br>
-            {% for error in form.password.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
-        </p>
+    <button type="button" class="btn btn-secondary mb-2" id="toggle-password-btn">
+        Изменить пароль
+    </button>
+</p>
+
+<div id="password-fields" class="d-none">
+    <p>
+        {{ form.password.label }}<br>
+        {{ form.password(class="form-control", type="password") }}<br>
+        {% for error in form.password.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.repeat_password.label }}<br>
+        {{ form.repeat_password(class="form-control", type="password") }}<br>
+        {% for error in form.repeat_password.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+    <p>
+        <button type="button" class="btn btn-outline-danger" id="cancel-password-btn">
+            Отменить
+        </button>
+    </p>
+</div>
         <p>{{ form.save(type="submit", class="btn btn-primary") }}</p>
     </form>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
@@ -137,4 +150,23 @@ map.on('click', async function(e) {
 });
 </script>
 
+<script>
+const toggleBtn = document.getElementById('toggle-password-btn');
+const cancelBtn = document.getElementById('cancel-password-btn');
+const passwordFields = document.getElementById('password-fields');
+
+toggleBtn.addEventListener('click', function() {
+    passwordFields.classList.remove('d-none'); // показать поля
+    toggleBtn.classList.add('d-none');          // скрыть кнопку "Добавить пароль"
+});
+
+cancelBtn.addEventListener('click', function() {
+    passwordFields.classList.add('d-none');     // скрыть поля
+    toggleBtn.classList.remove('d-none');       // показать кнопку "Добавить пароль"
+
+    // Очистка значений
+    document.getElementById("{{ form.password.id }}").value = '';
+    document.getElementById("{{ form.repeat_password.id }}").value = '';
+});
+</script>
 {% endblock %}
