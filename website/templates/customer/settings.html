@@ -21,9 +21,10 @@
                     </div>
 
                     <!-- Кнопка смены аватара -->
-                    <a href="{{ url_for('customer.edit_settings') }}" class="btn btn-outline-primary btn-sm mb-3">
+                    <button type="button" class="btn btn-outline-primary btn-sm mb-3"
+                            data-bs-toggle="modal" data-bs-target="#avatarModal">
                         Изменить аватар
-                    </a>
+                    </button>
 
                     <!-- Бонусы -->
                     <div class="bonus-display d-flex align-items-center justify-content-center gap-2">
@@ -33,6 +34,31 @@
                 </div>
             </div>
         </div>
+
+        <!-- Модальное окно для смены аватара -->
+<div class="modal fade" id="avatarModal" tabindex="-1" aria-labelledby="avatarModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="avatarModalLabel">Изменить аватар</h5>
+        </div>
+      <div class="modal-body text-center">
+        <img id="avatarPreview" src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ current_user.img }}"
+             class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+        <input type="file" id="uploadAvatar" accept="image/*" style="display: none;">
+        <div>
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('uploadAvatar').click()">
+                Выбрать файл
+            </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-success" id="saveAvatarBtn">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
 
         <!-- Правая колонка: информация пользователя -->
         <div class="col-md-8">
@@ -86,4 +112,58 @@
 
     </div>
 </div>
+
+
+<script>
+const uploadAvatar = document.getElementById('uploadAvatar');
+const avatarPreview = document.getElementById('avatarPreview');
+const saveAvatarBtn = document.getElementById('saveAvatarBtn');
+
+// сохраняем исходный аватар
+const originalAvatar = avatarPreview.src;
+
+uploadAvatar.addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        avatarPreview.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+});
+
+// сброс при закрытии модалки
+document.getElementById('avatarModal').addEventListener('hidden.bs.modal', function () {
+    uploadAvatar.value = "";           // очищаем input
+    avatarPreview.src = originalAvatar; // возвращаем оригинал
+});
+
+saveAvatarBtn.addEventListener('click', function () {
+    const file = uploadAvatar.files[0];
+
+    if (!file) {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('avatarModal'));
+        modal.hide();
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    fetch("{{ url_for('customer.upload_avatar') }}", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert("Ошибка загрузки аватара");
+        }
+    })
+    .catch(() => alert("Ошибка сети"));
+});
+</script>
 {% endblock %}

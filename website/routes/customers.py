@@ -297,3 +297,29 @@ def utility_processor():
         get_next_closing_time=get_next_closing_time,
         get_next_opening_time=get_next_opening_time
     )
+
+
+@customer_bp.route('/upload_avatar', methods=['POST'])
+@login_required
+def upload_avatar():
+    file = request.files.get('avatar')
+
+    if not file:
+        return {"success": False}, 400
+
+    img_name = upload_img_user(file)
+
+    try:
+        if img_name:
+            with db_session.create_session() as sess:
+                user = sess.get(User, current_user.id)
+                user.img = img_name
+
+                sess.add(user)
+                sess.commit()
+
+    except Exception as e:
+        print(e)
+        return {'success': False}
+
+    return {"success": True}
