@@ -121,12 +121,16 @@ def user_settings():
 def edit_settings():
     form = EditFormUser(
         user_name=current_user.name,
-        email=current_user.email
+        email=current_user.email,
+        address=current_user.address,
+        coords=current_user.coords
     )
 
     if form.validate_on_submit():
         email = form.email.data
         user_name = form.user_name.data
+        address = form.address.data
+        coords = form.coords.data
         avatar = form.avatar.data
         password = form.password.data
         repeat_password = form.repeat_password.data
@@ -137,7 +141,10 @@ def edit_settings():
 
         # Нужно будет добавить проверку почты
 
-        change_data = {}
+        change_data = {
+            'address': address,
+            'coords': coords
+        }
 
         if password:
             change_data['password'] = password

@@ -28,8 +28,8 @@ parser_patch_args.add_argument('email')
 parser_patch_args.add_argument('password')
 parser_patch_args.add_argument('role', choices=['customer', 'shop'],
                                help='Allowed roles: "customer" and "shop"')
-parser_post_args.add_argument('address')
-parser_post_args.add_argument('coords')
+parser_patch_args.add_argument('address')
+parser_patch_args.add_argument('coords')
 
 
 def abort_if_user_not_found(user_id: int):
@@ -90,6 +90,7 @@ class UsersResource(Resource):
 
         user = abort_if_user_not_found(user_id)
         args = parser_patch_args.parse_args()
+        print(args)
 
         with db_session.create_session() as sess:
             for key, value in args.items():
@@ -162,7 +163,9 @@ class UsersListResource(Resource):
                 email=args['email'],
                 hashed_password=hashed_password,
                 created_date=date.today(),
-                role=args['role']
+                role=args['role'],
+                address=args['address'],
+                coords=args['coords'],
             )
             sess.add(user)
             sess.commit()
