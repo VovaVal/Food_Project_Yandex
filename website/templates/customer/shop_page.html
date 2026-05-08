@@ -112,6 +112,28 @@
                     <h5 class="card-title"><i class="bi bi-info-circle"></i> Информация</h5>
                     <div class="mb-2">
                         <i class="bi bi-geo-alt-fill text-secondary me-2"></i>
+                        <strong>Статус:</strong><br>
+
+                        {% if is_shop_open(shop) %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle-fill"></i> Открыто
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle-fill"></i> Закрыто
+                                </span>
+                            {% endif %}
+                            <span class="text-muted ms-2">
+                                {% if is_shop_open(shop) %}
+                                    до {{ get_next_closing_time(shop) }}
+                                {% else %}
+                                    откроется {{'не скоро' if get_next_opening_time(shop) == None or get_next_opening_time(shop) == '' else get_next_opening_time(shop) }}
+                                {% endif %}
+                            </span>
+
+                    </div>
+                    <div class="mb-2">
+                        <i class="bi bi-geo-alt-fill text-secondary me-2"></i>
                         <strong>Адрес:</strong>
                         <p class="mt-1 ms-4 text-muted">{{ shop.address or 'Не указан' }}</p>
                     </div>
@@ -123,7 +145,24 @@
                     <div class="mb-2">
                         <i class="bi bi-clock-history text-secondary me-2"></i>
                         <strong>Часы работы:</strong>
-                        <p class="mt-1 ms-4 text-muted">{{ shop.timetable or 'Не указано' }}</p>
+                        {% if not shop.timetable%}
+                            <p class="mt-1 ms-4 text-muted">{{ 'Не указано' }}</p>
+                        {% else %}
+                            {% for day, name in days_ru.items() %}
+                                <p class="mt-1 ms-4 text-muted">{{ name }}:
+                                {% set from_time = shop['timetable'][day]['from'] %}
+                                {% set to_time = shop['timetable'][day]['to'] %}
+
+                                {% if from_time == '' and to_time == '' %}
+                                    <strong>Выходной</strong>
+                                {% elif from_time == '00:00' and to_time == '23:59' %}
+                                    <strong>Круглосуточно</strong>
+                                {% else %}
+                                    <strong>{{ from_time }} – {{ to_time if to_time else '…' }}</strong>
+                                {% endif %}
+                                </p>
+                        {% endfor %}
+                        {% endif %}
                     </div>
                     <div class="mb-2">
                         <i class="bi bi-telephone text-secondary me-2"></i>
