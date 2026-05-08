@@ -135,8 +135,8 @@
                 </div>
             {% else %}
                 <div class="auth-buttons">
-                    <a class="btn btn-primary" href="/register">Зарегистрироваться</a>
-                    <a class="btn btn-success" href="/login">Войти</a>
+                    <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Зарегистрироваться</a>
+                    <a class="btn btn-success" href="{{ url_for('auth.login') }}">Войти</a>
                 </div>
             {% endif %}
         </div>

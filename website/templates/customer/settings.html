@@ -1,15 +1,89 @@
 {% extends "base.html" %}
 
 {% block content %}
-<a href="{{ url_for('customer.dashboard') }}" class="btn btn-primary">На главную страницу</a>
-<h1>Настройки</h1>
-<h3>Аватар:  <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ current_user.img }}" alt="Изображение аватара"></h3>
+<div class="container mt-4">
+    <a href="{{ url_for('customer.dashboard') }}" class="btn btn-secondary mb-3">← На главную страницу</a>
 
-<h3>Имя пользователя: {{ current_user.name }}</h3>
-<h3>Почта: {{ current_user.email }}</h3>
-<h3>Адрес проживания: {{ current_user.address or 'Не указан' }}</h3>
-<h3>Бонусов: {{ current_user.user_bonuses }}</h3>
+    <h1 class="mb-4">Настройки пользователя</h1>
 
-<a href="{{ url_for('customer.edit_settings') }}" class="btn btn-primary">Редактировать</a>
+    <div class="row">
 
+        <!-- Левая колонка: аватар и бонусы -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <!-- Аватар -->
+                    <div class="mb-3">
+                        <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ current_user.img }}"
+                             class="rounded-circle img-fluid"
+                             alt="Аватар пользователя"
+                             style="width: 150px; height: 150px; object-fit: cover;">
+                    </div>
+
+                    <!-- Кнопка смены аватара -->
+                    <a href="{{ url_for('customer.edit_settings') }}" class="btn btn-outline-primary btn-sm mb-3">
+                        Изменить аватар
+                    </a>
+
+                    <!-- Бонусы -->
+                    <div class="bonus-display d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-gift-fill text-warning fs-4"></i>
+                        <span class="fw-bold">{{ current_user.user_bonuses }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка: информация пользователя -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Основная информация</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-person-fill me-2"></i> Имя пользователя</span>
+                            <span class="fw-bold"><strong>{{ current_user.name }}</strong></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-envelope-fill me-2"></i> Email</span>
+                            <span class="fw-bold"><strong>{{ current_user.email }}</strong></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-geo-alt-fill me-2"></i> Адрес</span>
+                            <span class="fw-bold"><strong>{{ current_user.address or 'Не указан' }}</strong></span>
+                        </li>
+                    </ul>
+
+                    <div class="mt-3 text-end">
+                        <a href="{{ url_for('customer.edit_settings') }}" class="btn btn-primary">
+                            Редактировать
+                        </a>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                            Выйти из аккаунта
+                        </button>
+                    </div>
+
+                    <!-- Модальное окно -->
+                    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="logoutModalLabel">Подтверждение выхода</h5>
+                            </div>
+                          <div class="modal-body">
+                            Вы точно хотите выйти из аккаунта?
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
+                            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">Да, выйти</a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
 {% endblock %}
