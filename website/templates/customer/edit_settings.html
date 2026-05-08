@@ -47,18 +47,33 @@
 
         <div id="map" style="height: 400px;" class="mb-3"></div>
 
-        <p>
-            {{ form.avatar.label }}<br>
-            {{ form.avatar(class="form-control",
-                   accept="image/png, image/jpeg, image/jpg, image/gif, image/webp",
-                   capture="environment") }}<br>
-            <small class="text-muted">Поддерживаются: PNG, JPEG, JPG, GIF, WEBP. Максимум 5 МБ.</small>
-            {% for error in form.avatar.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
-        </p>
+        <!-- Кнопка для аватара -->
+<p>
+    <button type="button" class="btn btn-secondary mb-2" id="toggle-avatar-btn">
+        Добавить / Изменить аватар
+    </button>
+</p>
+
+<!-- Скрытое поле аватара -->
+<div id="avatar-field" class="d-none">
+    <p>
+        {{ form.avatar.label }}<br>
+        {{ form.avatar(class="form-control",
+               accept="image/png, image/jpeg, image/jpg, image/gif, image/webp",
+               capture="environment") }}<br>
+        <small class="text-muted">Поддерживаются: PNG, JPEG, JPG, GIF, WEBP. Максимум 5 МБ.</small>
+        {% for error in form.avatar.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+    <p>
+        <button type="button" class="btn btn-outline-danger" id="cancel-avatar-btn">
+            Отменить
+        </button>
+    </p>
+</div>
         <p>
     <button type="button" class="btn btn-secondary mb-2" id="toggle-password-btn">
         Изменить пароль
@@ -167,6 +182,25 @@ cancelBtn.addEventListener('click', function() {
     // Очистка значений
     document.getElementById("{{ form.password.id }}").value = '';
     document.getElementById("{{ form.repeat_password.id }}").value = '';
+});
+</script>
+
+<script>
+const toggleAvatarBtn = document.getElementById('toggle-avatar-btn');
+const cancelAvatarBtn = document.getElementById('cancel-avatar-btn');
+const avatarField = document.getElementById('avatar-field');
+
+toggleAvatarBtn.addEventListener('click', function() {
+    avatarField.classList.remove('d-none'); // показать поле
+    toggleAvatarBtn.classList.add('d-none'); // скрыть кнопку "Добавить аватар"
+});
+
+cancelAvatarBtn.addEventListener('click', function() {
+    avatarField.classList.add('d-none');     // скрыть поле
+    toggleAvatarBtn.classList.remove('d-none'); // показать кнопку "Добавить аватар"
+
+    // Очистка выбранного файла
+    document.getElementById("{{ form.avatar.id }}").value = '';
 });
 </script>
 {% endblock %}
