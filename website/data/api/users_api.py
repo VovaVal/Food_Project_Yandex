@@ -101,7 +101,7 @@ class UsersResource(Resource):
                     key = 'hashed_password'
                     value = generate_password_hash(value)
 
-                if key == 'email' and value is not None:
+                if key == 'email' and value is not None and value != current_user.email:
                     email_exist = sess.query(User).filter(User.email == value.strip()).first()
 
                     if email_exist:

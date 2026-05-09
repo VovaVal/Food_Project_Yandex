@@ -1,7 +1,7 @@
 import datetime
 
 import requests
-from flask import Blueprint, render_template, redirect, url_for, request
+from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required, current_user
 
 from website.bucket_requests import upload_logo_shop, upload_img_shop, delete_by_key, upload_img_user
@@ -13,15 +13,18 @@ from website.forms.edit_shop import EditShop
 from website.config import BUCKET_CLIENT
 from website.forms.edit_shop_user_settings import EditFormShopUser
 
+
 shop_bp = Blueprint(
     'shop',
     __name__
+
 )
 
 @shop_bp.before_request
 def check_role():
     if not current_user.is_authenticated or current_user.role != 'shop':
         return redirect(url_for('auth.login'))
+
 
 @login_required
 @shop_bp.route('/dashboard')
@@ -423,12 +426,6 @@ def update_avatar():
 
 
 @login_required
-@shop_bp.route('/products')
-def products():
-    return render_template('shop/products.html')
-
-
-@login_required
 @shop_bp.route('/')
 def index():
     return redirect(url_for('shop.dashboard'))
@@ -447,4 +444,47 @@ def edit_settings():
         user_name=current_user.name,
         email=current_user.email
     )
+
+    if form.validate_on_submit():
+        user_name = form.user_name.data
+        email = form.email.data
+        avatar = form.avatar.data
+        password = form.password.data
+        repeat_password = form.repeat_password.data
+
+        if password != repeat_password:
+            flash(message='Пароли не совпадают!', category='danger')
+            return render_template('shop/edit_settings.html', title='Редактирование', form=form)
+
+        # Нужно будет добавить проверку почты
+
+        change_data = {
+            'name': user_name,
+            'email': email
+        }
+
+        if password:
+            change_data['password'] = password
+
+        if avatar:
+            img_name = upload_img_user(avatar)
+            if img_name:
+                change_data['img'] = img_name
+
+        api_url = request.url_root + f'api/users/{current_user.id}'
+        resp = requests.patch(
+            api_url,
+            json=change_data,
+            cookies=request.cookies
+        )
+
+        if resp.status_code == 200:
+            flash(message='Вы изменили данные аккаунта!', category='success')
+            return redirect(url_for('shop.shop_owner_settings'))
+
+        else:
+            error = resp.json().get('message', 'Ошибка регистрации')
+            flash(error, category='danger')
+            return render_template('shop/edit_settings.html', title='Редактирование', form=form)
+
     return render_template('shop/edit_settings.html', form=form, title='Редактирование')

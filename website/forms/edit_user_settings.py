@@ -6,7 +6,7 @@ from wtforms.validators import Optional, EqualTo, Email, Length, DataRequired
 
 class EditFormUser(FlaskForm):
     user_name = StringField('Имя пользователя', validators=[DataRequired()])
-    email = EmailField('Почта', validators=[Optional(), Email()])
+    email = EmailField('Почта', validators=[DataRequired(), Email()])
     address = StringField('Адрес дома', validators=[DataRequired(message='Адрес обязателен')])
     coords = StringField('Координаты дома', validators=[DataRequired(message='Координаты обязательны')])
     avatar = FileField('Аватар', validators=[Optional()])
