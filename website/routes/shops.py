@@ -379,6 +379,19 @@ def upload_logo(shop_id):
 
 
 @login_required
+@shop_bp.route('/delete_shop/<int:shop_id>')
+def delete_shop(shop_id: int):
+    api_url = request.url_root + f'api/shops/{shop_id}'
+    shop_data = requests.delete(api_url, cookies=request.cookies)
+
+    if shop_data.status_code != 200:
+        print(shop_data.status_code)
+        print(shop_data.reason)
+
+    return redirect(url_for('shop.dashboard'))
+
+
+@login_required
 @shop_bp.route('/products')
 def products():
     return render_template('shop/products.html')

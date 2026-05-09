@@ -191,9 +191,33 @@
 </div>
 {% endif %}
 
-<a href="{{ url_for('shop.edit_settings_shop', shop_id=shop['id']) }}" class="btn btn-primary mt-4">
-    ✏️ Редактировать
-</a>
+<div class="mt-3 text-end">
+    <a href="{{ url_for('shop.edit_settings_shop', shop_id=shop['id']) }}" class="btn btn-primary mt-4">
+        ✏️ Редактировать
+    </a>
+
+    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+        Удалить заведение
+    </button>
+</div>
+
+<!-- Модальное окно -->
+                    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="logoutModalLabel">Подтверждение удаления</h5>
+                            </div>
+                          <div class="modal-body">
+                            Вы точно хотите удалить это заведение?
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
+                            <a href="{{ url_for('shop.delete_shop', shop_id=shop['id']) }}" class="btn btn-danger">Да, удалить</a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
 <style>
 .carousel-item img {
