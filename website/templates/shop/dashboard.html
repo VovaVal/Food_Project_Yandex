@@ -1,38 +1,160 @@
 {% extends "base.html" %}
 
 {% block content %}
-<a href="/shop/add_shop" class="btn btn-primary">Добавить магазин</a>
-
 <div class="container mt-4">
+    <a href="/shop/add_shop" class="btn btn-primary">Добавить магазин</a>
+
     <h1 class="mb-4">Здравствуйте, {{ current_user.name }}!</h1>
 
-    <div class="row">
-        {% for shop in shops %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ shop.logo }}?v={{ shop['updated_date']|default(0) }}" class="card-img-top" alt="{{ shop.name }}" style="height: 200px; object-fit: cover;">
+    <!-- 🔹 Навигация вкладок -->
+    <ul class="nav nav-tabs mb-3" id="shopViewTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="cards-tab" data-bs-toggle="tab" data-bs-target="#cards" type="button" role="tab">Карточки магазинов</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="map-tab" data-bs-toggle="tab" data-bs-target="#map" type="button" role="tab">Карта</button>
+        </li>
+    </ul>
 
-                <div class="card-body">
-                    <h5 class="card-title">{{ shop.name }}</h5>
-                    <p class="card-text">
-                        <small class="text-muted">
-                            <i class="bi bi-geo-alt"></i> {{ shop.address[:50] }}{% if shop.address|length > 50 %}...{% endif %}
-                        </small>
-                    </p>
-                    <p class="card-text">
-                        <span class="badge bg-warning text-dark">
-                            <i class="bi bi-star-fill"></i> {{ shop.rate or 'Нет' }}
-                        </span>
-                    </p>
+    <!-- 🔹 Содержимое вкладок -->
+    <div class="tab-content">
+        <!-- Карточки -->
+        <div class="tab-pane fade show active" id="cards" role="tabpanel">
+            <div class="row">
+                {% for shop in shops %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ shop.logo }}?v={{ shop['updated_date']|default(0) }}" class="card-img-top" alt="{{ shop.name }}" style="height: 200px; object-fit: cover;">
+
+                        <div class="card-body">
+                            <h5 class="card-title">{{ shop.name }}</h5>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="bi bi-geo-alt"></i> {{ shop.address[:50] }}{% if shop.address|length > 50 %}...{% endif %}
+                                </small>
+                            </p>
+                            <p class="card-text">
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-star-fill me-1"></i> {{ shop.rate or 'Нет' }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent border-0">
+                            <a href="/shop/{{ shop.id }}" class="btn btn-primary w-100">Открыть магазин</a>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-footer bg-transparent border-0">
-                    <a href="/shop/{{ shop.id }}" class="btn btn-primary w-100">
-                        Открыть магазин
-                    </a>
-                </div>
+                {% endfor %}
             </div>
         </div>
-        {% endfor %}
+
+        <!-- Карта -->
+        <div class="tab-pane fade" id="map" role="tabpanel">
+            <div id="shopsMap" style="height: 600px; width: 100%; border-radius: 12px;"></div>
+        </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    let map = null;
+
+    // Передаём данные безопасно
+    const shopsData = [
+        {% for shop in shops %}
+            {% if shop.coords %}
+            {
+                id: {{ shop.id }},
+                name: "{{ shop.name|default('Название отсутствует') }}",
+                address: "{{ shop.address|default('Адрес не указан') }}",
+                rate: "{{ shop.rate|default('Новый') }}",
+                coords: "{{ shop.coords }}"
+            }{% if not loop.last %},{% endif %}
+            {% endif %}
+        {% endfor %}
+    ];
+
+    function initMap() {
+        if (map) return;
+
+        let centerLat = 55.751244;
+        let centerLng = 37.618423;
+        const bounds = [];
+
+        if (shopsData.length > 0) {
+            const firstCoords = shopsData[0].coords.split(',');
+            centerLat = parseFloat(firstCoords[0]);
+            centerLng = parseFloat(firstCoords[1]);
+        }
+
+        map = L.map('shopsMap', { center: [centerLat, centerLng], zoom: 12 });
+        map.attributionControl.remove();
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        shopsData.forEach(shop => {
+            const [lat, lng] = shop.coords.split(',').map(parseFloat);
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const marker = L.marker([lat, lng]).addTo(map)
+
+                marker.bindPopup(`
+                    <strong>${shop.name}</strong><br>
+                    📍 ${shop.address.substring(0, 100)}${shop.address.length > 100 ? '...' : ''}<br>
+                    ⭐ Рейтинг: ${shop.rate}<br>
+                    <a href="/shop/${shop.id}" class="btn btn-sm btn-primary mt-2">Перейти в магазин →</a>
+                `);
+
+            // Подсвечиваем при наведении
+            marker.on('mouseover', function() {
+                marker.openPopup();
+            });
+
+            marker.on('click', function() {
+                window.location.href = `/shop/${shop.id}`;
+            });
+                bounds.push([lat, lng]);
+            }
+        });
+
+        if (bounds.length > 0) {
+            map.fitBounds(bounds, { padding: [50, 50] });
+        }
+    }
+
+    document.getElementById('map-tab').addEventListener('shown.bs.tab', initMap);
+
+    // Если вкладка карты активна при загрузке
+    if (document.getElementById('map').classList.contains('show', 'active')) {
+        initMap();
+    }
+});
+</script>
+
+<style>
+#shopsMap {
+    height: 600px;
+    width: 100%;
+    border-radius: 12px;
+    background-color: #f8f9fa;
+}
+@media (max-width: 768px) {
+    #shopsMap {
+        height: 400px;
+    }
+}
+
+    /* Убираем рамку при фокусе и клике на nav-tabs кнопках */
+    .nav-tabs .nav-link:focus,
+    .nav-tabs .nav-link:active {
+        outline: none;
+        box-shadow: none;
+    }
+
+    .nav-tabs .nav-link {
+        outline: none;
+    }
+</style>
 {% endblock %}

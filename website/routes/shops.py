@@ -27,7 +27,7 @@ def dashboard():
     with db_session.create_session() as sess:
         shops = sess.query(Shops).filter(Shops.user_id == current_user.id)
 
-    return render_template('shop/dashboard.html', user=current_user, shops=shops)
+    return render_template('shop/dashboard.html', user=current_user, shops=shops, title='Главная')
 
 
 @login_required
