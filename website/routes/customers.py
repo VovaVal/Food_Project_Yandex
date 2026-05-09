@@ -1,12 +1,8 @@
 import datetime
-import io
-
 import requests
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
-from PIL import Image
 
-from website.data.shops import Shops
 from website.data.users import User
 from website.forms.edit_user_settings import EditFormUser
 from website.data import db_session
