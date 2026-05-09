@@ -16,6 +16,14 @@
                 </div>
             {% endfor %}
         </p>
+
+        <div class="mb-2">
+            <button type="button" class="btn btn-success mb-2" id="toggle-logo-btn">
+                Добавить лого заведения
+            </button>
+        </div>
+
+        <div id="logo-field" class="d-none">
         <p>
             {{ form.logo.label }}<br>
             {{ form.logo(class="form-control",
@@ -28,7 +36,67 @@
                 </div>
             {% endfor %}
         </p>
+            <div id="logo-preview" class="mt-2"></div>
+    </div>
+
         <p>{{ form.save(type="submit", class="btn btn-primary") }}</p>
     </form>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+const toggleLogoBtn = document.getElementById('toggle-logo-btn');
+const logoField = document.getElementById('logo-field');
+
+toggleLogoBtn.addEventListener('click', () => {
+    logoField.classList.toggle('d-none');
+});
+</script>
+
+<script>
+const logoInput = document.getElementById('logo');
+const logoPreview = document.getElementById('logo-preview');
+
+logoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+
+    if (!file) {
+        logoPreview.innerHTML = '';
+        return;
+    }
+
+    const container = document.createElement('div');
+    container.style.position = 'relative';
+    container.style.display = 'inline-block';
+
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    img.style.width = '120px';
+    img.style.height = '120px';
+    img.style.objectFit = 'cover';
+    img.style.border = '1px solid #ccc';
+    img.style.borderRadius = '5px';
+
+    const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.innerText = '✖';
+        btn.style.position = 'absolute';
+        btn.style.top = '0';
+        btn.style.left = '0';
+        btn.style.border = 'none';
+        btn.style.borderRadius = '50%';
+        btn.style.cursor = 'pointer';
+        btn.style.width = '0px';
+        btn.style.height = '0px';
+        btn.onclick = () => {
+            logoInput.value = '';
+            logoPreview.innerHTML = '';
+        };
+
+    container.appendChild(img);
+    container.appendChild(btn);
+
+    logoPreview.innerHTML = '';
+    logoPreview.appendChild(container);
+});
+</script>
 {% endblock %}
