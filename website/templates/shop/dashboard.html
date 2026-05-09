@@ -59,7 +59,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     let map = null;
 
-    // Передаём данные безопасно
     const shopsData = [
         {% for shop in shops %}
             {% if shop.coords %}
@@ -107,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <a href="/shop/${shop.id}" class="btn btn-sm btn-primary mt-2">Перейти в магазин →</a>
                 `);
 
-            // Подсвечиваем при наведении
             marker.on('mouseover', function() {
                 marker.openPopup();
             });
@@ -146,7 +144,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 }
 
-    /* Убираем рамку при фокусе и клике на nav-tabs кнопках */
     .nav-tabs .nav-link:focus,
     .nav-tabs .nav-link:active {
         outline: none;

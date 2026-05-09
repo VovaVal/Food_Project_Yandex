@@ -10,3 +10,4 @@ python-dotenv
 alembic
 email_validator
 pillow
+boto3

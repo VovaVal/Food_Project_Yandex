@@ -28,11 +28,10 @@
                     {% for img in images %}
                     <div class="carousel-item {% if loop.first %}active{% endif %}">
                         <div class="carousel-image-container" style="height: 400px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border-radius: 12px;">
-                            <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ img | urlencode }}"
+                            <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ img }}"
                                  class="d-block"
                                  alt="Фото {{ shop.name }}"
-                                 style="max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;"
-                                 onerror="this.src='{{ url_for('static', filename='imgs/no-image.png') }}'">
+                                 style="max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;">
                         </div>
                     </div>
                     {% endfor %}
@@ -80,11 +79,10 @@
                     <div class="d-flex align-items-start gap-3">
                         <!-- Логотип -->
                         <div class="shop-logo">
-                            <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ shop.logo | urlencode }}"
+                            <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ shop.logo }}"
                                  alt="{{ shop.name }}"
                                  class="rounded-circle"
-                                 style="width: 80px; height: 80px; object-fit: cover; border: 2px solid #0d6efd;"
-                                 onerror="this.src='{{ url_for('static', filename='imgs/default-shop.png') }}'">
+                                 style="width: 80px; height: 80px; object-fit: cover; border: 2px solid #0d6efd;">
                         </div>
                         <div>
                             <h1 class="h3 mb-2">{{ shop.name }}</h1>

@@ -30,6 +30,10 @@ def create_app():
             user = sess.get(User, user_id)
         return user
 
+    @app.before_request
+    def log_request():
+        print(f"[REQUEST] {request.method} {request.path}")
+
     from website.routes.auth import auth_bp
     from website.routes.common_routes import bp_common
     from website.routes.customers import customer_bp
