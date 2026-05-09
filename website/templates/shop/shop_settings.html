@@ -28,6 +28,21 @@
     </div>
 </div>
         </div>
+        <div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title text-center">Зона доставки</h5>
+
+        {% if shop['delivery_radius'] and shop['coords'] %}
+            <div id="shopMap"
+                 style="height: 300px; border-radius: 12px;">
+            </div>
+        {% else %}
+            <div>
+                Не указан адрес заведения
+            </div>
+        {% endif %}
+    </div>
+</div>
     </div>
 
     <div class="col-md-8">
@@ -249,6 +264,41 @@ document.getElementById('uploadLogo').addEventListener('change', function () {
         }
     })
     .catch(() => alert("Ошибка сети"));
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // координаты магазина
+    const coords = "{{ shop['coords'] }}";
+
+    if (!coords) return;
+
+    const [lat, lng] = coords.split(',');
+
+    // создаем карту
+    const map = L.map('shopMap', {
+        zoomControl: false
+    }).setView([lat, lng], 14);
+    map.attributionControl.remove(); // Убирает флаг
+
+    // слой карты
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // маркер магазина
+    L.marker([lat, lng]).addTo(map);
+
+    // круг радиуса доставки
+    L.circle([lat, lng], {
+        radius: {{ shop['delivery_radius'] or 0 }},
+        color: '#0d6efd',
+        fillColor: '#0d6efd',
+        fillOpacity: 0.2
+    }).addTo(map);
+
 });
 </script>
 {% endblock %}
