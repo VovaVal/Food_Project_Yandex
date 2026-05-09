@@ -21,6 +21,7 @@ def create_bucket_session():
 
 
 def upload_img_user(img):
+    '''загружает изображение пользователя'''
     if current_user.img != 'users/imgs/default_icon_user_account.png':
         resp = delete_by_key(current_user.img)
 
