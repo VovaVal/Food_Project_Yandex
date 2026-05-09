@@ -11,6 +11,7 @@ from website.data.users import User
 from website.forms.add_shop import AddShop
 from website.forms.edit_shop import EditShop
 from website.config import BUCKET_CLIENT
+from website.forms.edit_shop_user_settings import EditFormShopUser
 
 shop_bp = Blueprint(
     'shop',
@@ -162,7 +163,7 @@ def get_next_opening_time(shop):
     current_day_index = datetime.datetime.now().weekday()
 
     # Проверяем сегодняшний день
-    for i in range(7):
+    for i in range(8):
         check_index = (current_day_index + i) % 7
         day = days_order[check_index]
         day_schedule = timetable.get(day, {})
@@ -170,7 +171,10 @@ def get_next_opening_time(shop):
 
         if from_time and from_time != '':
             if i == 0:
-                return f"сегодня в {from_time}"
+                if is_shop_open(shop):
+                    return f"сегодня в {from_time}"
+                else:
+                    continue
             elif i == 1:
                 return f"завтра в {from_time}"
             else:
@@ -437,6 +441,10 @@ def shop_owner_settings():
 
 
 @login_required
-@shop_bp.route('/edit_settings')
+@shop_bp.route('/edit_settings', methods=['GET', 'POST'])
 def edit_settings():
-    return render_template('shop/edit_settings.html')
+    form = EditFormShopUser(
+        user_name=current_user.name,
+        email=current_user.email
+    )
+    return render_template('shop/edit_settings.html', form=form, title='Редактирование')

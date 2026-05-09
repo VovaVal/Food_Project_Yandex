@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1></h1>
+    <a href="/shop/settings" class="btn btn-primary">Назад</a>
+
+    <h1>Редактирование</h1>
+    <form action="" method="post" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.user_name.label }}<br>
+            {{ form.user_name(class="form-control") }}<br>
+            {% for error in form.user_name.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.email.label }}<br>
+            {{ form.email(class="form-control", type="email") }}<br>
+            {% for error in form.email.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+
+        <!-- Кнопка для аватара -->
+<p>
+    <button type="button" class="btn btn-success mb-2" id="toggle-avatar-btn">
+        Добавить / Изменить аватар
+    </button>
+</p>
+
+<!-- Скрытое поле аватара -->
+<div id="avatar-field" class="d-none">
+    <p>
+        {{ form.avatar.label }}<br>
+        {{ form.avatar(class="form-control",
+               accept="image/png, image/jpeg, image/jpg, image/gif, image/webp",
+               capture="environment") }}<br>
+        <small class="text-muted">Поддерживаются: PNG, JPEG, JPG, GIF, WEBP. Максимум 5 МБ.</small>
+        {% for error in form.avatar.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+    <p>
+        <button type="button" class="btn btn-outline-danger" id="cancel-avatar-btn">
+            Отменить
+        </button>
+    </p>
+</div>
+        <p>
+    <button type="button" class="btn btn-warning mb-2" id="toggle-password-btn">
+        Изменить пароль
+    </button>
+</p>
+
+<div id="password-fields" class="d-none">
+    <p>
+        {{ form.password.label }}<br>
+        {{ form.password(class="form-control", type="password") }}<br>
+        {% for error in form.password.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.repeat_password.label }}<br>
+        {{ form.repeat_password(class="form-control", type="password") }}<br>
+        {% for error in form.repeat_password.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+    <p>
+        <button type="button" class="btn btn-outline-danger" id="cancel-password-btn">
+            Отменить
+        </button>
+    </p>
+</div>
+        <p>{{ form.save(type="submit", class="btn btn-primary") }}</p>
+    </form>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+const toggleBtn = document.getElementById('toggle-password-btn');
+const cancelBtn = document.getElementById('cancel-password-btn');
+const passwordFields = document.getElementById('password-fields');
+
+toggleBtn.addEventListener('click', function() {
+    passwordFields.classList.remove('d-none'); // показать поля
+    toggleBtn.classList.add('d-none');          // скрыть кнопку "Добавить пароль"
+});
+
+cancelBtn.addEventListener('click', function() {
+    passwordFields.classList.add('d-none');     // скрыть поля
+    toggleBtn.classList.remove('d-none');       // показать кнопку "Добавить пароль"
+
+    // Очистка значений
+    document.getElementById("{{ form.password.id }}").value = '';
+    document.getElementById("{{ form.repeat_password.id }}").value = '';
+});
+</script>
+
+<script>
+const toggleAvatarBtn = document.getElementById('toggle-avatar-btn');
+const cancelAvatarBtn = document.getElementById('cancel-avatar-btn');
+const avatarField = document.getElementById('avatar-field');
+
+toggleAvatarBtn.addEventListener('click', function() {
+    avatarField.classList.remove('d-none'); // показать поле
+    toggleAvatarBtn.classList.add('d-none'); // скрыть кнопку "Добавить аватар"
+});
+
+cancelAvatarBtn.addEventListener('click', function() {
+    avatarField.classList.add('d-none');     // скрыть поле
+    toggleAvatarBtn.classList.remove('d-none'); // показать кнопку "Добавить аватар"
+
+    // Очистка выбранного файла
+    document.getElementById("{{ form.avatar.id }}").value = '';
+});
+</script>
+{% endblock %}
