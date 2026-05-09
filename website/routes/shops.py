@@ -4,9 +4,10 @@ import requests
 from flask import Blueprint, render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 
-from website.bucket_requests import upload_logo_shop, upload_img_shop, delete_by_key
+from website.bucket_requests import upload_logo_shop, upload_img_shop, delete_by_key, upload_img_user
 from website.data import db_session
 from website.data.shops import Shops
+from website.data.users import User
 from website.forms.add_shop import AddShop
 from website.forms.edit_shop import EditShop
 from website.config import BUCKET_CLIENT
@@ -392,6 +393,32 @@ def delete_shop(shop_id: int):
 
 
 @login_required
+@shop_bp.route('/update_avatar', methods=['POST'])
+def update_avatar():
+    file = request.files.get('avatar')
+
+    if not file:
+        return {"success": False}, 400
+
+    img_name = upload_img_user(file)
+
+    try:
+        if img_name:
+            with db_session.create_session() as sess:
+                user = sess.get(User, current_user.id)
+                user.img = img_name
+
+                sess.add(user)
+                sess.commit()
+
+    except Exception as e:
+        print(e)
+        return {'success': False}
+
+    return {"success": True}
+
+
+@login_required
 @shop_bp.route('/products')
 def products():
     return render_template('shop/products.html')
@@ -406,7 +433,7 @@ def index():
 @login_required
 @shop_bp.route('/settings')
 def shop_owner_settings():
-    return render_template('shop/owner_settings.html')
+    return render_template('shop/owner_settings.html', title='Настройки')
 
 
 @login_required

@@ -1,12 +1,140 @@
 {% extends "base.html" %}
 
 {% block content %}
-<a href="{{ url_for('shop.dashboard') }}" class="btn btn-primary">На главную страницу</a>
-<h1>Настройки</h1>
+<div class="container mt-4">
+    <a href="{{ url_for('shop.dashboard') }}" class="btn btn-outline-secondary mb-3">← На главную страницу</a>
 
-<h3>Имя пользователя: {{ current_user.name }}</h3>
-<h3>Почта: {{ current_user.email }}</h3>
+    <div class="row">
+        <!-- Левая колонка: аватар -->
+        <div class="col-md-4 text-center">
+            <div class="card">
+                <div class="card-body">
+                    <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ current_user.img or 'users/imgs/default_icon_user_account.png' }}"
+                         alt="Аватар пользователя"
+                         class="rounded-circle mb-3"
+                         style="width: 150px; height: 150px; object-fit: cover; border: 2px solid #0d6efd;">
+                    <h5 class="card-title">{{ current_user.name }}</h5>
+                    <p class="text-muted">{{ current_user.email }}</p>
 
-<a href="{{ url_for('shop.edit_settings') }}" class="btn btn-primary">Редактировать</a>
+                    <!-- Кнопка изменить аватар -->
+                    <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#avatarModal">
+                        Изменить аватар
+                    </button>
+                </div>
+            </div>
+        </div>
 
+        <!-- Правая колонка: настройки -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Настройки профиля</h3>
+                    <hr>
+                    <p><strong>Имя пользователя:</strong> {{ current_user.name }}</p>
+                    <p><strong>Почта:</strong> {{ current_user.email }}</p>
+                    <a href="{{ url_for('shop.edit_settings') }}" class="btn btn-primary">Редактировать профиль</a>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                            Выйти из аккаунта
+                        </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logoutModalLabel">Подтверждение выхода</h5>
+            </div>
+            <div class="modal-body">
+                Вы точно хотите выйти из аккаунта?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">Да, выйти</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для смены аватара -->
+<div class="modal fade" id="avatarModal" tabindex="-1" aria-labelledby="avatarModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="avatarModalLabel">Изменить аватар</h5>
+        </div>
+      <div class="modal-body text-center">
+        <img id="avatarPreview" src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ current_user.img or 'users/imgs/default_icon_user_account.png' }}"
+             class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+        <input type="file" id="uploadAvatar" accept="image/*" style="display: none;">
+        <div>
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('uploadAvatar').click()">
+                Выбрать файл
+            </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-success" id="saveAvatarBtn">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    const uploadAvatar = document.getElementById('uploadAvatar');
+    const avatarPreview = document.getElementById('avatarPreview');
+    const saveAvatarBtn = document.getElementById('saveAvatarBtn');
+
+    // сохраняем исходный аватар
+    const originalAvatar = avatarPreview.src;
+
+    uploadAvatar.addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            avatarPreview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // сброс при закрытии модалки
+    document.getElementById('avatarModal').addEventListener('hidden.bs.modal', function () {
+        uploadAvatar.value = "";           // очищаем input
+        avatarPreview.src = originalAvatar; // возвращаем оригинал
+    });
+
+    saveAvatarBtn.addEventListener('click', function () {
+        const file = uploadAvatar.files[0];
+
+        if (!file) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('avatarModal'));
+            modal.hide();
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        fetch("{{ url_for('shop.update_avatar') }}", {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert("Ошибка загрузки аватара");
+            }
+        })
+        .catch(() => alert("Ошибка сети"));
+    });
+</script>
 {% endblock %}
