@@ -15,7 +15,7 @@ parser_post_args.add_argument('imgs', default='products/imgs/product_img_default
 parser_post_args.add_argument('quantity', type=int, default=0)
 parser_post_args.add_argument('rate', type=float, default=0)
 parser_post_args.add_argument('price', type=int, required=True)
-parser_post_args.add_argument('product_weight', type=int, required=True)
+parser_post_args.add_argument('product_weight', type=float, required=True)
 parser_post_args.add_argument('description')
 parser_post_args.add_argument('product_type', choices=['drink', 'bakery', 'dessert', 'other'], default='other',
                               help='Allowed product types: "drink", "bakery", "dessert" and "other"')
@@ -29,7 +29,7 @@ parser_patch_args.add_argument('imgs')
 parser_patch_args.add_argument('quantity', type=int)
 parser_patch_args.add_argument('rate', type=float)
 parser_patch_args.add_argument('price', type=int)
-parser_post_args.add_argument('product_weight', type=int)
+parser_patch_args.add_argument('product_weight', type=float)
 parser_patch_args.add_argument('description')
 parser_patch_args.add_argument('product_type', choices=['drink', 'bakery', 'dessert', 'other'],
                                help='Allowed product types: "drink", "bakery", "dessert" and "other"')

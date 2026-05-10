@@ -43,7 +43,7 @@ class Products(SqlAlchemyBase, SerializerMixin):
         sqlalchemy.Integer
     )
     product_weight = sqlalchemy.Column(
-        sqlalchemy.Integer,
+        sqlalchemy.Float,
         default=100
     )
     type_of_count = sqlalchemy.Column(

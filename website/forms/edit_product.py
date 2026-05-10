@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import MultipleFileField, FileAllowed
 from wtforms import SubmitField
 from wtforms.fields.choices import SelectField
-from wtforms.fields.numeric import IntegerField
+from wtforms.fields.numeric import IntegerField, FloatField
 from wtforms.fields.simple import StringField
 from wtforms.validators import Optional, DataRequired, NumberRange, InputRequired
 
@@ -22,7 +22,7 @@ class EditProduct(FlaskForm):
                              NumberRange(min=0, message='Цена не может быть отрицательной')
                          ],
                          default=100)
-    product_weight = IntegerField('Вес/Объём продукта', default=100,
+    product_weight = FloatField('Вес/Объём продукта', default=100,
                                   validators=[
                                       InputRequired(message='Введите цену'),
                                       NumberRange(min=0, message='Цена не может быть отрицательной')
@@ -43,4 +43,4 @@ class EditProduct(FlaskForm):
                                  FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'webp'],
                                              'Только изображения!')
                              ])
-    save = SubmitField('Добавить')
+    save = SubmitField('Сохранить')

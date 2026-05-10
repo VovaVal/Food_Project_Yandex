@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import MultipleFileField, FileAllowed
 from wtforms import SubmitField
 from wtforms.fields.choices import SelectField
-from wtforms.fields.numeric import IntegerField
+from wtforms.fields.numeric import IntegerField, FloatField
 from wtforms.fields.simple import StringField
 from wtforms.validators import Optional, DataRequired, NumberRange, InputRequired
 
@@ -27,7 +27,7 @@ class AddProduct(FlaskForm):
                        choices=[('drink', 'напиток'), ('bakery', 'выпечка'),
                                 ('dessert', 'десерт'), ('other', 'другое')],
                        default='other')
-    product_weight = IntegerField('Вес/Объём продукта', default=100,
+    product_weight = FloatField('Вес/Объём продукта', default=100,
                                   validators=[
                                       InputRequired(message='Введите цену'),
                                       NumberRange(min=0, message='Цена не может быть отрицательной')
