@@ -1,11 +1,13 @@
 import datetime
 
+import requests
 from flask_restful import Resource, reqparse, abort
-from flask import jsonify
+from flask import jsonify, request
 from flask_login import current_user, login_required
 
 from datetime import date
 
+from website.data.products import Products
 from website.data.shops import Shops
 from website.data import db_session
 from website.bucket_requests import delete_by_key
@@ -76,6 +78,11 @@ class ShopsResource(Resource):
             delete_by_key(shop.logo)
 
         with db_session.create_session() as sess:
+            products = sess.query(Products).filter(Products.shop_id == shop_id)
+            for product in products:
+                api_url = request.url_root + f'api/products/{product.id}'
+                requests.delete(api_url, cookies=request.cookies)
+
             sess.delete(shop)
             sess.commit()
 
