@@ -18,13 +18,14 @@
 
     <!-- 🔹 Содержимое вкладок -->
     <div class="tab-content">
-        <!-- Поле поиска -->
-        <div class="mb-3">
-            <input type="text" id="searchInput" class="form-control" placeholder="🔍 Поиск по названию или адресу...">
-        </div>
 
         <!-- Карточки -->
         <div class="tab-pane fade show active" id="cards" role="tabpanel">
+
+            <div class="mb-3">
+                <input type="text" id="searchInput" class="form-control" placeholder="🔍 Поиск по названию или адресу...">
+            </div>
+
             <div class="row">
                 {% for shop in shops %}
                 <div class="col-md-4 mb-4 shop-card" data-name="{{ shop.name }}" data-address="{{ shop.address }}">
