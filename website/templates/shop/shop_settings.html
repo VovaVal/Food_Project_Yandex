@@ -35,7 +35,7 @@
             </div>
         {% else %}
             <div>
-                Не указан адрес заведения
+                <h6 class="text-center">Не указан адрес заведения</h6>
             </div>
         {% endif %}
     </div>
@@ -216,6 +216,10 @@
 <div class="mt-4 gap-3">
     <a href="{{ url_for('shop.edit_settings_shop', shop_id=shop['id']) }}" class="btn btn-primary">
         ✏️ Редактировать
+    </a>
+
+    <a href="{{ url_for('shop.products', shop_id=shop['id']) }}" class="btn btn-success">
+        Товары заведения
     </a>
 
     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">

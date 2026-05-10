@@ -488,3 +488,15 @@ def edit_settings():
             return render_template('shop/edit_settings.html', title='Редактирование', form=form)
 
     return render_template('shop/edit_settings.html', form=form, title='Редактирование')
+
+
+@login_required
+@shop_bp.route('/products/<int:shop_id>')
+def products(shop_id: int):
+    with db_session.create_session() as sess:
+        shop = sess.get(Shops, shop_id)
+
+    if not shop:
+        return redirect(url_for('shop.dashboard'))
+
+    return render_template('shop/shop_products.html', title='Продукты')
