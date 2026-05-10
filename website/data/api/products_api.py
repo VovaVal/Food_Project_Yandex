@@ -2,6 +2,7 @@ from flask_restful import Resource, reqparse, abort
 from flask import jsonify
 from flask_login import current_user, login_required
 
+from website.bucket_requests import delete_by_key
 from website.data.products import Products
 from website.data import db_session
 from website.data.shops import Shops
@@ -68,6 +69,13 @@ class ProductsResource(Resource):
         check_shop_ownership(product.shop_id)
 
         with db_session.create_session() as sess:
+            product_imgs = product.imgs
+
+            if product_imgs and product_imgs != None:
+                for img in product_imgs.split(','):
+                    if img != 'products/imgs/product_img_default.png':
+                        delete_by_key(img)
+
             sess.delete(product)
             sess.commit()
 

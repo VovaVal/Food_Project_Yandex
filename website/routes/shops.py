@@ -608,3 +608,16 @@ def upload_product_images(product_id: int, shop_id: int):
         sess.commit()
 
     return {"success": True}
+
+
+@login_required
+@shop_bp.route('/<int:shop_id>/delete_product/<int:product_id>')
+def delete_product(shop_id: int, product_id: int):
+    api_url = request.url_root + f'api/products/{product_id}'
+    product_data = requests.delete(api_url, cookies=request.cookies)
+
+    if product_data.status_code != 200:
+        print(product_data.status_code)
+        print(product_data.reason)
+
+    return redirect(url_for('shop.products', shop_id=shop_id))
