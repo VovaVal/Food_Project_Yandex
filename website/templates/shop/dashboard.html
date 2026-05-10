@@ -30,7 +30,7 @@
                             <h5 class="card-title">{{ shop.name }}</h5>
                             <p class="card-text">
                                 <small class="text-muted">
-                                    <i class="bi bi-geo-alt"></i> {{ shop.address[:50] }}{% if shop.address|length > 50 %}...{% endif %}
+                                    <i class="bi bi-geo-alt"></i> {{ shop.address[:50] or 'Адрес не указан' }}{% if shop.address|length > 50 %}...{% endif %}
                                 </small>
                             </p>
                             <p class="card-text">
