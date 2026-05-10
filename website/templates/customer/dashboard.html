@@ -211,14 +211,14 @@ function initMap() {
     });
 
     if (userCoords) {
-    const [userLat, userLng] = userCoords.split(',').map(parseFloat);
+        const [userLat, userLng] = userCoords.split(',').map(parseFloat);
 
-    shopsData.forEach(shop => {
-        if (shop.lat && shop.lng) {
-            shop.distance = getDistance(userLat, userLng, shop.lat, shop.lng);
-        } else {
-            shop.distance = '?';
-        }
+        shopsData.forEach(shop => {
+            if (shop.lat && shop.lng) {
+                shop.distance = getDistance(userLat, userLng, shop.lat, shop.lng);
+            } else {
+                shop.distance = '?';
+            }
     });
 
     // Обновляем отображение
@@ -247,6 +247,7 @@ function initMap() {
 // Добавление маркеров на карту
 function addMarkers() {
     markers = [];
+    const boundsMarkers = []; // массив для fitBounds
 
     if (userCoords) {
         const [userLat, userLng] = userCoords.split(',').map(parseFloat);
@@ -258,6 +259,8 @@ function addMarkers() {
             })
         }).addTo(map);
         homeMarker.bindPopup("🏠 Ваш дом");
+
+        boundsMarkers.push(homeMarker);
     }
 
     shopsData.forEach(shop => {
@@ -316,11 +319,12 @@ function addMarkers() {
         });
 
         markers.push(marker);
+        boundsMarkers.push(marker);
     });
 
     // Адаптируем карту под все маркеры
     if (markers.length > 0) {
-        const group = L.featureGroup(markers);
+        const group = L.featureGroup(boundsMarkers);
         map.fitBounds(group.getBounds());
     }
 }
