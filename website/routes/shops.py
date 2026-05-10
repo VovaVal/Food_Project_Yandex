@@ -8,6 +8,7 @@ from website.bucket_requests import upload_logo_shop, upload_img_shop, delete_by
 from website.data import db_session
 from website.data.shops import Shops
 from website.data.users import User
+from website.forms.add_product import AddProduct
 from website.forms.add_shop import AddShop
 from website.forms.edit_shop import EditShop
 from website.config import BUCKET_CLIENT
@@ -491,12 +492,25 @@ def edit_settings():
 
 
 @login_required
-@shop_bp.route('/products/<int:shop_id>')
+@shop_bp.route('/<int:shop_id>/products')
 def products(shop_id: int):
     with db_session.create_session() as sess:
         shop = sess.get(Shops, shop_id)
+        shop_products = shop.products
 
     if not shop:
         return redirect(url_for('shop.dashboard'))
 
-    return render_template('shop/shop_products.html', title='Продукты')
+    return render_template('shop/shop_products.html', title='Продукты', shop_products=shop_products,
+                           shop_id=shop_id)
+
+
+@login_required
+@shop_bp.route('/<int:shop_id>/add_product')
+def add_product(shop_id: int):
+    form = AddProduct()
+
+    if form.validate_on_submit():
+        ...
+
+    return render_template('shop/add_product.html', title='Добавление', form=form, shop_id=shop_id)
