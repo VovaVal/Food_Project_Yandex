@@ -8,6 +8,7 @@ from datetime import date
 
 from website.data.shops import Shops
 from website.data import db_session
+from website.bucket_requests import delete_by_key
 
 
 parser_post_args = reqparse.RequestParser()
@@ -65,6 +66,14 @@ class ShopsResource(Resource):
     def delete(self, shop_id: int):
         shop = abort_if_shop_not_found(shop_id)
         is_shop_owner_or_admin(shop)
+
+        shop_imgs = shop.imgs
+        for img in shop_imgs.split(','):
+            if img != 'shops/imgs/shop_img_default.jpg':
+                delete_by_key(img)
+
+        if shop.logo != 'shops/logos/default_logo.svg':
+            delete_by_key(shop.logo)
 
         with db_session.create_session() as sess:
             sess.delete(shop)
