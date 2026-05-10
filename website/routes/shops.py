@@ -48,9 +48,41 @@ def add_shop():
         shop_name = form.shop_name.data
         logo = form.logo.data
 
+        schedule = {
+            'monday': {
+                'from': '',
+                'to': ''
+            },
+            'tuesday': {
+                'from': '',
+                'to': ''
+            },
+            'wednesday': {
+                'from': '',
+                'to': ''
+            },
+            'thursday': {
+                'from': '',
+                'to': ''
+            },
+            'friday': {
+                'from': '',
+                'to': ''
+            },
+            'saturday': {
+                'from': '',
+                'to': ''
+            },
+            'sunday': {
+                'from': '',
+                'to': ''
+            },
+        }
+
         data = {
             'name': shop_name,
-            'user_id': current_user.id
+            'user_id': current_user.id,
+            'timetable': schedule
         }
 
         with db_session.create_session() as sess:
