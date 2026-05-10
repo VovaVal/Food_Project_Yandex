@@ -64,7 +64,7 @@ class ProductsResource(Resource):
             {
                 'product': product.to_dict(
                     only=('id', 'name', 'imgs', 'shop_id', 'rate', 'description',
-                          'quantity', 'price', 'product_type')
+                          'quantity', 'price', 'product_type', 'product_weight', 'type_of_count')
                 )
             }
         )
@@ -136,7 +136,7 @@ class ProductsListResource(Resource):
                     [
                         item.to_dict(
                             only=('id', 'name', 'imgs', 'shop_id', 'rate', 'description',
-                                  'quantity', 'price', 'product_type')
+                                  'quantity', 'price', 'product_type', 'product_weight', 'type_of_count')
                         )
                         for item in products
                     ]
