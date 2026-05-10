@@ -82,6 +82,22 @@ def upload_img_shop(img):
     return img_name
 
 
+def upload_img_product(img):
+    if not img:
+        return None
+
+    img_name = f'products/imgs/product_img_{uuid.uuid4().hex}'
+
+    s3 = create_bucket_session()
+    s3.upload_fileobj(
+        img,
+        BUCKET_NAME,
+        img_name
+    )
+
+    return img_name
+
+
 def delete_by_key(key: str) -> bool:
     """Удаляет файл из S3 по ключу (пути внутри бакета)"""
     if not key:

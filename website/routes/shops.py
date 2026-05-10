@@ -4,8 +4,10 @@ import requests
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required, current_user
 
-from website.bucket_requests import upload_logo_shop, upload_img_shop, delete_by_key, upload_img_user
+from website.bucket_requests import upload_logo_shop, upload_img_shop, delete_by_key, upload_img_user, \
+    upload_img_product
 from website.data import db_session
+from website.data.products import Products
 from website.data.shops import Shops
 from website.data.users import User
 from website.forms.add_product import AddProduct
@@ -506,11 +508,45 @@ def products(shop_id: int):
 
 
 @login_required
-@shop_bp.route('/<int:shop_id>/add_product')
+@shop_bp.route('/<int:shop_id>/add_product', methods=['GET', 'POST'])
 def add_product(shop_id: int):
     form = AddProduct()
 
     if form.validate_on_submit():
-        ...
+        name = form.product_name.data
+        description = form.description.data
+        quantity = form.quantity.data
+        price = form.price.data
+        product_type = form.product_type.data
+        imgs = request.files.getlist('imgs')
+
+        data = {
+            'name': name,
+            'description': description,
+            'quantity': quantity,
+            'price': price,
+            'product_type': product_type,
+            'shop_id': shop_id
+        }
+
+        img_names = []
+        for img in imgs:
+            print('name: ', img)
+            img_name = upload_img_product(img)
+            if img_name:
+                img_names.append(img_name)
+
+        if img_names:
+            data['imgs'] = ','.join(img_names)
+
+        with db_session.create_session() as sess:
+            product = Products(
+                **data
+            )
+
+            sess.add(product)
+            sess.commit()
+
+        return redirect(url_for('shop.products', shop_id=shop_id))
 
     return render_template('shop/add_product.html', title='Добавление', form=form, shop_id=shop_id)

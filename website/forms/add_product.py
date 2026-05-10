@@ -4,7 +4,7 @@ from wtforms import SubmitField
 from wtforms.fields.choices import SelectField
 from wtforms.fields.numeric import IntegerField
 from wtforms.fields.simple import StringField
-from wtforms.validators import Optional, DataRequired, NumberRange
+from wtforms.validators import Optional, DataRequired, NumberRange, InputRequired
 
 
 class AddProduct(FlaskForm):
@@ -12,13 +12,13 @@ class AddProduct(FlaskForm):
     description = StringField('Описание продукта', validators=[Optional()])
     quantity = IntegerField('Кол.-во продукта',
                             validators=[
-                                Optional(),
+                                InputRequired(message='Введите количество'),
                                 NumberRange(min=0, message='Кол.-во не может быть отрицательным')
                             ],
                             default=0)  # кол.-во товара
     price = IntegerField('Цена продукта',
                          validators=[
-                             DataRequired(),
+                             InputRequired(message='Введите цену'),
                              NumberRange(min=0, message='Цена не может быть отрицательной')
                          ],
                          default=100)
