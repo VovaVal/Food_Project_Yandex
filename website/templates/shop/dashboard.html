@@ -18,11 +18,16 @@
 
     <!-- 🔹 Содержимое вкладок -->
     <div class="tab-content">
+        <!-- Поле поиска -->
+        <div class="mb-3">
+            <input type="text" id="searchInput" class="form-control" placeholder="🔍 Поиск по названию или адресу...">
+        </div>
+
         <!-- Карточки -->
         <div class="tab-pane fade show active" id="cards" role="tabpanel">
             <div class="row">
                 {% for shop in shops %}
-                <div class="col-md-4 mb-4">
+                <div class="col-md-4 mb-4 shop-card" data-name="{{ shop.name }}" data-address="{{ shop.address }}">
                     <div class="card h-100">
                         <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ shop.logo }}?v={{ shop['updated_date']|default(0) }}" class="card-img-top" alt="{{ shop.name }}" style="height: 200px; object-fit: cover;">
 
@@ -154,4 +159,27 @@ document.addEventListener('DOMContentLoaded', () => {
         outline: none;
     }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('searchInput');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase().trim();
+
+            document.querySelectorAll('.shop-card').forEach(card => {
+                const name = (card.dataset.name || '').toLowerCase();
+                const address = (card.dataset.address || '').toLowerCase();
+
+                if (name.includes(term) || address.includes(term) || term === '') {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
 {% endblock %}
