@@ -555,9 +555,31 @@ def add_product(shop_id: int):
 
 
 @login_required
-@shop_bp.route('/delete_product_image/<int:product_id>')
-def delete_product_image(product_id: int):
-    ...
+@shop_bp.route('/<int:shop_id>/delete_product_image/<int:product_id>', methods=['POST'])
+def delete_product_image(product_id: int, shop_id: int):
+    img = request.form.get('img_url')
+
+    with db_session.create_session() as sess:
+        product = sess.get(Products, product_id)
+
+        if not product or not img:
+            return redirect(url_for('shop.products', shop_id=shop_id))
+
+        # удаляем из S3
+        if img and img != 'products/imgs/product_img_default.png':
+            delete_by_key(img)
+
+        imgs = product.imgs.split(',') if product.imgs else []
+
+        if img in imgs:
+            imgs.remove(img)
+
+        product.imgs = ','.join(imgs) if imgs else None
+
+        sess.add(product)
+        sess.commit()
+
+    return redirect(url_for('shop.products', shop_id=shop_id))
 
 
 @login_required
