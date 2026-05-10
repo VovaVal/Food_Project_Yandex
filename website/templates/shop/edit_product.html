@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <a href="{{ url_for('shop.products', shop_id=shop_id) }}" class="btn btn-outline-secondary mb-4">← Назад</a>
+
+    <h1>Редактирование товара</h1>
+
+    <form action="" method="post" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <p>
+            {{ form.product_name.label }}<br>
+            {{ form.product_name(class="form-control") }}<br>
+            {% for error in form.product_name.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
+        </p>
+
+        <p>
+            {{ form.price.label }}<br>
+            {{ form.price(class="form-control") }}<br>
+            {% for error in form.price.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
+        </p>
+
+        <p>
+            {{ form.quantity.label }}<br>
+            {{ form.quantity(class="form-control") }}<br>
+            {% for error in form.quantity.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
+        </p>
+
+        <p>
+            {{ form.product_type.label }}<br>
+            {{ form.product_type(class="form-control") }}<br>
+            {% for error in form.product_type.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
+        </p>
+
+        <!-- Кнопка для скрытого поля описания -->
+        <div class="mb-2">
+            <button type="button" class="btn btn-info mb-2" id="toggle-desc-btn">
+                Описание продукта
+            </button>
+        </div>
+
+        <div id="desc-field" class="d-none mb-3">
+            <p>
+                {{ form.description.label }}<br>
+                {{ form.description(class="form-control") }}<br>
+                {% for error in form.description.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+            </p>
+        </div>
+
+        <!-- Кнопка для скрытого поля изображений -->
+        <div class="mb-2">
+            <button type="button" class="btn btn-success mb-2" id="toggle-imgs-btn">
+                Фотографии продукта
+            </button>
+        </div>
+
+        <div id="imgs-field" class="d-none mb-3">
+            <p>
+                {{ form.imgs.label }}<br>
+                {{ form.imgs(class="form-control", accept="image/png, image/jpeg, image/jpg, image/gif, image/webp",
+                            capture="environment", multiple=True, id="imgs") }}<br>
+                <small class="text-muted">Поддерживаются: PNG, JPEG, JPG, GIF, WEBP. Максимум 5 МБ.</small>
+                {% for error in form.imgs.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+            </p>
+            <div id="preview" class="d-flex flex-wrap gap-2 mt-2"></div>
+        </div>
+
+        <p>{{ form.save(type="submit", class="btn btn-primary") }}</p>
+    </form>
+</div>
+
+<script>
+    // Функция toggle для скрытых полей
+    const toggleField = (btnId, fieldId) => {
+        const btn = document.getElementById(btnId);
+        const field = document.getElementById(fieldId);
+
+        btn.addEventListener('click', () => {
+            field.classList.toggle('d-none');
+        });
+    };
+
+    toggleField('toggle-desc-btn', 'desc-field');
+    toggleField('toggle-imgs-btn', 'imgs-field');
+    toggleField('toggle-logo-btn', 'logo-field');
+
+
+</script>
+
+<script>
+let selectedFiles = [];
+
+function renderPreview() {
+    const preview = document.getElementById('preview');
+    if (!preview) return;
+
+    preview.innerHTML = '';
+
+    selectedFiles.forEach((file, index) => {
+        const container = document.createElement('div');
+        container.style.position = 'relative';
+        container.style.display = 'inline-block';
+        container.style.margin = '5px';
+
+        const img = document.createElement('img');
+
+        img.src = URL.createObjectURL(file);
+
+        img.style.width = '100px';
+        img.style.height = '100px';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '5px';
+        img.style.border = '1px solid #ccc';
+
+        const btn = document.createElement('button');
+        btn.innerText = '✖';
+        btn.style.position = 'absolute';
+        btn.style.top = '0px';
+        btn.style.left = '0px';
+        btn.style.borderRadius = '50%';
+        btn.style.border = 'none';
+        btn.style.color = 'white';
+        btn.style.width = '0px';
+        btn.style.height = '0px';
+        btn.style.cursor = 'pointer';
+
+        btn.onclick = () => {
+            selectedFiles.splice(index, 1);
+            renderPreview();
+        };
+
+        container.appendChild(img);
+        container.appendChild(btn);
+        preview.appendChild(container);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const imgsInput = document.getElementById('imgs');
+    if (imgsInput) {
+        imgsInput.addEventListener('change', (e) => {
+            const newFiles = Array.from(e.target.files);
+
+            newFiles.forEach(file => {
+                const isDuplicate = selectedFiles.some(f =>
+                    f.name === file.name && f.size === file.size
+                );
+                if (!isDuplicate) {
+                    selectedFiles.push(file);
+                }
+            });
+
+            renderPreview();
+            e.target.value = '';
+        });
+    }
+});
+
+    // Находим форму (она у вас одна на странице)
+const formElement = document.querySelector('form');
+
+formElement.onsubmit = (e) => {
+    // Создаем "хранилище" для файлов
+    const dataTransfer = new DataTransfer();
+
+    // Переносим в него все файлы из нашего JS-массива selectedFiles
+    selectedFiles.forEach(file => {
+        dataTransfer.items.add(file);
+    });
+
+    // Находим скрытый/пустой инпут и подменяем его содержимое нашим набором
+    const imgsInput = document.getElementById('imgs');
+    imgsInput.files = dataTransfer.files;
+
+    // Теперь форма отправится с файлами
+};
+</script>
+{% endblock %}

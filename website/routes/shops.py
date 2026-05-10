@@ -12,6 +12,7 @@ from website.data.shops import Shops
 from website.data.users import User
 from website.forms.add_product import AddProduct
 from website.forms.add_shop import AddShop
+from website.forms.edit_product import EditProduct
 from website.forms.edit_shop import EditShop
 from website.config import BUCKET_CLIENT
 from website.forms.edit_shop_user_settings import EditFormShopUser
@@ -621,3 +622,66 @@ def delete_product(shop_id: int, product_id: int):
         print(product_data.reason)
 
     return redirect(url_for('shop.products', shop_id=shop_id))
+
+
+@login_required
+@shop_bp.route('/<int:shop_id>/edit_product/<int:product_id>', methods=['GET', 'POST'])
+def edit_product(shop_id: int, product_id: int):
+    with db_session.create_session() as sess:
+        product = sess.get(Products, product_id)
+
+    form = EditProduct(
+        product_name=product.name,
+        description=product.description,
+        quantity=product.quantity,
+        price=product.price,
+        product_type=product.product_type
+    )
+
+    if form.validate_on_submit():
+        name = form.product_name.data
+        description = form.description.data
+        quantity = form.quantity.data
+        price = form.price.data
+        product_type = form.product_type.data
+        imgs = request.files.getlist('imgs')
+
+        data = {
+            'name': name,
+            'description': description,
+            'quantity': quantity,
+            'price': price,
+            'product_type': product_type,
+            'shop_id': shop_id
+        }
+
+        img_names = []
+        for img in imgs:
+            print('name: ', img)
+            img_name = upload_img_product(img)
+            if img_name:
+                img_names.append(img_name)
+
+        if img_names:
+            data['imgs'] = (','.join('' if not product.imgs or product.imgs is None else product.imgs.split(',')) + ',' + ','.join(img_names)).strip(',')
+
+        api_url = request.url_root + f'api/products/{product_id}'
+        resp = requests.patch(
+            api_url,
+            json=data,
+            cookies=request.cookies
+        )
+
+        if resp.status_code == 200:
+            flash(message='Вы изменили данные продукта!', category='success')
+            return redirect(url_for('shop.products', shop_id=shop_id))
+
+        else:
+            print('Error!!!')
+            print(resp.status_code)
+            print(resp.reason)
+            return render_template('shop/edit_product.html', form=form,
+                                   title='Редактирование', shop_id=shop_id)
+
+    return render_template('shop/edit_product.html', form=form,
+                           title='Редактирование', shop_id=shop_id)
