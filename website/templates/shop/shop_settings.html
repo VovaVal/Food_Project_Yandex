@@ -161,12 +161,6 @@
 <h3 class="mt-4 mb-3">Фотографии заведения</h3>
 <input type="file" id="uploadImages" multiple accept="image/*" style="display:none;">
 <div id="shopCarousel" class="carousel slide carousel-dark" data-bs-ride="carousel">
-    <div class="carousel-indicators">
-        {% for img in images %}
-        <button type="button" data-bs-target="#shopCarousel" data-bs-slide-to="{{ loop.index0 }}"
-                {% if loop.first %}class="active"{% endif %} aria-label="Slide {{ loop.index }}"></button>
-        {% endfor %}
-    </div>
 
     <div class="carousel-inner">
         {% for img in images %}
@@ -199,18 +193,20 @@
         {% endfor %}
     </div>
 
-    <button class="carousel-control-prev" type="button" data-bs-target="#shopCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon"></span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#shopCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon"></span>
-    </button>
+    {% if images|length > 1 %}
+        <button class="carousel-control-prev" type="button" data-bs-target="#shopCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#shopCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+    {% endif %}
 </div>
 {% else %}
-<div class="alert alert-info mt-3">
-    <i class="bi bi-image"></i> Нет добавленных фотографий.
-    <a href="{{ url_for('shop.edit_settings_shop', shop_id=shop['id']) }}" class="alert-link">Добавить фото</a>
-</div>
+    <div class="alert alert-info mt-3">
+        <i class="bi bi-image"></i> Нет добавленных фотографий.
+        <a href="{{ url_for('shop.edit_settings_shop', shop_id=shop['id']) }}" class="alert-link">Добавить фото</a>
+    </div>
 {% endif %}
 
 <div class="mt-4 gap-3">
@@ -244,26 +240,6 @@
                         </div>
                       </div>
                     </div>
-
-<style>
-.carousel-item img {
-    background-color: #f8f9fa;
-}
-.carousel-control-prev-icon,
-.carousel-control-next-icon {
-    background-color: rgba(0,0,0,0.5);
-    border-radius: 50%;
-    padding: 20px;
-}
-.carousel-item {
-    pointer-events: auto;
-}
-@media (max-width: 768px) {
-    .carousel-item img {
-        height: 250px !important;
-    }
-}
-</style>
 
 <script>
 document.getElementById('uploadImages').addEventListener('change', function() {
@@ -380,4 +356,55 @@ saveAvatarBtn.addEventListener('click', function () {
     .catch(() => alert("Ошибка сети"));
 });
 </script>
+
+<style>
+    /* Кастомные круглые кнопки карусели */
+.carousel-control-prev,
+.carousel-control-next {
+    width: 40px;
+    height: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    opacity: 0.8;
+    transition: all 0.2s ease;
+}
+
+.carousel-control-prev {
+    left: 10px;
+}
+
+.carousel-control-next {
+    right: 10px;
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    background: rgba(0, 0, 0, 0.8);
+    opacity: 1;
+    transform: translateY(-50%) scale(1.05);
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    width: 20px;
+    height: 20px;
+    background-size: 100% 100%;
+}
+
+@media (max-width: 768px) {
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 32px;
+        height: 32px;
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        width: 16px;
+        height: 16px;
+    }
+}
+</style>
 {% endblock %}
