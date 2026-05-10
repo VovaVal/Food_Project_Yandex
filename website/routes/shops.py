@@ -583,6 +583,28 @@ def delete_product_image(product_id: int, shop_id: int):
 
 
 @login_required
-@shop_bp.route('/upload_product_images/<int:product_id>')
-def upload_product_images(product_id: int):
-    ...
+@shop_bp.route('/<int:shop_id>/upload_product_images/<int:product_id>', methods=['POST'])
+def upload_product_images(product_id: int, shop_id: int):
+    files = request.files.getlist('images')
+
+    with db_session.create_session() as sess:
+        product = sess.get(Products, product_id)
+
+        if not product or not files:
+            return {"success": False}
+
+        imgs = product.imgs.split(',') if product.imgs else []
+
+        for file in files:
+            if file and file.filename:
+                img_name = upload_img_product(file)
+
+                if img_name:
+                    imgs.append(img_name)
+
+        product.imgs = ','.join(imgs)
+
+        sess.add(product)
+        sess.commit()
+
+    return {"success": True}

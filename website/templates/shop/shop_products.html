@@ -260,7 +260,7 @@
             formData.append('images', file);
         });
 
-        fetch("{{ url_for('shop.upload_product_images', product_id=0) }}".replace('0', productId), {
+        fetch("{{ url_for('shop.upload_product_images', product_id=0, shop_id=shop_id) }}".replace('0', productId), {
             method: "POST",
             body: formData
         })
