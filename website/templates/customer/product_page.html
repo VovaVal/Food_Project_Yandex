@@ -13,7 +13,7 @@
                 <div class="carousel-inner">
                     {% for img in images %}
                     <div class="carousel-item {% if loop.first %}active{% endif %}">
-                        <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ img }}" class="d-block w-100" style="height: 400px; object-fit: cover;">
+                        <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ img }}" class="d-block w-100" style="height: 400px; width: 400px; object-fit: contain; background-color: #f8f9fa;">
                     </div>
                     {% endfor %}
                 </div>
@@ -129,4 +129,54 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<style>
+    /* Кастомные круглые кнопки карусели */
+.carousel-control-prev,
+.carousel-control-next {
+    width: 40px;
+    height: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    opacity: 0.8;
+    transition: all 0.2s ease;
+}
+
+.carousel-control-prev {
+    left: 10px;
+}
+
+.carousel-control-next {
+    right: 10px;
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    background: rgba(0, 0, 0, 0.8);
+    opacity: 1;
+    transform: translateY(-50%) scale(1.05);
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    width: 20px;
+    height: 20px;
+    background-size: 100% 100%;
+}
+
+@media (max-width: 768px) {
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 32px;
+        height: 32px;
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        width: 16px;
+        height: 16px;
+    }
+}
+</style>
 {% endblock %}

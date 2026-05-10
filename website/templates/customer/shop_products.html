@@ -20,30 +20,30 @@
             <div style="position: relative;">
                 <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ img }}"
                      class="d-block w-100"
-                     style="height: 200px; object-fit: cover;"
+                     style="height: 200px; object-fit: contain; background-color: #f8f9fa;"
                      alt="{{ product.name }}">
             </div>
         </div>
         {% endfor %}
     </div>
     {% if images|length > 1 %}
-    <button class="carousel-control-prev" type="button" data-bs-target="#carousel{{ product.id }}" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#carousel{{ product.id }}" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    </button>
-    {% endif %}
-</div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#carousel{{ product.id }}" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carousel{{ product.id }}" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </button>
+            {% endif %}
+        </div>
 
-{% else %}
-<!-- Если нет изображений -->
-<div class="card-img-top d-flex flex-column align-items-center justify-content-center bg-light"
-     style="height: 200px; color: #6c757d;">
-    <i class="bi bi-image" style="font-size: 32px;"></i>
-    <span class="mt-2">Нет изображения</span>
-</div>
-{% endif %}
+        {% else %}
+        <!-- Если нет изображений -->
+        <div class="card-img-top d-flex flex-column align-items-center justify-content-center bg-light"
+             style="height: 200px; color: #6c757d;">
+            <i class="bi bi-image" style="font-size: 32px;"></i>
+            <span class="mt-2">Нет изображения</span>
+        </div>
+        {% endif %}
 
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">{{ product.name }}</h5>
