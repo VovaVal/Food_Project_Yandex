@@ -105,27 +105,26 @@
 
     <!-- Модальные окна для загрузки фото каждого товара -->
 {% for product in shop_products %}
-<div class="modal fade" id="uploadProductImageModal{{ product.id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Добавить фото для "{{ product.name }}"</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body text-center">
-                <div id="previewProduct{{ product.id }}" class="row g-2 mb-3"></div>
-                <input type="file" id="uploadProductInput{{ product.id }}" multiple accept="image/*" style="display: none;">
-                <button type="button" class="btn btn-primary" onclick="document.getElementById('uploadProductInput{{ product.id }}').click()">
-                    <i class="bi bi-plus-circle"></i> Выбрать файлы
-                </button>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-success" onclick="uploadProductImages({{ product.id }})">Сохранить</button>
+    <div class="modal fade" id="uploadProductImageModal{{ product.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Добавить фото для "{{ product.name }}"</h5>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="previewProduct{{ product.id }}" class="row g-2 mb-3"></div>
+                    <input type="file" id="uploadProductInput{{ product.id }}" multiple accept="image/*" style="display: none;">
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('uploadProductInput{{ product.id }}').click()">
+                        <i class="bi bi-plus-circle"></i> Выбрать файлы
+                    </button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-success" onclick="uploadProductImages({{ product.id }})">Сохранить</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 {% endfor %}
 </div>
 
@@ -192,8 +191,19 @@
         if (!input) return;
 
         input.addEventListener('change', function() {
-            selectedProductFiles[productId] = Array.from(this.files);
+            const newFiles = Array.from(this.files);
+            if (!selectedProductFiles[productId]) selectedProductFiles[productId] = [];
+
+            newFiles.forEach(file => {
+                // Проверяем, есть ли файл с таким именем и размером
+                const duplicate = selectedProductFiles[productId].some(f => f.name === file.name && f.size === file.size);
+                if (!duplicate) {
+                    selectedProductFiles[productId].push(file);
+                }
+            });
+
             renderProductPreview(productId);
+            input.value = ''; // сброс input чтобы можно было выбрать те же файлы снова
         });
     }
 
@@ -270,5 +280,18 @@
     {% for product in shop_products %}
         setupProductImageUpload({{ product.id }});
     {% endfor %}
+
+    {% for product in shop_products %}
+        const modal{{ product.id }} = document.getElementById('uploadProductImageModal{{ product.id }}');
+        modal{{ product.id }}.addEventListener('hidden.bs.modal', function () {
+            // Очистка выбранных файлов и превью
+            selectedProductFiles[{{ product.id }}] = [];
+            const preview = document.getElementById(`previewProduct{{ product.id }}`);
+            if (preview) preview.innerHTML = '';
+
+            const input = document.getElementById(`uploadProductInput{{ product.id }}`);
+            if (input) input.value = '';
+        });
+        {% endfor %}
 </script>
 {% endblock %}
