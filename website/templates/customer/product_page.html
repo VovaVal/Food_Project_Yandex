@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <a href="{{ url_for('customer.shop_products', shop_id=shop_id) }}" class="btn btn-outline-secondary mb-4">← Назад</a>
+
+    <div class="row">
+        <!-- Левый блок: изображение -->
+        <div class="col-md-6">
+            {% set images = product.imgs.split(',') if product.imgs else [] %}
+            {% if images %}
+            <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for img in images %}
+                    <div class="carousel-item {% if loop.first %}active{% endif %}">
+                        <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ img }}" class="d-block w-100" style="height: 400px; object-fit: cover;">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if images|length > 1 %}
+                <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 400px;">
+                <i class="bi bi-image" style="font-size: 48px; color: #6c757d;"></i>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Правый блок: описание и заказ -->
+        <div class="col-md-6">
+            <h2>{{ product.name }}</h2>
+
+            <p><strong>Тип:</strong>
+                {% set types = {'drink': 'Напиток', 'bakery': 'Выпечка', 'dessert': 'Десерт', 'other': 'Другое'} %}
+                {{ types[product.product_type] }}
+            </p>
+            <p><strong>Вес/Объём:</strong> {{ product.product_weight }}
+                {% set units = {'kg': 'кг', 'g': 'г', 'l': 'л', 'ml': 'мл'} %}
+                {{ units[product.type_of_count] }}
+            </p>
+            <!-- Рейтинг -->
+            <p><strong>Рейтинг:</strong>
+                {% set rating = product.rate|float %}
+                {% for i in range(5) %}
+                    {% if i < rating|int %}
+                        <span class="text-warning">★</span>
+                    {% else %}
+                        <span class="text-muted">☆</span>
+                    {% endif %}
+                {% endfor %}
+                ({{ product.rate or '0' }})
+            </p>
+
+            <p><strong>Цена:</strong>
+                {% if product.price == 0 %} бесплатно
+                {% else %} {{ product.price }} ₽ {% endif %}
+            </p>
+
+            <p><strong>Описание:</strong> {{ product.description or 'Отсутствует описание' }}</p>
+
+            <hr>
+
+            <!-- Заказ -->
+            {% if product.quantity > 0 %}
+                <div class="mb-3">
+                    <label for="orderQuantity" class="form-label">Количество для заказа:</label>
+                    <input type="number" id="orderQuantity" class="form-control" value="1" min="1" max="{{ product.quantity }}">
+                    <small class="text-muted">Доступно: {{ product.quantity }}</small>
+                </div>
+                <button class="btn btn-success" id="addToCartBtn">Добавить в корзину</button>
+            {% else %}
+                <p class="text-danger fw-bold">Товар отсутствует на складе</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Отзывы -->
+    <div class="mt-4">
+        <h4>Отзывы</h4>
+        {% if reviews %}
+            {% for review in reviews %}
+            <div class="mb-3 p-3 border rounded">
+                <p><strong>{{ review.user_name }}</strong> - {{ review.date }}</p>
+                <p>{{ review.text }}</p>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>Нет отзывов о товаре.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const addToCartBtn = document.getElementById('addToCartBtn');
+    if (addToCartBtn) {
+        addToCartBtn.addEventListener('click', () => {
+            const quantityInput = document.getElementById('orderQuantity');
+            let quantity = parseInt(quantityInput.value);
+            const max = parseInt(quantityInput.max);
+
+            if (quantity < 1) quantity = 1;
+            if (quantity > max) quantity = max;
+
+            // Пример: добавление в локальную корзину
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+            // Проверка, есть ли товар в корзине
+            const existing = cart.find(item => item.product_id === {{ product.id }});
+            if (existing) {
+                existing.quantity = Math.min(existing.quantity + quantity, max);
+            } else {
+                cart.push({product_id: {{ product.id }}, quantity: quantity});
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            alert(`Добавлено ${quantity} шт. в корзину!`);
+        });
+    }
+});
+</script>
+
+{% endblock %}

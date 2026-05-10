@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between mb-4">
+        <a href="{{ url_for('customer.shop_page', shop_id=shop_id) }}" class="btn btn-outline-secondary">← Назад</a>
+    </div>
+
+    <div class="row">
+        {% for product in shop_products %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                {% set images = product.imgs.split(',') if product.imgs else [] %}
+{% if images %}
+<div id="carousel{{ product.id }}" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+        {% for img in images %}
+        <div class="carousel-item {% if loop.first %}active{% endif %}">
+            <div style="position: relative;">
+                <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ img }}"
+                     class="d-block w-100"
+                     style="height: 200px; object-fit: cover;"
+                     alt="{{ product.name }}">
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% if images|length > 1 %}
+    <button class="carousel-control-prev" type="button" data-bs-target="#carousel{{ product.id }}" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carousel{{ product.id }}" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    </button>
+    {% endif %}
+</div>
+
+{% else %}
+<!-- Если нет изображений -->
+<div class="card-img-top d-flex flex-column align-items-center justify-content-center bg-light"
+     style="height: 200px; color: #6c757d;">
+    <i class="bi bi-image" style="font-size: 32px;"></i>
+    <span class="mt-2">Нет изображения</span>
+</div>
+{% endif %}
+
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text mb-1"><strong>Рейтинг</strong>:
+                    {% set rating = product.rate|float %}
+                            {% for i in range(5) %}
+                                {% if i < rating|int %}
+                                    <span class="text-warning">★</span>
+                                {% else %}
+                                    <span class="text-muted">☆</span>
+                                {% endif %}
+                            {% endfor %}
+                            ({{ product.rate or '0' }})</p>
+                    <p class="card-text mb-1"><strong>Описание</strong>: {{ product.description or 'Отсутствует описание' }}</p>
+                    {% set d = {'drink': 'напиток', 'bakery': 'выпечка', 'dessert': 'десерт', 'other': 'другое'} %}
+                    <p class="card-text mb-1"><strong>Тип продукта</strong>: {{ d[product.product_type] }}</p>
+                    <p class="card-text mb-1"><strong>Количество</strong>: {{ product.quantity or 0 }}</p>
+                    {% set d = {'kg': 'кг', 'g': 'гр', 'l': 'л', 'ml': 'мл'} %}
+                    <p class="card-text mb-1"><strong>Вес/Объём</strong>: {{ product.product_weight or 0 }} {{ d[product.type_of_count] }}</p>
+                    {% if product.price == 0 %}
+                        <p class="card-text fw-bold"><strong>Цена</strong>: бесплатно</p>
+                    {% else %}
+                        <p class="card-text fw-bold"><strong>Цена</strong>: {{ product.price }} ₽</p>
+                    {% endif %}
+                    <div class="mt-auto">
+                        <a href="{{ url_for('customer.product_page', shop_id=shop_id, product_id=product.id) }}" class="btn btn-primary w-100 mb-2">Открыть</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    /* Кастомные круглые кнопки карусели */
+.carousel-control-prev,
+.carousel-control-next {
+    width: 40px;
+    height: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    opacity: 0.8;
+    transition: all 0.2s ease;
+}
+
+.carousel-control-prev {
+    left: 10px;
+}
+
+.carousel-control-next {
+    right: 10px;
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    background: rgba(0, 0, 0, 0.8);
+    opacity: 1;
+    transform: translateY(-50%) scale(1.05);
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    width: 20px;
+    height: 20px;
+    background-size: 100% 100%;
+}
+
+@media (max-width: 768px) {
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 32px;
+        height: 32px;
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        width: 16px;
+        height: 16px;
+    }
+}
+</style>
+{% endblock %}

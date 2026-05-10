@@ -3,6 +3,8 @@ import requests
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 
+from website.data.products import Products
+from website.data.shops import Shops
 from website.data.users import User
 from website.forms.edit_user_settings import EditFormUser
 from website.data import db_session
@@ -90,7 +92,30 @@ def shop_page(shop_id: int):
 @login_required
 @customer_bp.route('/shop_products/<int:shop_id>')
 def shop_products(shop_id: int):
-    ...
+    with db_session.create_session() as sess:
+        shop = sess.get(Shops, shop_id)
+        shop_products = shop.products
+
+    if not shop:
+        return redirect(url_for('customer.dashboard'))
+
+    return render_template('customer/shop_products.html', title='Товары', shop_id=shop_id,
+                           shop_products=shop_products)
+
+
+@login_required
+@customer_bp.route('/shop_products/<int:shop_id>/product/<int:product_id>')
+def product_page(shop_id: int, product_id: int):
+    with db_session.create_session() as sess:
+        product = sess.get(Products, product_id)
+
+        if not product:
+            return redirect(url_for('customer.dashboard'))
+
+        reviews = product.reviews
+
+    return render_template('customer/product_page.html', shop_id=shop_id,
+                           product=product, title=product.name, reviews=reviews)
 
 
 @login_required
