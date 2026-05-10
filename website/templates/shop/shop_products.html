@@ -87,6 +87,8 @@
                     {% set d = {'drink': 'напиток', 'bakery': 'выпечка', 'dessert': 'десерт', 'other': 'другое'} %}
                     <p class="card-text mb-1"><strong>Тип продукта</strong>: {{ d[product.product_type] }}</p>
                     <p class="card-text mb-1"><strong>Количество</strong>: {{ product.quantity or 0 }}</p>
+                    {% set d = {'kg': 'кг', 'g': 'гр', 'l': 'л', 'ml': 'мл'} %}
+                    <p class="card-text mb-1"><strong>Вес/Объём</strong>: {{ product.product_weight or 0 }} {{ d[product.type_of_count] }}</p>
                     {% if product.price == 0 %}
                         <p class="card-text fw-bold"><strong>Цена</strong>: бесплатно</p>
                     {% else %}
