@@ -538,6 +538,8 @@ def add_product(shop_id: int):
 
         if img_names:
             data['imgs'] = ','.join(img_names)
+        else:
+            data['imgs'] = 'products/imgs/product_img_default.png'
 
         with db_session.create_session() as sess:
             product = Products(
@@ -555,4 +557,10 @@ def add_product(shop_id: int):
 @login_required
 @shop_bp.route('/delete_product_image/<int:product_id>')
 def delete_product_image(product_id: int):
+    ...
+
+
+@login_required
+@shop_bp.route('/upload_product_images/<int:product_id>')
+def upload_product_images(product_id: int):
     ...
