@@ -13,7 +13,8 @@
                 <div class="carousel-inner">
                     {% for img in images %}
                     <div class="carousel-item {% if loop.first %}active{% endif %}">
-                        <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ img }}" class="d-block w-100" style="height: 400px; width: 400px; object-fit: contain; background-color: #f8f9fa;">
+                        <img src="https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ img }}" class="d-block w-100"
+                             style="height: 400px; width: 400px; object-fit: contain; background-color: #f8f9fa;">
                     </div>
                     {% endfor %}
                 </div>
