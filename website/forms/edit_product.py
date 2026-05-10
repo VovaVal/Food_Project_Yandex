@@ -22,6 +22,16 @@ class EditProduct(FlaskForm):
                              NumberRange(min=0, message='Цена не может быть отрицательной')
                          ],
                          default=100)
+    product_weight = IntegerField('Вес/Объём продукта', default=100,
+                                  validators=[
+                                      InputRequired(message='Введите цену'),
+                                      NumberRange(min=0, message='Цена не может быть отрицательной')
+                                  ])
+    type_of_count = SelectField('Система мсчесления',
+                                choices=[('kg', 'кг'), ('g', 'гр'),
+                                         ('l', 'л'), ('ml', 'мл')],
+                                default='g'
+                                )
     # Тип товара
     product_type = SelectField('Тип продукта',
                        choices=[('drink', 'напиток'), ('bakery', 'выпечка'),

@@ -35,6 +35,24 @@
         </p>
 
         <p>
+            {{ form.product_weight.label }}<br>
+
+            <div class="d-flex gap-2">
+                <div style="flex: 2;">
+                    {{ form.product_weight(class="form-control") }}
+                </div>
+
+                <div style="flex: 1;">
+                    {{ form.type_of_count(class="form-control") }}
+                </div>
+            </div>
+
+            {% for error in form.product_weight.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
+        </p>
+
+        <p>
             {{ form.product_type.label }}<br>
             {{ form.product_type(class="form-control") }}<br>
             {% for error in form.product_type.errors %}

@@ -73,12 +73,16 @@ class ShopsResource(Resource):
         for img in shop_imgs.split(','):
             if img != 'shops/imgs/shop_img_default.jpg':
                 delete_by_key(img)
+                print('deleted', img)
 
         if shop.logo != 'shops/logos/default_logo.svg':
             delete_by_key(shop.logo)
+            print('deleted logo')
 
         with db_session.create_session() as sess:
             products = sess.query(Products).filter(Products.shop_id == shop_id)
+
+            print('product')
             for product in products:
                 api_url = request.url_root + f'api/products/{product.id}'
                 requests.delete(api_url, cookies=request.cookies)

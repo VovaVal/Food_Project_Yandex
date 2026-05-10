@@ -42,6 +42,14 @@ class Products(SqlAlchemyBase, SerializerMixin):
     price = sqlalchemy.Column(
         sqlalchemy.Integer
     )
+    product_weight = sqlalchemy.Column(
+        sqlalchemy.Integer,
+        default=100
+    )
+    type_of_count = sqlalchemy.Column(
+        sqlalchemy.String,
+        default='g'
+    )
     # тип продукта(напиток, мучная продукция и тд.)
     product_type = sqlalchemy.Column(
         sqlalchemy.String

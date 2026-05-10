@@ -519,6 +519,8 @@ def add_product(shop_id: int):
         quantity = form.quantity.data
         price = form.price.data
         product_type = form.product_type.data
+        product_weight = form.product_weight.data
+        type_of_count = form.type_of_count.data
         imgs = request.files.getlist('imgs')
 
         data = {
@@ -527,7 +529,9 @@ def add_product(shop_id: int):
             'quantity': quantity,
             'price': price,
             'product_type': product_type,
-            'shop_id': shop_id
+            'shop_id': shop_id,
+            'product_weight': product_weight,
+            'type_of_count': type_of_count
         }
 
         img_names = []
@@ -635,7 +639,9 @@ def edit_product(shop_id: int, product_id: int):
         description=product.description,
         quantity=product.quantity,
         price=product.price,
-        product_type=product.product_type
+        product_type=product.product_type,
+        product_weight=product.product_weight,
+        type_of_count=product.type_of_count
     )
 
     if form.validate_on_submit():
@@ -644,6 +650,8 @@ def edit_product(shop_id: int, product_id: int):
         quantity = form.quantity.data
         price = form.price.data
         product_type = form.product_type.data
+        product_weight = form.product_weight.data
+        type_of_count = form.type_of_count.data
         imgs = request.files.getlist('imgs')
 
         data = {
@@ -652,7 +660,9 @@ def edit_product(shop_id: int, product_id: int):
             'quantity': quantity,
             'price': price,
             'product_type': product_type,
-            'shop_id': shop_id
+            'shop_id': shop_id,
+            'product_weight': product_weight,
+            'type_of_count': type_of_count
         }
 
         img_names = []

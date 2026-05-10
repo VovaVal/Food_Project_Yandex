@@ -15,9 +15,12 @@ parser_post_args.add_argument('imgs', default='products/imgs/product_img_default
 parser_post_args.add_argument('quantity', type=int, default=0)
 parser_post_args.add_argument('rate', type=float, default=0)
 parser_post_args.add_argument('price', type=int, required=True)
+parser_post_args.add_argument('product_weight', type=int, required=True)
 parser_post_args.add_argument('description')
 parser_post_args.add_argument('product_type', choices=['drink', 'bakery', 'dessert', 'other'], default='other',
                               help='Allowed product types: "drink", "bakery", "dessert" and "other"')
+parser_post_args.add_argument('type_of_count', choices=['kg', 'g', 'l', 'ml'], default='g',
+                              help='Allowed product types of count: "kg", "g", "l" and "ml"')
 
 parser_patch_args = reqparse.RequestParser()
 parser_patch_args.add_argument('name')
@@ -26,9 +29,12 @@ parser_patch_args.add_argument('imgs')
 parser_patch_args.add_argument('quantity', type=int)
 parser_patch_args.add_argument('rate', type=float)
 parser_patch_args.add_argument('price', type=int)
+parser_post_args.add_argument('product_weight', type=int)
 parser_patch_args.add_argument('description')
 parser_patch_args.add_argument('product_type', choices=['drink', 'bakery', 'dessert', 'other'],
                                help='Allowed product types: "drink", "bakery", "dessert" and "other"')
+parser_patch_args.add_argument('type_of_count', choices=['kg', 'g', 'l', 'ml'],
+                              help='Allowed product types of count: "kg", "g", "l" and "ml"')
 
 
 def abort_if_product_not_found(product_id: int):
@@ -163,7 +169,9 @@ class ProductsListResource(Resource):
                 rate=args['rate'],
                 description=args['description'],
                 product_type=args['product_type'],
-                shop_id=args['shop_id']
+                shop_id=args['shop_id'],
+                product_weight=args['product_weight'],
+                type_of_count=args['type_of_count']
             )
             sess.add(product)
             sess.commit()
