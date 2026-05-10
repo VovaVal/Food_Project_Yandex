@@ -27,6 +27,16 @@ class AddProduct(FlaskForm):
                        choices=[('drink', 'напиток'), ('bakery', 'выпечка'),
                                 ('dessert', 'десерт'), ('other', 'другое')],
                        default='other')
+    product_weight = IntegerField('Вес/Объём продукта', default=100,
+                                  validators=[
+                                      InputRequired(message='Введите цену'),
+                                      NumberRange(min=0, message='Цена не может быть отрицательной')
+                         ])
+    type_of_count = SelectField('Система мсчесления',
+                                choices=[('kg', 'кг'), ('g', 'гр'),
+                                         ('l', 'л'), ('ml', 'мл')],
+                                default='g'
+                                )
     imgs = MultipleFileField('Фотографии продукта',
                              validators=[
                                  Optional(),
