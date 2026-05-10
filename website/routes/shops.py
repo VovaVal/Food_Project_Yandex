@@ -550,3 +550,9 @@ def add_product(shop_id: int):
         return redirect(url_for('shop.products', shop_id=shop_id))
 
     return render_template('shop/add_product.html', title='Добавление', form=form, shop_id=shop_id)
+
+
+@login_required
+@shop_bp.route('/delete_product_image/<int:product_id>')
+def delete_product_image(product_id: int):
+    ...
