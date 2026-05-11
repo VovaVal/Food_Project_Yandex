@@ -118,8 +118,13 @@ def product_page(shop_id: int, product_id: int):
 
         reviews = product.reviews
 
+        cart_item = sess.query(Cart).filter(Cart.user_id == current_user.id,
+                                             Cart.product_id == product_id).first()
+        quantity = cart_item.quantity if cart_item else 0
+        user_cart = {product_id: quantity}
+
     return render_template('customer/product_page.html', shop_id=shop_id,
-                           product=product, title=product.name, reviews=reviews)
+                           product=product, title=product.name, reviews=reviews, user_cart=user_cart)
 
 
 @login_required
