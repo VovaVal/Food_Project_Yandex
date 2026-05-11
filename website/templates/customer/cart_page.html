@@ -146,19 +146,29 @@ function changeQty(productId, delta, maxAvailable) {
 
     if (newQty <= 0) {
         if (confirm("Удалить этот товар из корзины?")) {
-            sendUpdateToServer(productId, 0);
             const row = document.getElementById(`product-row-${productId}`);
-            if (row) row.remove();
-            recalculateTotal();
+            if (row) {
+                row.remove(); // Удаляем из HTML
+            }
+
+            // Отправляем на сервер
+            sendUpdateToServer(productId, 0);
+
+            // Проверяем, остались ли еще товары
+            const remainingRows = document.querySelectorAll('.product-row');
+            if (remainingRows.length === 0) {
+                // Если товаров не осталось, принудительно обновляем через мгновение
+                setTimeout(() => { location.reload(); }, 100);
+            } else {
+                recalculateTotal();
+            }
         }
         return;
     }
 
-    // Обновляем интерфейс
+    // Обычное обновление количества
     qtyElement.textContent = newQty;
     recalculateTotal();
-
-    // Отправляем на сервер
     sendUpdateToServer(productId, newQty);
 }
 
