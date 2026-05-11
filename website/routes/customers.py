@@ -1,8 +1,9 @@
 import datetime
 import requests
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 
+from website.data.cart import Cart
 from website.data.products import Products
 from website.data.shops import Shops
 from website.data.users import User
@@ -116,12 +117,6 @@ def product_page(shop_id: int, product_id: int):
 
     return render_template('customer/product_page.html', shop_id=shop_id,
                            product=product, title=product.name, reviews=reviews)
-
-
-@login_required
-@customer_bp.route('/orders')
-def orders():
-    return render_template('customer/orders.html')
 
 
 @login_required
@@ -348,3 +343,60 @@ def upload_avatar():
         return {'success': False}
 
     return {"success": True}
+
+
+@customer_bp.route('/cart/add', methods=['POST'])
+@login_required
+def add_to_cart():
+    data = request.get_json()
+
+    product_id = data.get('product_id')
+    quantity = data.get('quantity', 1)
+
+    with db_session.create_session() as sess:
+        product = sess.get(Products, product_id)
+
+        if not product:
+            return jsonify(
+                {
+                    'success': False,
+                    'message': 'Товар не обнаружен'
+                }
+            )
+
+        # Проверка остатка
+        if quantity > product.quantity:
+            return jsonify({
+                'success': False,
+                'message': 'Недостаточно товара'
+            })
+
+        cart_item = sess.query(Cart).filter(Cart.user_id == current_user.id, Cart.product_id == product_id)
+
+        if cart_item:
+            cart_item.quantity += quantity
+
+            # Ограничение
+            if cart_item.quantity > product.quantity:
+                cart_item.quantity = product.quantity
+
+        else:
+            cart_item = Cart(
+                user_id=current_user.id,
+                product_id=product_id,
+                quantity=quantity
+            )
+
+            sess.add(cart_item)
+
+        sess.commit()
+
+    return jsonify({
+        'success': True
+    })
+
+
+@login_required
+@customer_bp.route('/cart_page')
+def cart_page():
+    ...
