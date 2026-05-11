@@ -5,3 +5,4 @@ from . import orders
 from . import order_items
 from . import reviews_shop
 from . import reviews_product
+from . import cart
