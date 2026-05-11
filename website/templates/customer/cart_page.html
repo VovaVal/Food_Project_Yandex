@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-cart3"></i> Ваша корзина</h2>
+        <a href="{{ url_for('customer.dashboard') }}" class="btn btn-outline-secondary btn-sm">Продолжить покупки</a>
+    </div>
+
+    {% if not cart_products %}
+        <div class="text-center py-5 shadow-sm bg-light rounded">
+            <i class="bi bi-cart-x text-muted" style="font-size: 4rem;"></i>
+            <h3 class="mt-3">Корзина пуста</h3>
+            <p class="text-muted">Кажется, вы еще ничего не добавили в список покупок.</p>
+            <a href="{{ url_for('customer.dashboard') }}" class="btn btn-primary mt-3">Перейти к магазинам</a>
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="col-lg-8">
+                <div id="cart-items-container">
+                    {% for item in cart_products %}
+                    {% set product = item.product %}
+                    <div class="card mb-3 shadow-sm border-0 cart-item-card product-row"
+                         id="product-row-{{ product.id }}"
+                         data-price="{{ product.price }}"
+                         data-product-id="{{ product.id }}">
+                        <div class="row g-0 align-items-center">
+                            <div class="col-3 col-md-2 p-2">
+                                {% set images = product.imgs.split(',') if product.imgs else [] %}
+                                <img src="{% if images %}https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ images[0] }}{% else %}https://via.placeholder.com/150{% endif %}"
+                                     class="img-fluid rounded" alt="{{ product.name }}" style="max-height: 100px; object-fit: contain;">
+                            </div>
+                            <div class="col-9 col-md-10">
+                                <div class="card-body py-2">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h5 class="card-title mb-1">{{ product.name }}</h5>
+                                        <button class="btn btn-sm text-danger" onclick="changeQty({{ product.id }}, -{{ item.quantity }}, {{ product.quantity }})">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <div class="input-group input-group-sm w-auto border rounded">
+                                            <button class="btn btn-light border-0" onclick="changeQty({{ product.id }}, -1, {{ product.quantity }})">−</button>
+                                            <span class="px-3 py-1 bg-white item-quantity" id="qty-{{ product.id }}">{{ item.quantity }}</span>
+                                            <button class="btn btn-light border-0" onclick="changeQty({{ product.id }}, 1, {{ product.quantity }})">+</button>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="text-muted small d-block">{{ product.price }} ₽ / шт.</span>
+                                            <span class="fw-bold fs-5 item-total-price" id="sum-{{ product.id }}">
+                                                {{ item.quantity * product.price }} ₽
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 p-4 sticky-top" style="top: 20px;">
+                    <h4 class="mb-4">Детали заказа</h4>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Товары (<span id="total-qty-count">{% set total_q = cart_products|sum(attribute='quantity') %}{{ total_q }}</span>):</span>
+                        <span id="total-price-display">{{ total_price }} ₽</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-4">
+                        <span>Скидка:</span>
+                        <span class="text-success">0 ₽</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="h5">Итого к оплате:</span>
+                        <span class="h5 text-primary" id="grand-total">{{ total_price }} ₽</span>
+                    </div>
+                    <button class="btn btn-primary btn-lg w-100 shadow-sm">Перейти к оплате</button>
+                    <p class="text-center text-muted small mt-3">
+                        <i class="bi bi-shield-check"></i> Безопасная оплата
+                    </p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function recalculateTotal() {
+    let grandTotal = 0;
+    let totalItemsCount = 0;
+    const rows = document.querySelectorAll('.product-row');
+
+    // Если товаров больше нет, обновляем страницу чтобы показать "Корзина пуста"
+    if (rows.length === 0) {
+        location.reload();
+        return;
+    }
+
+    rows.forEach(row => {
+        const price = parseFloat(row.dataset.price);
+        const qtyElement = row.querySelector('.item-quantity');
+        const qty = parseInt(qtyElement.textContent);
+
+        const rowSum = price * qty;
+        grandTotal += rowSum;
+        totalItemsCount += qty;
+
+        // Обновляем сумму строки
+        const sumElement = row.querySelector('.item-total-price');
+        if (sumElement) {
+            sumElement.textContent = rowSum + ' ₽';
+        }
+    });
+
+    // Обновляем правую панель
+    document.getElementById('total-price-display').textContent = grandTotal + ' ₽';
+    document.getElementById('grand-total').textContent = grandTotal + ' ₽';
+
+    const qtyDisplay = document.getElementById('total-qty-count');
+    if (qtyDisplay) qtyDisplay.textContent = totalItemsCount;
+}
+
+function changeQty(productId, delta, maxAvailable) {
+    const qtyElement = document.getElementById(`qty-${productId}`);
+    if (!qtyElement) return;
+
+    let currentQty = parseInt(qtyElement.textContent);
+    let newQty = currentQty + delta;
+
+    if (newQty > maxAvailable) {
+        alert("Достигнуто максимальное количество товара в наличии");
+        return;
+    }
+
+    if (newQty <= 0) {
+        if (confirm("Удалить этот товар из корзины?")) {
+            sendUpdateToServer(productId, 0);
+            const row = document.getElementById(`product-row-${productId}`);
+            if (row) row.remove();
+            recalculateTotal();
+        }
+        return;
+    }
+
+    // Обновляем интерфейс
+    qtyElement.textContent = newQty;
+    recalculateTotal();
+
+    // Отправляем на сервер
+    sendUpdateToServer(productId, newQty);
+}
+
+function sendUpdateToServer(productId, qty) {
+    fetch("{{ url_for('customer.add_to_cart') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            // Если у вас включен CSRF, раскомментируйте строку ниже:
+            // 'X-CSRFToken': "{{ csrf_token() if csrf_token else '' }}"
+        },
+        body: JSON.stringify({ product_id: productId, quantity: qty })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            alert("Ошибка: " + data.message);
+            location.reload();
+        }
+    })
+    .catch(err => {
+        console.error('Network error:', err);
+    });
+}
+</script>
+{% endblock %}

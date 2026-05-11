@@ -30,3 +30,5 @@ class Cart(SqlAlchemyBase, SerializerMixin):
         sqlalchemy.Integer,
         default=0
     )
+
+    product = orm.relationship('Products')

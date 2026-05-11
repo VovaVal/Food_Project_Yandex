@@ -2,6 +2,7 @@ import datetime
 import requests
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
+from sqlalchemy.orm import joinedload
 
 from website.data.cart import Cart
 from website.data.products import Products
@@ -400,4 +401,20 @@ def add_to_cart():
 @login_required
 @customer_bp.route('/cart_page')
 def cart_page():
-    ...
+    with db_session.create_session() as sess:
+        cart_products = sess.query(Cart).filter(Cart.user_id == current_user.id).all()
+
+        for product in cart_products:
+            pr = sess.get(Products, product.product_id)
+
+            if not pr or pr.quantity <= 0:
+                sess.delete(product)
+
+        sess.commit()
+
+        cart_products = sess.query(Cart).options(
+            joinedload(Cart.product)
+        ).filter(Cart.user_id == current_user.id).all()
+
+    return render_template('customer/cart_page.html', cart_products=cart_products,
+                           title='Корзина')
