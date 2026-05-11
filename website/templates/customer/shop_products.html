@@ -92,11 +92,13 @@
     <small class="text-muted d-block mb-2">
         В наличии: {{ product.quantity }}
     </small>
+                        <div class="d-grid gap-2">
 
-    <a href="{{ url_for('customer.product_page', shop_id=shop_id, product_id=product.id) }}"
-       class="btn btn-primary w-100">
-        Открыть
-    </a>
+                    <a href="{{ url_for('customer.product_page', shop_id=shop_id, product_id=product.id) }}"
+                       class="btn btn-success">
+                        Открыть
+                    </a>
+                </div>
 
 </div>
                 </div>
@@ -193,6 +195,60 @@ function changeQuantity(productId, change, maxQuantity) {
 
     // Обновляем число
     document.getElementById(`count-${productId}`).textContent = newValue;
+}
+</script>
+
+<script>
+// Объект для хранения текущего состояния счетчиков на странице
+const localCartState = {};
+
+function changeQuantity(productId, change, maxQuantity) {
+    // Получаем текущее значение из DOM, если в объекте еще нет данных
+    if (localCartState[productId] === undefined) {
+        localCartState[productId] = parseInt(document.getElementById(`count-${productId}`).textContent) || 0;
+    }
+
+    let newValue = localCartState[productId] + change;
+
+    // Валидация: не меньше 0 и не больше остатка
+    if (newValue < 0) newValue = 0;
+    if (newValue > maxQuantity) newValue = maxQuantity;
+
+    // Обновляем состояние и UI
+    localCartState[productId] = newValue;
+    document.getElementById(`count-${productId}`).textContent = newValue;
+
+    // Мгновенная отправка на сервер
+    syncCartWithServer(productId, newValue);
+}
+
+function syncCartWithServer(productId, quantity) {
+    fetch("{{ url_for('customer.add_to_cart') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: quantity // Сервер теперь перезаписывает значение (quantity = X)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            alert('Ошибка: ' + data.message);
+            // Здесь можно добавить логику отката счетчика назад, если сервер вернул ошибку
+        }
+
+        // Опционально: обновляем общий счетчик товаров в шапке сайта, если он есть
+        const cartCountHeader = document.getElementById('cartCount');
+        if (cartCountHeader && data.total_items !== undefined) {
+            cartCountHeader.textContent = data.total_items;
+        }
+    })
+    .catch(err => {
+        console.error('Ошибка сети:', err);
+    });
 }
 </script>
 {% endblock %}

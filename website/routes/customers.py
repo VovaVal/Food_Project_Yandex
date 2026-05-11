@@ -349,36 +349,32 @@ def upload_avatar():
 @login_required
 def add_to_cart():
     data = request.get_json()
-
     product_id = data.get('product_id')
-    quantity = data.get('quantity', 1)
+    quantity = data.get('quantity', 0)
 
     with db_session.create_session() as sess:
         product = sess.get(Products, product_id)
-
         if not product:
-            return jsonify(
-                {
-                    'success': False,
-                    'message': 'Товар не обнаружен'
-                }
-            )
+            return jsonify({'success': False, 'message': 'Товар не обнаружен'})
 
-        # Проверка остатка
+        # Ищем товар в корзине
+        cart_item = sess.query(Cart).filter(
+            Cart.user_id == current_user.id,
+            Cart.product_id == product_id
+        ).first()
+
+        # Если количество 0 — удаляем товар из корзины
+        if quantity <= 0:
+            if cart_item:
+                sess.delete(cart_item)
+                sess.commit()
+            return jsonify({'success': True, 'message': 'Товар удален из корзины'})
+
         if quantity > product.quantity:
-            return jsonify({
-                'success': False,
-                'message': 'Недостаточно товара'
-            })
-
-        cart_item = sess.query(Cart).filter(Cart.user_id == current_user.id, Cart.product_id == product_id)
+            return jsonify({'success': False, 'message': f'Доступно только {product.quantity} шт.'})
 
         if cart_item:
-            cart_item.quantity += quantity
-
-            # Ограничение
-            if cart_item.quantity > product.quantity:
-                cart_item.quantity = product.quantity
+            cart_item.quantity = quantity
 
         else:
             cart_item = Cart(
@@ -386,14 +382,11 @@ def add_to_cart():
                 product_id=product_id,
                 quantity=quantity
             )
-
             sess.add(cart_item)
 
         sess.commit()
 
-    return jsonify({
-        'success': True
-    })
+    return jsonify({'success': True})
 
 
 @login_required
