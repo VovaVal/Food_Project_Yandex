@@ -71,22 +71,26 @@
                     {% endif %}
                     <div class="mt-auto">
 
-    <!-- Счётчик товара -->
-    <div class="d-flex align-items-center justify-content-between mb-2">
+                        {% if product.quantity > 0 %}
+                            <!-- Счётчик товара -->
+                            <div class="d-flex align-items-center justify-content-between mb-2">
 
-        <button class="btn btn-outline-danger btn-sm"
-                onclick="changeQuantity({{ product.id }}, -1, {{ product.quantity }})">
-            −
-        </button>
+                                <button class="btn btn-outline-danger btn-sm"
+                                        onclick="changeQuantity({{ product.id }}, -1, {{ product.quantity }})">
+                                    −
+                                </button>
 
-        <span id="count-{{ product.id }}" class="fw-bold fs-5">{{ user_cart.get(product.id, 0) }}</span>
+                                <span id="count-{{ product.id }}" class="fw-bold fs-5">{{ user_cart.get(product.id, 0) }}</span>
 
-        <button class="btn btn-outline-success btn-sm"
-                onclick="changeQuantity({{ product.id }}, 1, {{ product.quantity }})">
-            +
-        </button>
+                                <button class="btn btn-outline-success btn-sm"
+                                        onclick="changeQuantity({{ product.id }}, 1, {{ product.quantity }})">
+                                    +
+                                </button>
 
-    </div>
+                            </div>
+                        {% else %}
+                            <p class="text-danger fw-bold">Товар отсутствует на складе</p>
+                        {% endif %}
 
     <!-- Остаток -->
     <small class="text-muted d-block mb-2">
