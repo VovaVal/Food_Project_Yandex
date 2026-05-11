@@ -69,12 +69,12 @@
                     </div>
                     <div class="d-flex justify-content-between mb-4">
                         <span>Скидка:</span>
-                        <span class="text-success">0 ₽</span>
+                        <span class="text-success" id="user-bonuses" data-bonus="{{ current_user.user_bonuses }}">{{ current_user.user_bonuses }} ₽</span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between mb-4">
                         <span class="h5">Итого к оплате:</span>
-                        <span class="h5 text-primary" id="grand-total">{{ total_price }} ₽</span>
+                        <span class="h5 text-primary" id="grand-total">{{ total_price}} ₽</span>
                     </div>
                     <button class="btn btn-primary btn-lg w-100 shadow-sm">Перейти к оплате</button>
                     <p class="text-center text-muted small mt-3">
@@ -90,9 +90,12 @@
 function recalculateTotal() {
     let grandTotal = 0;
     let totalItemsCount = 0;
-    const rows = document.querySelectorAll('.product-row');
 
-    // Если товаров больше нет, обновляем страницу чтобы показать "Корзина пуста"
+    // Получаем значение бонусов из HTML-атрибута
+    const bonusElement = document.getElementById('user-bonuses');
+    const bonuses = parseFloat(bonusElement.dataset.bonus) || 0;
+
+    const rows = document.querySelectorAll('.product-row');
     if (rows.length === 0) {
         location.reload();
         return;
@@ -107,16 +110,19 @@ function recalculateTotal() {
         grandTotal += rowSum;
         totalItemsCount += qty;
 
-        // Обновляем сумму строки
         const sumElement = row.querySelector('.item-total-price');
         if (sumElement) {
             sumElement.textContent = rowSum + ' ₽';
         }
     });
 
+    // Расчет финальной суммы с учетом скидки
+    let finalTotal = grandTotal - bonuses;
+    if (finalTotal < 0) finalTotal = 0; // На случай если скидка больше суммы
+
     // Обновляем правую панель
     document.getElementById('total-price-display').textContent = grandTotal + ' ₽';
-    document.getElementById('grand-total').textContent = grandTotal + ' ₽';
+    document.getElementById('grand-total').textContent = finalTotal + ' ₽';
 
     const qtyDisplay = document.getElementById('total-qty-count');
     if (qtyDisplay) qtyDisplay.textContent = totalItemsCount;
