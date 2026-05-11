@@ -97,11 +97,14 @@ def shop_products(shop_id: int):
         shop = sess.get(Shops, shop_id)
         shop_products = shop.products
 
+        cart_items = sess.query(Cart).filter(Cart.user_id == current_user.id).all()
+        user_cart = {item.product_id: item.quantity for item in cart_items}
+
     if not shop:
         return redirect(url_for('customer.dashboard'))
 
     return render_template('customer/shop_products.html', title='Товары', shop_id=shop_id,
-                           shop_products=shop_products)
+                           shop_products=shop_products, user_cart=user_cart)
 
 
 @login_required

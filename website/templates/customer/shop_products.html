@@ -79,7 +79,7 @@
             −
         </button>
 
-        <span id="count-{{ product.id }}" class="fw-bold fs-5">0</span>
+        <span id="count-{{ product.id }}" class="fw-bold fs-5">{{ user_cart.get(product.id, 0) }}</span>
 
         <button class="btn btn-outline-success btn-sm"
                 onclick="changeQuantity({{ product.id }}, 1, {{ product.quantity }})">
