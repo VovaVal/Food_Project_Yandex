@@ -123,15 +123,6 @@
             cursor: pointer;
         }
 
-        /* Бейдж с количеством */
-        .cart-badge {
-            position: absolute;
-            top: -8px;
-            right: -10px;
-            font-size: 12px;
-            padding: 2px 6px;
-        }
-
         /* Отступы между элементами шапки */
         .navbar .d-flex.align-items-center.gap-3 > * {
             margin-right: 30px;
@@ -161,7 +152,6 @@
                 <div class="cart-display position-relative">
                     <a href="{{ url_for('customer.cart_page') }}">
                         <i class="bi bi-cart-fill cart-icon"></i>
-                        <span id="cartCount" class="badge rounded-pill bg-danger cart-badge">0</span>
                     </a>
                 </div>
                 {% endif %}
