@@ -91,9 +91,10 @@ function recalculateTotal() {
     let grandTotal = 0;
     let totalItemsCount = 0;
 
-    // Получаем значение бонусов из HTML-атрибута
     const bonusElement = document.getElementById('user-bonuses');
-    const bonuses = parseFloat(bonusElement.dataset.bonus) || 0;
+    if (!bonusElement) return;
+
+    const maxUserBonuses = parseFloat(bonusElement.dataset.bonus) || 0;
 
     const rows = document.querySelectorAll('.product-row');
     if (rows.length === 0) {
@@ -103,25 +104,24 @@ function recalculateTotal() {
 
     rows.forEach(row => {
         const price = parseFloat(row.dataset.price);
-        const qtyElement = row.querySelector('.item-quantity');
-        const qty = parseInt(qtyElement.textContent);
-
+        const qty = parseInt(row.querySelector('.item-quantity').textContent);
         const rowSum = price * qty;
+
         grandTotal += rowSum;
         totalItemsCount += qty;
 
         const sumElement = row.querySelector('.item-total-price');
-        if (sumElement) {
-            sumElement.textContent = rowSum + ' ₽';
-        }
+        if (sumElement) sumElement.textContent = rowSum + ' ₽';
     });
 
-    // Расчет финальной суммы с учетом скидки
-    let finalTotal = grandTotal - bonuses;
-    if (finalTotal < 0) finalTotal = 0; // На случай если скидка больше суммы
+    let appliedDiscount = maxUserBonuses > grandTotal ? grandTotal : maxUserBonuses;
 
-    // Обновляем правую панель
+    let finalTotal = grandTotal - appliedDiscount;
+
     document.getElementById('total-price-display').textContent = grandTotal + ' ₽';
+
+    bonusElement.textContent = appliedDiscount + ' ₽';
+
     document.getElementById('grand-total').textContent = finalTotal + ' ₽';
 
     const qtyDisplay = document.getElementById('total-qty-count');
