@@ -70,8 +70,35 @@
                         <p class="card-text fw-bold"><strong>Цена</strong>: {{ product.price }} ₽</p>
                     {% endif %}
                     <div class="mt-auto">
-                        <a href="{{ url_for('customer.product_page', shop_id=shop_id, product_id=product.id) }}" class="btn btn-primary w-100 mb-2">Открыть</a>
-                    </div>
+
+    <!-- Счётчик товара -->
+    <div class="d-flex align-items-center justify-content-between mb-2">
+
+        <button class="btn btn-outline-danger btn-sm"
+                onclick="changeQuantity({{ product.id }}, -1, {{ product.quantity }})">
+            −
+        </button>
+
+        <span id="count-{{ product.id }}" class="fw-bold fs-5">0</span>
+
+        <button class="btn btn-outline-success btn-sm"
+                onclick="changeQuantity({{ product.id }}, 1, {{ product.quantity }})">
+            +
+        </button>
+
+    </div>
+
+    <!-- Остаток -->
+    <small class="text-muted d-block mb-2">
+        В наличии: {{ product.quantity }}
+    </small>
+
+    <a href="{{ url_for('customer.product_page', shop_id=shop_id, product_id=product.id) }}"
+       class="btn btn-primary w-100">
+        Открыть
+    </a>
+
+</div>
                 </div>
             </div>
         </div>
@@ -140,4 +167,32 @@
     }
 }
 </style>
+
+<script>
+const cart = {};
+
+function changeQuantity(productId, change, maxQuantity) {
+
+    if (!cart[productId]) {
+        cart[productId] = 0;
+    }
+
+    let newValue = cart[productId] + change;
+
+    // Нельзя меньше 0
+    if (newValue < 0) {
+        newValue = 0;
+    }
+
+    // Нельзя больше остатка
+    if (newValue > maxQuantity) {
+        newValue = maxQuantity;
+    }
+
+    cart[productId] = newValue;
+
+    // Обновляем число
+    document.getElementById(`count-${productId}`).textContent = newValue;
+}
+</script>
 {% endblock %}

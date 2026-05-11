@@ -71,9 +71,32 @@
             <!-- Заказ -->
             {% if product.quantity > 0 %}
                 <div class="mb-3">
-                    <label for="orderQuantity" class="form-label">Количество для заказа:</label>
-                    <input type="number" id="orderQuantity" class="form-control" value="1" min="1" max="{{ product.quantity }}">
-                    <small class="text-muted">Доступно: {{ product.quantity }}</small>
+                    <label class="form-label">Количество для заказа:</label>
+
+                    <div class="d-flex align-items-center gap-4">
+
+                    <button type="button"
+                            class="btn btn-outline-danger"
+                            id="minusBtn">
+                        −
+                    </button>
+
+                    <span id="quantityValue"
+                          class="fs-4 fw-bold px-3">
+                        1
+                    </span>
+
+                    <button type="button"
+                            class="btn btn-outline-success"
+                            id="plusBtn">
+                        +
+                    </button>
+
+                </div>
+
+                    <small class="text-muted d-block mt-2">
+                        Доступно: {{ product.quantity }}
+                    </small>
                 </div>
                 <button class="btn btn-success" id="addToCartBtn">Добавить в корзину</button>
             {% else %}
@@ -180,4 +203,74 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const addToCartBtn = document.getElementById('addToCartBtn');
+
+    const minusBtn = document.getElementById('minusBtn');
+    const plusBtn = document.getElementById('plusBtn');
+    const quantityValue = document.getElementById('quantityValue');
+
+    const maxQuantity = {{ product.quantity }};
+    let quantity = 1;
+
+    // Обновление отображения
+    function updateQuantity() {
+        quantityValue.textContent = quantity;
+
+        // Блокируем кнопки при лимитах
+        minusBtn.disabled = quantity <= 1;
+        plusBtn.disabled = quantity >= maxQuantity;
+    }
+
+    // Минус
+    minusBtn.addEventListener('click', () => {
+        if (quantity > 1) {
+            quantity--;
+            updateQuantity();
+        }
+    });
+
+    // Плюс
+    plusBtn.addEventListener('click', () => {
+        if (quantity < maxQuantity) {
+            quantity++;
+            updateQuantity();
+        }
+    });
+
+    // Первичная инициализация
+    updateQuantity();
+
+    // Добавление в корзину
+    if (addToCartBtn) {
+        addToCartBtn.addEventListener('click', () => {
+
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+            const existing = cart.find(
+                item => item.product_id === {{ product.id }}
+            );
+
+            if (existing) {
+                existing.quantity = Math.min(
+                    existing.quantity + quantity,
+                    maxQuantity
+                );
+            } else {
+                cart.push({
+                    product_id: {{ product.id }},
+                    quantity: quantity
+                });
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+
+            alert(`Добавлено ${quantity} шт. в корзину!`);
+        });
+    }
+});
+</script>
 {% endblock %}
