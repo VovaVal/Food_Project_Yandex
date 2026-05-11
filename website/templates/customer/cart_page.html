@@ -27,8 +27,12 @@
                         <div class="row g-0 align-items-center">
                             <div class="col-3 col-md-2 p-2">
                                 {% set images = product.imgs.split(',') if product.imgs else [] %}
-                                <img src="{% if images %}https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ images[0] }}{% else %}https://via.placeholder.com/150{% endif %}"
-                                     class="img-fluid rounded" alt="{{ product.name }}" style="max-height: 100px; object-fit: contain;">
+                                <div class="ratio ratio-1x1 bg-light rounded overflow-hidden shadow-sm border">
+                                    <img src="{% if images %}https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ images[0] }}{% else %}https://via.placeholder.com/150{% endif %}"
+                                         class="img-fluid"
+                                         alt="{{ product.name }}"
+                                         style="object-fit: cover;">
+                                </div>
                             </div>
                             <div class="col-9 col-md-10">
                                 <div class="card-body py-2">
