@@ -189,20 +189,20 @@ let currentView = 'list';
 
 // Инициализация карты
 function initMap() {
-    let center = [55.750536, 37.616913]; // дефолт
+    let center = [55.750536, 37.616913];
     if (shopsData.length > 0 && shopsData[0].lat && shopsData[0].lng) {
         center = [shopsData[0].lat, shopsData[0].lng];
     }
 
     map = L.map('map').setView(center, 12);
-    map.attributionControl.remove(); // Убирает флаг
+    map.attributionControl.remove();
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19
     }).addTo(map);
 
-    // Преобразуем coords из строки в массив чисел
+    // 1. Сначала парсим координаты всех магазинов
     shopsData.forEach(shop => {
         if (shop.coords) {
             shop.lat = parseFloat(shop.coords.split(',')[0].trim());
@@ -210,38 +210,61 @@ function initMap() {
         }
     });
 
+    // 2. Если есть координаты пользователя, считаем расстояние и СОРТИРУЕМ
     if (userCoords) {
         const [userLat, userLng] = userCoords.split(',').map(parseFloat);
 
         shopsData.forEach(shop => {
             if (shop.lat && shop.lng) {
-                shop.distance = getDistance(userLat, userLng, shop.lat, shop.lng);
+                shop.distance = parseFloat(getDistance(userLat, userLng, shop.lat, shop.lng));
             } else {
-                shop.distance = '?';
+                shop.distance = 999999; // Для тех, у кого нет координат
             }
-    });
+        });
 
-    // Обновляем отображение
-    document.querySelectorAll('.shop-item').forEach(el => {
-        const shopId = el.dataset.id;
-        const shop = shopsData.find(s => s.id == shopId);
-        if (shop && shop.distance) {
-            el.querySelector('.shop-meta').textContent = `⭐ ${shop.rate || 'Новое'} | 📍 ${shop.distance} км`;
-        }
-    });
+        // Сортировка массива данных по возрастанию расстояния
+        shopsData.sort((a, b) => a.distance - b.distance);
 
-    document.querySelectorAll('.shop-card').forEach(el => {
-        const shopId = el.dataset.id;
-        const shop = shopsData.find(s => s.id == shopId);
-        if (shop && shop.distance) {
-            const ratingEl = el.querySelector('.shop-rating');
-            ratingEl.textContent = `⭐ ${shop.rate || 'Новое'} | 📍 ${shop.distance} км`;
-        }
+        // Перестраиваем элементы в списке и карточках на странице
+        reorderElements();
+
+        // Обновляем текст (мету) уже после сортировки
+        updateDistanceUI();
+    }
+
+    addMarkers();
+}
+
+// Функция для физической перестановки элементов в DOM
+function reorderElements() {
+    const listContainer = document.getElementById('shopsList');
+    const cardsContainer = document.getElementById('cardsContainer');
+
+    shopsData.forEach(shop => {
+        // Находим элемент списка и карточку по data-id
+        const item = listContainer.querySelector(`.shop-item[data-id="${shop.id}"]`);
+        const card = cardsContainer.querySelector(`.shop-card[data-id="${shop.id}"]`);
+
+        if (item) listContainer.appendChild(item);
+        if (card) cardsContainer.appendChild(card);
     });
 }
 
-    // Добавляем маркеры для всех магазинов
-    addMarkers();
+// Функция для обновления текста расстояния в UI
+function updateDistanceUI() {
+    shopsData.forEach(shop => {
+        const distText = shop.distance === 999999 ? '?' : shop.distance;
+
+        document.querySelectorAll(`[data-id="${shop.id}"]`).forEach(el => {
+            if (el.classList.contains('shop-item')) {
+                el.querySelector('.shop-meta').textContent = `⭐ ${shop.rate || 'Новое'} | 📍 ${distText} км`;
+            }
+            if (el.classList.contains('shop-card')) {
+                const ratingEl = el.querySelector('.shop-rating');
+                ratingEl.textContent = `⭐ ${shop.rate || 'Новое'} | 📍 ${distText} км`;
+            }
+        });
+    });
 }
 
 // Добавление маркеров на карту
