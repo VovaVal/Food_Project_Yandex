@@ -6,9 +6,8 @@
 
     {% if grouped_cart %}
         <form id="final-checkout-form">
-            {% set total_sum = 0 %}
-            {% set discount_amount = 0 %}
-            
+            {% set ns = namespace(total_sum=0) %}
+
             {% for shop_id, shop_data in grouped_cart.items() %}
                 <div class="card mb-4 shadow-sm border-0">
                     <div class="card-header bg-primary text-white">
@@ -20,14 +19,14 @@
                                 <tr>
                                     <th>Товар</th>
                                     <th>Количество</th>
-                                    <th>Цена за единицу</th>
+                                    <th>Цена</th>
                                     <th>Сумма</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for item in shop_data['items'] %}
                                     {% set item_sum = item.quantity * item.product.price %}
-                                    {% set total_sum = total_sum + item_sum %}
+                                    {% set ns.total_sum = ns.total_sum + item_sum %}
                                     <tr>
                                         <td>{{ item.product.name }}</td>
                                         <td>{{ item.quantity }}</td>
@@ -37,41 +36,70 @@
                                 {% endfor %}
                             </tbody>
                         </table>
-                        {% set d = {'pickup': 'самовывоз', 'delivery': 'доставка'} %}
-                        {% set delivery_method = session.get('delivery_data', {}).get(shop_id|string, 'pickup') %}
-                        <p><strong>Способ доставки:</strong> {{ d.get(delivery_method, 'самовывоз')|capitalize }}</p>
                     </div>
                 </div>
             {% endfor %}
 
             <div class="card mb-4 shadow-sm border-0 p-4">
-                <div class="mb-3">
-                    <label for="promo-code" class="form-label">Промокод</label>
-                    <div class="input-group">
-                        <input type="text" id="promo-code" class="form-control" placeholder="Введите промокод">
+                <h5 class="mb-3">Итого к оплате</h5>
+
+                <p class="d-flex justify-content-between">
+                    <span>Сумма заказа:</span>
+                    <span id="total-sum" data-value="{{ ns.total_sum | float }}">{{ ns.total_sum }} ₽</span>
+                </p>
+
+                <p class="d-flex justify-content-between text-success">
+                    <span>Ваша скидка (бонусы):</span>
+                    {% if current_user.user_bonuses > ns.total_sum %}
+                        <span id="user-discount" data-value="{{ current_user.user_bonuses | float }}">
+                            -{{ ns.total_sum }} ₽
+                        </span>
+                    {% else %}
+                        <span id="user-discount" data-value="{{ current_user.user_bonuses | float }}">
+                            -{{ current_user.user_bonuses }} ₽
+                        </span>
+                    {% endif %}
+                </p>
+
+                <p class="d-flex justify-content-between text-info" id="promo-row" style="display: none !important;">
+                    <span>Промокод:</span>
+                    <span id="promo-discount-val">0 ₽</span>
+                </p>
+
+                <hr>
+
+                <p class="d-flex justify-content-between h4">
+                    <span>Итого:</span>
+                    <span id="final-sum" class="text-primary">
+                        {{ [ns.total_sum - current_user.user_bonuses, 0] | max }} ₽
+                    </span>
+                </p>
+
+                <div class="mt-3">
+                    <label for="promo-code" class="form-label small">Есть промокод?</label>
+                    <div class="input-group input-group-sm">
+                        <input type="text" id="promo-code" class="form-control" placeholder="Введите код">
                         <button type="button" id="check-promo" class="btn btn-outline-primary">Применить</button>
                     </div>
-                    <small id="promo-message" class="form-text text-success"></small>
+                    <small id="promo-message" class="d-block mt-1"></small>
                 </div>
-                <p><strong>Сумма заказа:</strong> <span id="total-sum">{{ total_sum }} ₽</span></p>
-                <p><strong>Скидка:</strong> <span id="discount">{{ discount_amount }} ₽</span></p>
-                <p><strong>Итого к оплате:</strong> <span id="final-sum">{{ total_sum - discount_amount }} ₽</span></p>
             </div>
 
-            <button type="submit" class="btn btn-success btn-lg">Перейти к оплате</button>
+            <button type="submit" class="btn btn-success btn-lg w-100 shadow-sm">Оплатить заказ</button>
         </form>
     {% else %}
-        <p>Ваша корзина пуста.</p>
+        <div class="alert alert-info text-center py-5">
+            <i class="bi bi-cart-x fs-1"></i>
+            <p class="mt-3">Ваша корзина пуста.</p>
+            <a href="{{ url_for('customer.dashboard') }}" class="btn btn-primary">Вернуться к покупкам</a>
+        </div>
     {% endif %}
 </div>
 
 <script>
 document.getElementById('check-promo').addEventListener('click', async () => {
     const promoCode = document.getElementById('promo-code').value.trim();
-    if (!promoCode) {
-        alert('Введите промокод!');
-        return;
-    }
+    if (!promoCode) return;
 
     try {
         const res = await fetch('{{ url_for("customer.apply_promo") }}', {
@@ -81,27 +109,30 @@ document.getElementById('check-promo').addEventListener('click', async () => {
         });
         const data = await res.json();
 
-        const discountEl = document.getElementById('discount');
+        const totalSum = parseFloat(document.getElementById('total-sum').dataset.value);
+        const userBonuses = parseFloat(document.getElementById('user-discount').dataset.value);
         const finalSumEl = document.getElementById('final-sum');
         const promoMsgEl = document.getElementById('promo-message');
-        const totalSum = parseFloat({{ total_sum }});
+        const promoRow = document.getElementById('promo-row');
+        const promoValEl = document.getElementById('promo-discount-val');
 
         if (data.success) {
-            discountEl.textContent = data.discount_amount + ' ₽';
-            finalSumEl.textContent = (totalSum - data.discount_amount) + ' ₽';
-            promoMsgEl.textContent = 'Промокод успешно применен!';
-            promoMsgEl.classList.remove('text-danger');
-            promoMsgEl.classList.add('text-success');
+            const promoDiscount = parseFloat(data.discount_amount);
+            promoRow.style.setProperty('display', 'flex', 'important');
+            promoValEl.textContent = '-' + promoDiscount + ' ₽';
+            let newFinalSum = totalSum - userBonuses - promoDiscount;
+            finalSumEl.textContent = Math.max(newFinalSum, 0) + ' ₽';
+            promoMsgEl.textContent = 'Промокод применен!';
+            promoMsgEl.className = 'd-block mt-1 text-success';
         } else {
-            discountEl.textContent = '0 ₽';
-            finalSumEl.textContent = totalSum + ' ₽';
-            promoMsgEl.textContent = data.message || 'Неверный промокод';
-            promoMsgEl.classList.remove('text-success');
-            promoMsgEl.classList.add('text-danger');
+            promoRow.style.setProperty('display', 'none', 'important');
+            finalSumEl.textContent = Math.max(totalSum - userBonuses, 0) + ' ₽';
+            promoMsgEl.textContent = data.message || 'Неверный код';
+            promoMsgEl.className = 'd-block mt-1 text-danger';
         }
     } catch (err) {
         console.error(err);
-        alert('Ошибка при проверке промокода');
+        alert('Ошибка связи с сервером');
     }
 });
 </script>
