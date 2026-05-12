@@ -398,23 +398,35 @@ def add_to_cart():
     return jsonify({'success': True})
 
 
+from sqlalchemy.orm import joinedload
+
+
 @login_required
 @customer_bp.route('/cart_page')
 def cart_page():
     with db_session.create_session() as sess:
-        cart_products = sess.query(Cart).filter(Cart.user_id == current_user.id).all()
-
-        for product in cart_products:
-            pr = sess.get(Products, product.product_id)
-
-            if not pr or pr.quantity <= 0:
-                sess.delete(product)
-
-        sess.commit()
-
-        cart_products = sess.query(Cart).options(
+        # Загружаем корзину вместе с продуктами
+        cart_items = sess.query(Cart).options(
             joinedload(Cart.product)
         ).filter(Cart.user_id == current_user.id).all()
 
-    return render_template('customer/cart_page.html', cart_products=cart_products,
+        grouped_cart = {}
+
+        for item in cart_items:
+            if item.product:
+                _ = item.product.name
+                shop = sess.get(Shops, item.product.shop_id)
+
+                if shop:
+                    if shop.id not in grouped_cart:
+                        grouped_cart[shop.id] = {
+                            'shop_name': shop.name,
+                            'items': []
+                        }
+                    grouped_cart[shop.id]['items'].append(item)
+
+        sess.expunge_all()
+
+    return render_template('customer/cart_page.html',
+                           grouped_cart=grouped_cart,
                            title='Корзина')

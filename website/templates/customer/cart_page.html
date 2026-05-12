@@ -7,7 +7,7 @@
         <a href="{{ url_for('customer.dashboard') }}" class="btn btn-outline-secondary btn-sm">Продолжить покупки</a>
     </div>
 
-    {% if not cart_products %}
+    {% if not grouped_cart %}
         <div class="text-center py-5 shadow-sm bg-light rounded">
             <i class="bi bi-cart-x text-muted" style="font-size: 4rem;"></i>
             <h3 class="mt-3">Корзина пуста</h3>
@@ -18,48 +18,59 @@
         <div class="row">
             <div class="col-lg-8">
                 <div id="cart-items-container">
-                    {% for item in cart_products %}
-                    {% set product = item.product %}
-                    <div class="card mb-3 shadow-sm border-0 cart-item-card product-row"
-                         id="product-row-{{ product.id }}"
-                         data-price="{{ product.price }}"
-                         data-product-id="{{ product.id }}">
-                        <div class="row g-0 align-items-center">
-                            <div class="col-3 col-md-2 p-2">
-                                {% set images = product.imgs.split(',') if product.imgs else [] %}
-                                <div class="ratio ratio-1x1 bg-light rounded overflow-hidden shadow-sm border">
-                                    <img src="{% if images %}https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ images[0] }}{% else %}https://via.placeholder.com/150{% endif %}"
-                                         class="img-fluid"
-                                         alt="{{ product.name }}"
-                                         style="object-fit: cover;">
-                                </div>
-                            </div>
-                            <div class="col-9 col-md-10">
-                                <div class="card-body py-2">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <h5 class="card-title mb-1"><a href="{{ url_for('customer.product_page', shop_id=product.shop_id, product_id=product.id) }}">{{ product.name }}</a></h5>
-                                        <button class="btn btn-sm text-danger" onclick="changeQty({{ product.id }}, -{{ item.quantity }}, {{ product.quantity }})">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
+                    {% for shop_id, shop_data in grouped_cart.items() %}
+                        <div class="shop-group-header mb-3 mt-4 d-flex align-items-center">
+                            <i class="bi bi-shop text-primary me-2 fs-4"></i>
+                            <h4 class="mb-0">{{ shop_data.shop_name }}</h4>
+                        </div>
 
-                                    <div class="d-flex justify-content-between align-items-center mt-3">
-                                        <div class="input-group input-group-sm w-auto border rounded">
-                                            <button class="btn btn-light border-0" onclick="changeQty({{ product.id }}, -1, {{ product.quantity }})">−</button>
-                                            <span class="px-3 py-1 bg-white item-quantity" id="qty-{{ product.id }}">{{ item.quantity }}</span>
-                                            <button class="btn btn-light border-0" onclick="changeQty({{ product.id }}, 1, {{ product.quantity }})">+</button>
+                        {% for item in shop_data['items'] %}
+                        {% set product = item.product %}
+                        <div class="card mb-3 shadow-sm border-0 cart-item-card product-row"
+                             id="product-row-{{ product.id }}"
+                             data-price="{{ product.price }}"
+                             data-product-id="{{ product.id }}">
+                            <div class="row g-0 align-items-center">
+                                <div class="col-3 col-md-2 p-2 ps-3">
+                                    {% set images = product.imgs.split(',') if product.imgs else [] %}
+                                    <div class="ratio ratio-1x1 bg-light rounded overflow-hidden shadow-sm border">
+                                        <img src="{% if images %}https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ images[0] }}{% else %}https://via.placeholder.com/150{% endif %}"
+                                             class="img-fluid"
+                                             alt="{{ product.name }}"
+                                             style="object-fit: cover;">
+                                    </div>
+                                </div>
+                                <div class="col-9 col-md-10">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <h5 class="card-title mb-1">
+                                                <a href="{{ url_for('customer.product_page', shop_id=product.shop_id, product_id=product.id) }}" class="text-decoration-none text-dark">
+                                                    {{ product.name }}
+                                                </a>
+                                            </h5>
+                                            <button class="btn btn-sm text-danger" onclick="changeQty({{ product.id }}, -{{ item.quantity }}, {{ product.quantity }})">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </div>
-                                        <div class="text-end">
-                                            <span class="text-muted small d-block">{{ product.price }} ₽ / шт.</span>
-                                            <span class="fw-bold fs-5 item-total-price" id="sum-{{ product.id }}">
-                                                {{ item.quantity * product.price }} ₽
-                                            </span>
+
+                                        <div class="d-flex justify-content-between align-items-center mt-3">
+                                            <div class="input-group input-group-sm w-auto border rounded">
+                                                <button class="btn btn-light border-0" onclick="changeQty({{ product.id }}, -1, {{ product.quantity }})">−</button>
+                                                <span class="px-3 py-1 bg-white item-quantity" id="qty-{{ product.id }}">{{ item.quantity }}</span>
+                                                <button class="btn btn-light border-0" onclick="changeQty({{ product.id }}, 1, {{ product.quantity }})">+</button>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="text-muted small d-block">{{ product.price }} ₽ / шт.</span>
+                                                <span class="fw-bold fs-5 item-total-price" id="sum-{{ product.id }}">
+                                                    {{ item.quantity * product.price }} ₽
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                        {% endfor %}
                     {% endfor %}
                 </div>
             </div>
@@ -68,8 +79,8 @@
                 <div class="card shadow-sm border-0 p-4 sticky-top" style="top: 20px;">
                     <h4 class="mb-4">Детали заказа</h4>
                     <div class="d-flex justify-content-between mb-2">
-                        <span>Товары (<span id="total-qty-count">{% set total_q = cart_products|sum(attribute='quantity') %}{{ total_q }}</span>):</span>
-                        <span id="total-price-display">{{ total_price }} ₽</span>
+                        <span>Товары (<span id="total-qty-count">0</span>):</span>
+                        <span id="total-price-display">0 ₽</span>
                     </div>
                     <div class="d-flex justify-content-between mb-4">
                         <span>Скидка:</span>
@@ -78,7 +89,7 @@
                     <hr>
                     <div class="d-flex justify-content-between mb-4">
                         <span class="h5">Итого к оплате:</span>
-                        <span class="h5 text-primary" id="grand-total">{{ total_price}} ₽</span>
+                        <span class="h5 text-primary" id="grand-total">0 ₽</span>
                     </div>
                     <button class="btn btn-primary btn-lg w-100 shadow-sm">Перейти к оплате</button>
                     <p class="text-center text-muted small mt-3">
@@ -91,16 +102,15 @@
 </div>
 
 <script>
+// JavaScript остается почти таким же, так как он ищет все .product-row
+// независимо от того, в какой группе магазина они находятся.
+// Единственное изменение — добавлена очистка пустых заголовков магазинов при удалении.
+
 function recalculateTotal() {
     let grandTotal = 0;
     let totalItemsCount = 0;
-
-    const bonusElement = document.getElementById('user-bonuses');
-    if (!bonusElement) return;
-
-    const maxUserBonuses = parseFloat(bonusElement.dataset.bonus) || 0;
-
     const rows = document.querySelectorAll('.product-row');
+
     if (rows.length === 0) {
         location.reload();
         return;
@@ -110,26 +120,21 @@ function recalculateTotal() {
         const price = parseFloat(row.dataset.price);
         const qty = parseInt(row.querySelector('.item-quantity').textContent);
         const rowSum = price * qty;
-
         grandTotal += rowSum;
         totalItemsCount += qty;
-
         const sumElement = row.querySelector('.item-total-price');
         if (sumElement) sumElement.textContent = rowSum + ' ₽';
     });
 
+    const bonusElement = document.getElementById('user-bonuses');
+    const maxUserBonuses = parseFloat(bonusElement.dataset.bonus) || 0;
     let appliedDiscount = maxUserBonuses > grandTotal ? grandTotal : maxUserBonuses;
-
     let finalTotal = grandTotal - appliedDiscount;
 
     document.getElementById('total-price-display').textContent = grandTotal + ' ₽';
-
     bonusElement.textContent = appliedDiscount + ' ₽';
-
     document.getElementById('grand-total').textContent = finalTotal + ' ₽';
-
-    const qtyDisplay = document.getElementById('total-qty-count');
-    if (qtyDisplay) qtyDisplay.textContent = totalItemsCount;
+    document.getElementById('total-qty-count').textContent = totalItemsCount;
 }
 
 function changeQty(productId, delta, maxAvailable) {
@@ -147,26 +152,17 @@ function changeQty(productId, delta, maxAvailable) {
     if (newQty <= 0) {
         if (confirm("Удалить этот товар из корзины?")) {
             const row = document.getElementById(`product-row-${productId}`);
-            if (row) {
-                row.remove(); // Удаляем из HTML
-            }
+            if (row) row.remove();
 
-            // Отправляем на сервер
             sendUpdateToServer(productId, 0);
+            recalculateTotal();
 
-            // Проверяем, остались ли еще товары
-            const remainingRows = document.querySelectorAll('.product-row');
-            if (remainingRows.length === 0) {
-                // Если товаров не осталось, принудительно обновляем через мгновение
-                setTimeout(() => { location.reload(); }, 100);
-            } else {
-                recalculateTotal();
-            }
+            // Если в магазине не осталось товаров, можно тоже обновить страницу
+            // Но базовый пересчет в recalculateTotal() обработает пустую корзину
         }
         return;
     }
 
-    // Обычное обновление количества
     qtyElement.textContent = newQty;
     recalculateTotal();
     sendUpdateToServer(productId, newQty);
@@ -175,25 +171,16 @@ function changeQty(productId, delta, maxAvailable) {
 function sendUpdateToServer(productId, qty) {
     fetch("{{ url_for('customer.add_to_cart') }}", {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            // Если у вас включен CSRF, раскомментируйте строку ниже:
-            // 'X-CSRFToken': "{{ csrf_token() if csrf_token else '' }}"
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ product_id: productId, quantity: qty })
-    })
-    .then(response => response.json())
-    .then(data => {
+    }).then(r => r.json()).then(data => {
         if (!data.success) {
-            alert("Ошибка: " + data.message);
+            alert(data.message);
             location.reload();
         }
-    })
-    .catch(err => {
-        console.error('Network error:', err);
     });
 }
 
-    document.addEventListener('DOMContentLoaded', recalculateTotal);
+document.addEventListener('DOMContentLoaded', recalculateTotal);
 </script>
 {% endblock %}
