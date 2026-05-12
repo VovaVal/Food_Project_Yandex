@@ -34,7 +34,7 @@
                                 <div class="col-3 col-md-2 p-2 ps-3">
                                     {% set images = product.imgs.split(',') if product.imgs else [] %}
                                     <div class="ratio ratio-1x1 bg-light rounded overflow-hidden shadow-sm border">
-                                        <img src="{% if images %}https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ images[0] }}{% else %}https://via.placeholder.com/150{% endif %}"
+                                        <img src="{% if images %}https://{{ config['BUCKET_CLIENT'] }}.s3.cloud.ru/{{ images[0] }}{% endif %}"
                                              class="img-fluid"
                                              alt="{{ product.name }}"
                                              style="object-fit: cover;">

@@ -25,6 +25,9 @@
     </div>
 
     <div class="mt-4 text-end">
+        <a href="{{ url_for('customer.cart_page') }}" class="btn btn-secondary btn-lg">
+            <i class="bi bi-arrow-left"></i> Вернуться в корзину
+        </a>
         <button class="btn btn-success btn-lg">Подтвердить и перейти к оплате</button>
     </div>
 </div>
@@ -40,6 +43,8 @@ const userCoords = {% if current_user.coords %}[{{ current_user.coords|replace('
 
 // Инициализация карты
 const map = L.map('map');
+
+map.attributionControl.remove(); // Убирает флаг
 
 // Добавляем слой карты
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -66,9 +71,18 @@ shopItems.forEach(item => {
     const lat = parseFloat(item.dataset.lat);
     const lng = parseFloat(item.dataset.lng);
     const name = item.childNodes[0].nodeValue.trim();
+    const deliveryRadius = parseFloat(item.dataset.radius) || 3000;
 
     const marker = L.marker([lat, lng]).bindPopup(name).addTo(map);
     markers.push(marker);
+
+    // Синий круг радиуса доставки
+    L.circle([lat, lng], {
+        color: '#0d6efd',
+        fillColor: '#0d6efd',
+        fillOpacity: 0.1,
+        radius: deliveryRadius
+    }).addTo(map);
 
     if (userCoords) {
         const distance = getDistance(userCoords[0], userCoords[1], lat, lng);
