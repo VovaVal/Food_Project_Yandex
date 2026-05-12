@@ -105,14 +105,7 @@
 <script>
 function recalculateTotal() {
     const rows = document.querySelectorAll('.product-row');
-    const cartContainer = document.getElementById('cart-items-container');
-
-    if (rows.length === 0 && cartContainer) {
-        location.reload();
-        return;
-    }
-
-    if (rows.length === 0) return;
+    // Убрали отсюда автоматический reload!
 
     let grandTotal = 0;
     let totalItemsCount = 0;
@@ -155,6 +148,7 @@ function removeProduct(productId) {
 
     const shopContainer = row.closest('.shop-container');
 
+    // Скрываем или удаляем строку визуально
     row.remove();
 
     if (shopContainer && shopContainer.querySelectorAll('.product-row').length === 0) {
@@ -163,6 +157,7 @@ function removeProduct(productId) {
 
     recalculateTotal();
 
+    // Отправляем запрос
     fetch("{{ url_for('customer.add_to_cart') }}", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -170,7 +165,14 @@ function removeProduct(productId) {
     })
     .then(r => r.json())
     .then(data => {
-        if (!data.success) {
+        if (data.success) {
+            // ПРОВЕРКА: если после удаления в DOM не осталось ни одного товара
+            const remainingRows = document.querySelectorAll('.product-row');
+            if (remainingRows.length === 0) {
+                // Теперь перезагрузка безопасна — сервер уже удалил товар
+                location.reload();
+            }
+        } else {
             alert("Ошибка при удалении: " + data.message);
             location.reload();
         }
