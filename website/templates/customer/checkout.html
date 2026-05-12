@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2><i class="bi bi-bag-check"></i> Оформление заказа</h2>
+
+    <div class="row mt-4">
+        <div class="col-lg-8">
+            <div id="map" style="height: 500px; border-radius: 8px;"></div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 p-4">
+                <h4 class="mb-3">Магазины и расстояния</h4>
+                <ul class="list-group" id="shop-list">
+                    {% for shop_id, shop_data in grouped_cart.items() %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center" data-lat="{{ shop_data.lat }}" data-lng="{{ shop_data.lng }}">
+                        {{ shop_data.shop_name }}
+                        <span class="badge bg-primary rounded-pill" id="distance-{{ shop_id }}">?км</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 text-end">
+        <button class="btn btn-success btn-lg">Подтвердить и перейти к оплате</button>
+    </div>
+</div>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+// Координаты пользователя, если есть
+const userCoords = {% if current_user.coords %}[{{ current_user.coords|replace(',', ',') }}]{% else %}null{% endif %};
+
+// Инициализация карты
+const map = L.map('map');
+
+// Добавляем слой карты
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+}).addTo(map);
+
+// Создаем группу маркеров
+const markers = [];
+
+// Маркер пользователя
+if (userCoords) {
+    const userMarker = L.marker(userCoords, {
+        icon: L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/25/25694.png',
+            iconSize: [32,32]
+        })
+    }).bindPopup('Ваш дом').addTo(map);
+    markers.push(userMarker);
+}
+
+// Маркеры магазинов
+const shopItems = document.querySelectorAll('#shop-list li');
+shopItems.forEach(item => {
+    const lat = parseFloat(item.dataset.lat);
+    const lng = parseFloat(item.dataset.lng);
+    const name = item.childNodes[0].nodeValue.trim();
+
+    const marker = L.marker([lat, lng]).bindPopup(name).addTo(map);
+    markers.push(marker);
+
+    if (userCoords) {
+        const distance = getDistance(userCoords[0], userCoords[1], lat, lng);
+        item.querySelector('span').textContent = distance.toFixed(2) + ' км';
+    }
+});
+
+// Подстраиваем карту под все маркеры
+if (markers.length > 0) {
+    const group = L.featureGroup(markers);
+    map.fitBounds(group.getBounds().pad(0.2)); // pad добавляет отступ вокруг маркеров
+}
+
+// Функция расчета расстояния между двумя координатами (в км)
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // радиус Земли в км
+    const dLat = deg2rad(lat2-lat1);
+    const dLon = deg2rad(lon2-lon1);
+    const a =
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon/2) * Math.sin(dLon/2)
+        ;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const d = R * c;
+    return d;
+}
+
+function deg2rad(deg) {
+    return deg * (Math.PI/180)
+}
+</script>
+{% endblock %}

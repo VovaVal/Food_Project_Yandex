@@ -36,6 +36,14 @@ def dashboard():
     if resp.status_code == 200:
         data = resp.json()
         shops = data.get('shops', [])
+        shops1 = []
+        for shop in shops:
+            if (not shop['address'] or shop['address'] is None) or (not shop['coords'] or shop['coords'] is None):
+                continue
+            else:
+                shops1.append(shop)
+
+        shops = shops1
 
         return render_template('customer/dashboard.html', title='Главно окно', user=current_user, shops=shops)
     else:
@@ -66,6 +74,9 @@ def shop_page(shop_id: int):
     if resp.status_code == 200:
         shop = resp.json()['shop']
 
+        if (not shop['address'] or shop['address'] is None) or (not shop['coords'] or shop['coords'] is None):
+            return redirect(url_for('customer.dashboard'))
+
         with db_session.create_session() as sess:
             user = sess.get(User, shop['user_id'])
 
@@ -88,7 +99,7 @@ def shop_page(shop_id: int):
         print('Error occurred!!!')
         print(resp.status_code)
         print(resp.reason)
-        return redirect('customer.dashboard')
+        return redirect(url_for('customer.dashboard'))
 
 
 @login_required
@@ -96,12 +107,19 @@ def shop_page(shop_id: int):
 def shop_products(shop_id: int):
     with db_session.create_session() as sess:
         shop = sess.get(Shops, shop_id)
+
+        if not shop:
+            return redirect(url_for('customer.dashboard'))
+
         shop_products = shop.products
 
         cart_items = sess.query(Cart).filter(Cart.user_id == current_user.id).all()
         user_cart = {item.product_id: item.quantity for item in cart_items}
 
     if not shop:
+        return redirect(url_for('customer.dashboard'))
+
+    if (not shop.address or shop.address is None) or (not shop.coords or shop.coords is None):
         return redirect(url_for('customer.dashboard'))
 
     return render_template('customer/shop_products.html', title='Товары', shop_id=shop_id,
@@ -115,6 +133,28 @@ def product_page(shop_id: int, product_id: int):
         product = sess.get(Products, product_id)
 
         if not product:
+            return redirect(url_for('customer.dashboard'))
+
+        shop = sess.get(Shops, product.shop_id)
+
+        if not shop:
+            return redirect(url_for('customer.dashboard'))
+
+        if (not shop.address or shop.address is None) or (not shop.coords or shop.coords is None):
+            return redirect(url_for('customer.dashboard'))
+
+        if shop.id != product.shop_id:
+            return redirect(url_for('customer.dashboard'))
+
+        shop = sess.get(Shops, shop_id)
+
+        if not shop:
+            return redirect(url_for('customer.dashboard'))
+
+        if (not shop.address or shop.address is None) or (not shop.coords or shop.coords is None):
+            return redirect(url_for('customer.dashboard'))
+
+        if shop.id != product.shop_id:
             return redirect(url_for('customer.dashboard'))
 
         reviews = product.reviews
@@ -430,3 +470,49 @@ def cart_page():
     return render_template('customer/cart_page.html',
                            grouped_cart=grouped_cart,
                            title='Корзина')
+
+
+@login_required
+@customer_bp.route('/checkout')
+def checkout():
+    with db_session.create_session() as sess:
+        cart_items = sess.query(Cart).options(
+            joinedload(Cart.product)
+        ).filter(Cart.user_id == current_user.id).all()
+
+        grouped_cart = {}
+
+        for item in cart_items:
+            if item.product:
+                _ = item.product.name
+                shop = sess.get(Shops, item.product.shop_id)
+
+                if shop:
+                    if shop.id not in grouped_cart:
+                        # Добавляем lat и lng
+                        if shop.coords:
+                            try:
+                                coords = shop.coords.split(',')
+                                lat = float(coords[0].strip())
+                                lng = float(coords[1].strip())
+                            except:
+                                lat = 55.751244
+                                lng = 37.618423
+                        else:
+                            lat = 55.751244
+                            lng = 37.618423
+
+                        grouped_cart[shop.id] = {
+                            'shop_name': shop.name,
+                            'items': [],
+                            'lat': lat,
+                            'lng': lng
+                        }
+
+                    grouped_cart[shop.id]['items'].append(item)
+
+        sess.expunge_all()
+
+    return render_template('customer/checkout.html',
+                           grouped_cart=grouped_cart,
+                           title='Заказ')
