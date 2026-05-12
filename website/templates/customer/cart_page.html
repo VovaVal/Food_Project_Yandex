@@ -102,19 +102,18 @@
 </div>
 
 <script>
-// JavaScript остается почти таким же, так как он ищет все .product-row
-// независимо от того, в какой группе магазина они находятся.
-// Единственное изменение — добавлена очистка пустых заголовков магазинов при удалении.
-
 function recalculateTotal() {
     let grandTotal = 0;
     let totalItemsCount = 0;
     const rows = document.querySelectorAll('.product-row');
 
-    if (rows.length === 0) {
+    const cartContainer = document.getElementById('cart-items-container');
+    if (rows.length === 0 && cartContainer) {
         location.reload();
         return;
     }
+
+    if (rows.length === 0) return;
 
     rows.forEach(row => {
         const price = parseFloat(row.dataset.price);
@@ -127,14 +126,16 @@ function recalculateTotal() {
     });
 
     const bonusElement = document.getElementById('user-bonuses');
-    const maxUserBonuses = parseFloat(bonusElement.dataset.bonus) || 0;
-    let appliedDiscount = maxUserBonuses > grandTotal ? grandTotal : maxUserBonuses;
-    let finalTotal = grandTotal - appliedDiscount;
+    if (bonusElement) {
+        const maxUserBonuses = parseFloat(bonusElement.dataset.bonus) || 0;
+        let appliedDiscount = maxUserBonuses > grandTotal ? grandTotal : maxUserBonuses;
+        let finalTotal = grandTotal - appliedDiscount;
 
-    document.getElementById('total-price-display').textContent = grandTotal + ' ₽';
-    bonusElement.textContent = appliedDiscount + ' ₽';
-    document.getElementById('grand-total').textContent = finalTotal + ' ₽';
-    document.getElementById('total-qty-count').textContent = totalItemsCount;
+        document.getElementById('total-price-display').textContent = grandTotal + ' ₽';
+        bonusElement.textContent = appliedDiscount + ' ₽';
+        document.getElementById('grand-total').textContent = finalTotal + ' ₽';
+        document.getElementById('total-qty-count').textContent = totalItemsCount;
+    }
 }
 
 function changeQty(productId, delta, maxAvailable) {
@@ -151,14 +152,7 @@ function changeQty(productId, delta, maxAvailable) {
 
     if (newQty <= 0) {
         if (confirm("Удалить этот товар из корзины?")) {
-            const row = document.getElementById(`product-row-${productId}`);
-            if (row) row.remove();
-
             sendUpdateToServer(productId, 0);
-            recalculateTotal();
-
-            // Если в магазине не осталось товаров, можно тоже обновить страницу
-            // Но базовый пересчет в recalculateTotal() обработает пустую корзину
         }
         return;
     }
@@ -173,11 +167,24 @@ function sendUpdateToServer(productId, qty) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ product_id: productId, quantity: qty })
-    }).then(r => r.json()).then(data => {
-        if (!data.success) {
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            if (qty === 0) {
+                const row = document.getElementById(`product-row-${productId}`);
+                if (row) {
+                    row.remove();
+                    recalculateTotal();
+                }
+            }
+        } else {
             alert(data.message);
             location.reload();
         }
+    })
+    .catch(err => {
+        console.error("Ошибка сети:", err);
     });
 }
 
