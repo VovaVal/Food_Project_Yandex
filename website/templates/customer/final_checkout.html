@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2><i class="bi bi-bag-check"></i> Финальное оформление заказа</h2>
+
+    {% if grouped_cart %}
+        <form id="final-checkout-form">
+            {% set total_sum = 0 %}
+            {% set discount_amount = 0 %}
+            
+            {% for shop_id, shop_data in grouped_cart.items() %}
+                <div class="card mb-4 shadow-sm border-0">
+                    <div class="card-header bg-primary text-white">
+                        <h5>{{ shop_data.shop_name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Товар</th>
+                                    <th>Количество</th>
+                                    <th>Цена за единицу</th>
+                                    <th>Сумма</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in shop_data['items'] %}
+                                    {% set item_sum = item.quantity * item.product.price %}
+                                    {% set total_sum = total_sum + item_sum %}
+                                    <tr>
+                                        <td>{{ item.product.name }}</td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>{{ item.product.price }} ₽</td>
+                                        <td>{{ item_sum }} ₽</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% set d = {'pickup': 'самовывоз', 'delivery': 'доставка'} %}
+                        {% set delivery_method = session.get('delivery_data', {}).get(shop_id|string, 'pickup') %}
+                        <p><strong>Способ доставки:</strong> {{ d.get(delivery_method, 'самовывоз')|capitalize }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <div class="card mb-4 shadow-sm border-0 p-4">
+                <div class="mb-3">
+                    <label for="promo-code" class="form-label">Промокод</label>
+                    <div class="input-group">
+                        <input type="text" id="promo-code" class="form-control" placeholder="Введите промокод">
+                        <button type="button" id="check-promo" class="btn btn-outline-primary">Применить</button>
+                    </div>
+                    <small id="promo-message" class="form-text text-success"></small>
+                </div>
+                <p><strong>Сумма заказа:</strong> <span id="total-sum">{{ total_sum }} ₽</span></p>
+                <p><strong>Скидка:</strong> <span id="discount">{{ discount_amount }} ₽</span></p>
+                <p><strong>Итого к оплате:</strong> <span id="final-sum">{{ total_sum - discount_amount }} ₽</span></p>
+            </div>
+
+            <button type="submit" class="btn btn-success btn-lg">Перейти к оплате</button>
+        </form>
+    {% else %}
+        <p>Ваша корзина пуста.</p>
+    {% endif %}
+</div>
+
+<script>
+document.getElementById('check-promo').addEventListener('click', async () => {
+    const promoCode = document.getElementById('promo-code').value.trim();
+    if (!promoCode) {
+        alert('Введите промокод!');
+        return;
+    }
+
+    try {
+        const res = await fetch('{{ url_for("customer.apply_promo") }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ promo_code: promoCode })
+        });
+        const data = await res.json();
+
+        const discountEl = document.getElementById('discount');
+        const finalSumEl = document.getElementById('final-sum');
+        const promoMsgEl = document.getElementById('promo-message');
+        const totalSum = parseFloat({{ total_sum }});
+
+        if (data.success) {
+            discountEl.textContent = data.discount_amount + ' ₽';
+            finalSumEl.textContent = (totalSum - data.discount_amount) + ' ₽';
+            promoMsgEl.textContent = 'Промокод успешно применен!';
+            promoMsgEl.classList.remove('text-danger');
+            promoMsgEl.classList.add('text-success');
+        } else {
+            discountEl.textContent = '0 ₽';
+            finalSumEl.textContent = totalSum + ' ₽';
+            promoMsgEl.textContent = data.message || 'Неверный промокод';
+            promoMsgEl.classList.remove('text-success');
+            promoMsgEl.classList.add('text-danger');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Ошибка при проверке промокода');
+    }
+});
+</script>
+{% endblock %}

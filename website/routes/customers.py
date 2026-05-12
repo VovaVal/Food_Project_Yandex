@@ -529,5 +529,51 @@ def final_checkout():
 
         return jsonify({'success': True, 'redirect_url': url_for('customer.final_checkout')})
 
+    with db_session.create_session() as sess:
+        cart_items = sess.query(Cart).options(
+            joinedload(Cart.product)
+        ).filter(Cart.user_id == current_user.id).all()
+
+        grouped_cart = {}
+
+        for item in cart_items:
+            if item.product:
+                _ = item.product.name
+                shop = sess.get(Shops, item.product.shop_id)
+
+                if shop:
+                    if shop.id not in grouped_cart:
+                        if shop.coords:
+                            try:
+                                coords = shop.coords.split(',')
+                                lat = float(coords[0].strip())
+                                lng = float(coords[1].strip())
+                            except:
+                                # Москва
+                                lat = 55.751244
+                                lng = 37.618423
+                        else:
+                            # Москва
+                            lat = 55.751244
+                            lng = 37.618423
+
+                        grouped_cart[shop.id] = {
+                            'shop_name': shop.name,
+                            'items': [],
+                            'lat': lat,
+                            'lng': lng
+                        }
+
+                    grouped_cart[shop.id]['items'].append(item)
+
+        sess.expunge_all()
+
     delivery_data = session.get('delivery_data', {})
-    return render_template('customer/final_checkout.html', delivery_data=delivery_data, title='Заказ')
+    return render_template('customer/final_checkout.html', delivery_data=delivery_data,
+                           title='Заказ', grouped_cart=grouped_cart)
+
+
+@login_required
+@customer_bp.route('/apply_promo', methods=['POST'])
+def apply_promo():
+    ...
