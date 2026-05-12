@@ -14,9 +14,25 @@
                 <h4 class="mb-3">Магазины и расстояния</h4>
                 <ul class="list-group" id="shop-list">
                     {% for shop_id, shop_data in grouped_cart.items() %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center" data-lat="{{ shop_data.lat }}" data-lng="{{ shop_data.lng }}">
-                        {{ shop_data.shop_name }}
-                        <span class="badge bg-primary rounded-pill" id="distance-{{ shop_id }}">?км</span>
+                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                        data-lat="{{ shop_data.lat }}"
+                        data-lng="{{ shop_data.lng }}"
+                        data-radius="{{ shop_data.delivery_radius }}"
+                        data-shop-id="{{ shop_id }}">
+                        <div>
+                            {{ shop_data.shop_name }}
+                            <div class="mt-1 delivery-options" id="delivery-options-{{ shop_id }}">
+                                <label>
+                                    <input type="radio" name="delivery-{{ shop_id }}" value="pickup" checked>
+                                    Самовывоз
+                                </label>
+                                <label class="ms-3">
+                                    <input type="radio" name="delivery-{{ shop_id }}" value="delivery">
+                                    Доставка
+                                </label>
+                            </div>
+                        </div>
+                        <span class="badge bg-primary rounded-pill" id="distance-{{ shop_id }}">? км</span>
                     </li>
                     {% endfor %}
                 </ul>
@@ -24,7 +40,7 @@
         </div>
     </div>
 
-    <div class="mt-4 text-end">
+    <div class="mt-4 d-flex justify-content-between">
         <a href="{{ url_for('customer.cart_page') }}" class="btn btn-secondary btn-lg">
             <i class="bi bi-arrow-left"></i> Вернуться в корзину
         </a>
@@ -38,38 +54,31 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-// Координаты пользователя, если есть
+// Координаты пользователя
 const userCoords = {% if current_user.coords %}[{{ current_user.coords|replace(',', ',') }}]{% else %}null{% endif %};
 
 // Инициализация карты
 const map = L.map('map');
-
 map.attributionControl.remove(); // Убирает флаг
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-// Добавляем слой карты
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-}).addTo(map);
-
-// Создаем группу маркеров
+// Группа маркеров
 const markers = [];
 
 // Маркер пользователя
 if (userCoords) {
     const userMarker = L.marker(userCoords, {
-        icon: L.icon({
-            iconUrl: 'https://cdn-icons-png.flaticon.com/512/25/25694.png',
-            iconSize: [32,32]
-        })
+        icon: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/25/25694.png', iconSize: [32,32] })
     }).bindPopup('Ваш дом').addTo(map);
     markers.push(userMarker);
 }
 
-// Маркеры магазинов
+// Магазины
 const shopItems = document.querySelectorAll('#shop-list li');
 shopItems.forEach(item => {
     const lat = parseFloat(item.dataset.lat);
     const lng = parseFloat(item.dataset.lng);
+    const shopId = item.dataset.shopId;
     const name = item.childNodes[0].nodeValue.trim();
     const deliveryRadius = parseFloat(item.dataset.radius) || 3000;
 
@@ -77,42 +86,41 @@ shopItems.forEach(item => {
     markers.push(marker);
 
     // Синий круг радиуса доставки
-    L.circle([lat, lng], {
-        color: '#0d6efd',
-        fillColor: '#0d6efd',
-        fillOpacity: 0.1,
-        radius: deliveryRadius
-    }).addTo(map);
+    L.circle([lat, lng], { color: '#0d6efd', fillColor: '#0d6efd', fillOpacity: 0.1, radius: deliveryRadius }).addTo(map);
 
+    // Расстояние до пользователя
+    let distance = null;
     if (userCoords) {
-        const distance = getDistance(userCoords[0], userCoords[1], lat, lng);
+        distance = getDistance(userCoords[0], userCoords[1], lat, lng);
         item.querySelector('span').textContent = distance.toFixed(2) + ' км';
+    }
+
+    // Настройка способа доставки
+    const deliveryDiv = document.getElementById(`delivery-options-${shopId}`);
+    if (!userCoords || (distance && distance*1000 > deliveryRadius)) {
+        // Пользователь далеко или нет адреса -> только самовывоз
+        deliveryDiv.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.checked = radio.value === 'pickup';
+            radio.disabled = true;
+        });
     }
 });
 
 // Подстраиваем карту под все маркеры
 if (markers.length > 0) {
     const group = L.featureGroup(markers);
-    map.fitBounds(group.getBounds().pad(0.2)); // pad добавляет отступ вокруг маркеров
+    map.fitBounds(group.getBounds().pad(0.2));
 }
 
-// Функция расчета расстояния между двумя координатами (в км)
+// Расчет расстояния
 function getDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // радиус Земли в км
+    const R = 6371;
     const dLat = deg2rad(lat2-lat1);
     const dLon = deg2rad(lon2-lon1);
-    const a =
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-        Math.sin(dLon/2) * Math.sin(dLon/2)
-        ;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const d = R * c;
-    return d;
+    const a = Math.sin(dLat/2)**2 + Math.cos(deg2rad(lat1))*Math.cos(deg2rad(lat2))*Math.sin(dLon/2)**2;
+    return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-function deg2rad(deg) {
-    return deg * (Math.PI/180)
-}
+function deg2rad(deg) { return deg * (Math.PI/180); }
 </script>
 {% endblock %}
