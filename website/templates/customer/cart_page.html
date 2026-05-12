@@ -175,7 +175,16 @@ function sendUpdateToServer(productId, qty) {
                 const row = document.getElementById(`product-row-${productId}`);
                 if (row) {
                     row.remove();
-                    recalculateTotal();
+
+                    const remainingRows = document.querySelectorAll('.product-row');
+                    if (remainingRows.length === 0) {
+                        setTimeout(() => {
+                            const currentUrl = window.location.pathname;
+                            window.location.href = currentUrl + "?t=" + new Date().getTime();
+                        }, 400);
+                    } else {
+                        recalculateTotal();
+                    }
                 }
             }
         } else {
@@ -183,9 +192,7 @@ function sendUpdateToServer(productId, qty) {
             location.reload();
         }
     })
-    .catch(err => {
-        console.error("Ошибка сети:", err);
-    });
+    .catch(err => console.error("Ошибка сети:", err));
 }
 
 document.addEventListener('DOMContentLoaded', recalculateTotal);
