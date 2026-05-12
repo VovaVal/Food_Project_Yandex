@@ -44,7 +44,7 @@
         <a href="{{ url_for('customer.cart_page') }}" class="btn btn-secondary btn-lg">
             <i class="bi bi-arrow-left"></i> Вернуться в корзину
         </a>
-        <button class="btn btn-success btn-lg">Подтвердить и перейти к оплате</button>
+        <button id="checkout-btn" class="btn btn-success btn-lg">Подтвердить и перейти к оплате</button>
     </div>
 </div>
 
@@ -54,18 +54,14 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-// Координаты пользователя
 const userCoords = {% if current_user.coords %}[{{ current_user.coords|replace(',', ',') }}]{% else %}null{% endif %};
 
-// Инициализация карты
 const map = L.map('map');
-map.attributionControl.remove(); // Убирает флаг
+map.attributionControl.remove();
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-// Группа маркеров
 const markers = [];
 
-// Маркер пользователя
 if (userCoords) {
     const userMarker = L.marker(userCoords, {
         icon: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/25/25694.png', iconSize: [32,32] })
@@ -73,7 +69,6 @@ if (userCoords) {
     markers.push(userMarker);
 }
 
-// Магазины
 const shopItems = document.querySelectorAll('#shop-list li');
 shopItems.forEach(item => {
     const lat = parseFloat(item.dataset.lat);
@@ -95,7 +90,6 @@ shopItems.forEach(item => {
         item.querySelector('span').textContent = distance.toFixed(2) + ' км';
     }
 
-    // Настройка способа доставки
     const deliveryDiv = document.getElementById(`delivery-options-${shopId}`);
     if (!userCoords || (distance && distance*1000 > deliveryRadius)) {
         // Пользователь далеко или нет адреса -> только самовывоз
@@ -106,13 +100,11 @@ shopItems.forEach(item => {
     }
 });
 
-// Подстраиваем карту под все маркеры
 if (markers.length > 0) {
     const group = L.featureGroup(markers);
     map.fitBounds(group.getBounds().pad(0.2));
 }
 
-// Расчет расстояния
 function getDistance(lat1, lon1, lat2, lon2) {
     const R = 6371;
     const dLat = deg2rad(lat2-lat1);
@@ -122,5 +114,32 @@ function getDistance(lat1, lon1, lat2, lon2) {
 }
 
 function deg2rad(deg) { return deg * (Math.PI/180); }
+</script>
+
+<script>
+document.getElementById('checkout-btn').addEventListener('click', () => {
+    const deliveryData = {};
+    document.querySelectorAll('.delivery-options').forEach(div => {
+        const shopId = div.id.split('-')[2]; // delivery-options-<shop_id>
+        const selected = div.querySelector('input[type="radio"]:checked');
+        if (selected) {
+            deliveryData[shopId] = selected.value;
+        }
+    });
+
+    fetch('{{ url_for("customer.final_checkout") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(deliveryData)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = data.redirect_url;
+        } else {
+            alert(data.message || 'Ошибка при оформлении заказа');
+        }
+    });
+});
 </script>
 {% endblock %}

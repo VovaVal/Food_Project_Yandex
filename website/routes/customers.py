@@ -1,6 +1,6 @@
 import datetime
 import requests
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, session
 from flask_login import login_required, current_user
 from sqlalchemy.orm import joinedload
 
@@ -86,9 +86,11 @@ def shop_page(shop_id: int):
                 shop['lat'] = float(coords[0].strip())
                 shop['lng'] = float(coords[1].strip())
             except:
+                # Москва
                 shop['lat'] = 55.751244
                 shop['lng'] = 37.618423
         else:
+            # Москва
             shop['lat'] = 55.751244
             shop['lng'] = 37.618423
 
@@ -406,7 +408,6 @@ def add_to_cart():
         if not product:
             return jsonify({'success': False, 'message': 'Товар не обнаружен'})
 
-        # Ищем товар в корзине
         cart_item = sess.query(Cart).filter(
             Cart.user_id == current_user.id,
             Cart.product_id == product_id
@@ -436,9 +437,6 @@ def add_to_cart():
         sess.commit()
 
     return jsonify({'success': True})
-
-
-from sqlalchemy.orm import joinedload
 
 
 @login_required
@@ -489,16 +487,17 @@ def checkout():
 
                 if shop:
                     if shop.id not in grouped_cart:
-                        # Добавляем lat и lng
                         if shop.coords:
                             try:
                                 coords = shop.coords.split(',')
                                 lat = float(coords[0].strip())
                                 lng = float(coords[1].strip())
                             except:
+                                # Москва
                                 lat = 55.751244
                                 lng = 37.618423
                         else:
+                            # Москва
                             lat = 55.751244
                             lng = 37.618423
 
@@ -516,3 +515,19 @@ def checkout():
     return render_template('customer/checkout.html',
                            grouped_cart=grouped_cart,
                            title='Заказ')
+
+
+@login_required
+@customer_bp.route('/final_checkout', methods=['GET', 'POST'])
+def final_checkout():
+    '''Последний этап заказа'''
+    if request.method == 'POST':
+        delivery_data = request.get_json()
+        print(delivery_data)
+
+        session['delivery_data'] = delivery_data
+
+        return jsonify({'success': True, 'redirect_url': url_for('customer.final_checkout')})
+
+    delivery_data = session.get('delivery_data', {})
+    return render_template('customer/final_checkout.html', delivery_data=delivery_data, title='Заказ')
