@@ -572,9 +572,3 @@ def final_checkout():
     print(delivery_data)
     return render_template('customer/final_checkout.html', delivery_data=delivery_data,
                            title='Заказ', grouped_cart=grouped_cart)
-
-
-@login_required
-@customer_bp.route('/apply_promo', methods=['POST'])
-def apply_promo():
-    ...

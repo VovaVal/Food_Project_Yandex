@@ -75,11 +75,6 @@
                     {% endif %}
                 </p>
 
-                <p class="d-flex justify-content-between text-info" id="promo-row" style="display: none !important;">
-                    <span>Промокод:</span>
-                    <span id="promo-discount-val">0 ₽</span>
-                </p>
-
                 <hr>
 
                 <p class="d-flex justify-content-between h4">
@@ -88,15 +83,6 @@
                         {{ [ns.total_sum - current_user.user_bonuses, 0] | max }} ₽
                     </span>
                 </p>
-
-                <div class="mt-3">
-                    <label for="promo-code" class="form-label small">Есть промокод?</label>
-                    <div class="input-group input-group-sm">
-                        <input type="text" id="promo-code" class="form-control" placeholder="Введите код">
-                        <button type="button" id="check-promo" class="btn btn-outline-primary">Применить</button>
-                    </div>
-                    <small id="promo-message" class="d-block mt-1"></small>
-                </div>
             </div>
 
             <button type="submit" class="btn btn-success btn-lg w-100 shadow-sm">Оплатить заказ</button>
@@ -109,45 +95,4 @@
         </div>
     {% endif %}
 </div>
-
-<script>
-document.getElementById('check-promo').addEventListener('click', async () => {
-    const promoCode = document.getElementById('promo-code').value.trim();
-    if (!promoCode) return;
-
-    try {
-        const res = await fetch('{{ url_for("customer.apply_promo") }}', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ promo_code: promoCode })
-        });
-        const data = await res.json();
-
-        const totalSum = parseFloat(document.getElementById('total-sum').dataset.value);
-        const userBonuses = parseFloat(document.getElementById('user-discount').dataset.value);
-        const finalSumEl = document.getElementById('final-sum');
-        const promoMsgEl = document.getElementById('promo-message');
-        const promoRow = document.getElementById('promo-row');
-        const promoValEl = document.getElementById('promo-discount-val');
-
-        if (data.success) {
-            const promoDiscount = parseFloat(data.discount_amount);
-            promoRow.style.setProperty('display', 'flex', 'important');
-            promoValEl.textContent = '-' + promoDiscount + ' ₽';
-            let newFinalSum = totalSum - userBonuses - promoDiscount;
-            finalSumEl.textContent = Math.max(newFinalSum, 0) + ' ₽';
-            promoMsgEl.textContent = 'Промокод применен!';
-            promoMsgEl.className = 'd-block mt-1 text-success';
-        } else {
-            promoRow.style.setProperty('display', 'none', 'important');
-            finalSumEl.textContent = Math.max(totalSum - userBonuses, 0) + ' ₽';
-            promoMsgEl.textContent = data.message || 'Неверный код';
-            promoMsgEl.className = 'd-block mt-1 text-danger';
-        }
-    } catch (err) {
-        console.error(err);
-        alert('Ошибка связи с сервером');
-    }
-});
-</script>
 {% endblock %}
