@@ -456,18 +456,36 @@ def cart_page():
                 shop = sess.get(Shops, item.product.shop_id)
 
                 if shop:
+                    shop_data_for_check = {
+                        'timetable': shop.timetable
+                    }
+                    is_open = is_shop_open(shop_data_for_check)
+
                     if shop.id not in grouped_cart:
                         grouped_cart[shop.id] = {
                             'shop_name': shop.name,
+                            'is_active': is_open,
+                            'timetable': shop.timetable,
                             'items': []
                         }
+
+                    if item.active != is_open:
+                        item.active = is_open
+
                     grouped_cart[shop.id]['items'].append(item)
 
-        sess.expunge_all()
+        sess.commit()
 
-    return render_template('customer/cart_page.html',
-                           grouped_cart=grouped_cart,
-                           title='Корзина')
+        # Сортируем: сначала активные магазины, потом закрытые
+        sorted_grouped_cart = dict(sorted(
+            grouped_cart.items(),
+            key=lambda x: x[1]['is_active'],
+            reverse=True
+        ))
+
+        return render_template('customer/cart_page.html',
+                               grouped_cart=sorted_grouped_cart,
+                               title='Корзина', is_shop_open=is_shop_open)
 
 
 @login_required
@@ -486,6 +504,11 @@ def checkout():
                 shop = sess.get(Shops, item.product.shop_id)
 
                 if shop:
+                    shop_data_for_check = {
+                        'timetable': shop.timetable
+                    }
+                    is_open = is_shop_open(shop_data_for_check)
+
                     if shop.id not in grouped_cart:
                         if shop.coords:
                             try:
@@ -503,18 +526,23 @@ def checkout():
 
                         grouped_cart[shop.id] = {
                             'shop_name': shop.name,
+                            'is_active': is_open,
+                            'timetable': shop.timetable,
                             'items': [],
                             'lat': lat,
                             'lng': lng
                         }
 
+                    if item.active != is_open:
+                        item.active = is_open
+
                     grouped_cart[shop.id]['items'].append(item)
 
-        sess.expunge_all()
+        sess.commit()
 
-    return render_template('customer/checkout.html',
-                           grouped_cart=grouped_cart,
-                           title='Заказ')
+        return render_template('customer/checkout.html',
+                               grouped_cart=grouped_cart,
+                               title='Заказ')
 
 
 @login_required
@@ -542,6 +570,11 @@ def final_checkout():
                 shop = sess.get(Shops, item.product.shop_id)
 
                 if shop:
+                    shop_data_for_check = {
+                        'timetable': shop.timetable
+                    }
+                    is_open = is_shop_open(shop_data_for_check)
+
                     if shop.id not in grouped_cart:
                         if shop.coords:
                             try:
@@ -559,16 +592,21 @@ def final_checkout():
 
                         grouped_cart[shop.id] = {
                             'shop_name': shop.name,
+                            'is_active': is_open,
+                            'timetable': shop.timetable,
                             'items': [],
                             'lat': lat,
                             'lng': lng
                         }
 
+                    if item.active != is_open:
+                        item.active = is_open
+
                     grouped_cart[shop.id]['items'].append(item)
 
-        sess.expunge_all()
+        sess.commit()
 
-    delivery_data = session.get('delivery_data', {})
-    print(delivery_data)
-    return render_template('customer/final_checkout.html', delivery_data=delivery_data,
-                           title='Заказ', grouped_cart=grouped_cart)
+        delivery_data = session.get('delivery_data', {})
+        print(delivery_data)
+        return render_template('customer/final_checkout.html', delivery_data=delivery_data,
+                               title='Заказ', grouped_cart=grouped_cart)

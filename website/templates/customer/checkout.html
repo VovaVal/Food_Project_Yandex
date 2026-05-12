@@ -14,26 +14,28 @@
                 <h4 class="mb-3">Магазины и расстояния</h4>
                 <ul class="list-group" id="shop-list">
                     {% for shop_id, shop_data in grouped_cart.items() %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                        data-lat="{{ shop_data.lat }}"
-                        data-lng="{{ shop_data.lng }}"
-                        data-radius="{{ shop_data.delivery_radius }}"
-                        data-shop-id="{{ shop_id }}">
-                        <div>
-                            {{ shop_data.shop_name }}
-                            <div class="mt-1 delivery-options" id="delivery-options-{{ shop_id }}">
-                                <label>
-                                    <input type="radio" name="delivery-{{ shop_id }}" value="pickup" checked>
-                                    Самовывоз
-                                </label>
-                                <label class="ms-3">
-                                    <input type="radio" name="delivery-{{ shop_id }}" value="delivery">
-                                    Доставка
-                                </label>
+                    {% if shop_data.is_active %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center"
+                            data-lat="{{ shop_data.lat }}"
+                            data-lng="{{ shop_data.lng }}"
+                            data-radius="{{ shop_data.delivery_radius }}"
+                            data-shop-id="{{ shop_id }}">
+                            <div>
+                                {{ shop_data.shop_name }}
+                                <div class="mt-1 delivery-options" id="delivery-options-{{ shop_id }}">
+                                    <label>
+                                        <input type="radio" name="delivery-{{ shop_id }}" value="pickup" checked>
+                                        Самовывоз
+                                    </label>
+                                    <label class="ms-3">
+                                        <input type="radio" name="delivery-{{ shop_id }}" value="delivery">
+                                        Доставка
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-                        <span class="badge bg-primary rounded-pill" id="distance-{{ shop_id }}">? км</span>
-                    </li>
+                            <span class="badge bg-primary rounded-pill" id="distance-{{ shop_id }}">? км</span>
+                        </li>
+                    {% endif %}
                     {% endfor %}
                 </ul>
             </div>

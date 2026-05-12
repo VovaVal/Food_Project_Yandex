@@ -30,5 +30,10 @@ class Cart(SqlAlchemyBase, SerializerMixin):
         sqlalchemy.Integer,
         default=0
     )
+    # активен ли товар(работает ли магазин в данный момент)
+    active = sqlalchemy.Column(
+        sqlalchemy.Boolean,
+        default=True
+    )
 
     product = orm.relationship('Products')
