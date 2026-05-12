@@ -569,6 +569,7 @@ def final_checkout():
         sess.expunge_all()
 
     delivery_data = session.get('delivery_data', {})
+    print(delivery_data)
     return render_template('customer/final_checkout.html', delivery_data=delivery_data,
                            title='Заказ', grouped_cart=grouped_cart)
 

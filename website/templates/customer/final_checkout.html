@@ -17,6 +17,15 @@
                 <div class="card mb-4 shadow-sm border-0">
                     <div class="card-header bg-primary text-white">
                         <h5>{{ shop_data.shop_name }}</h5>
+
+                        {% set method = delivery_data.get(shop_id|string) %}
+                        <span class="badge bg-light text-primary">
+                            {% if method == 'delivery' %}
+                                <i class="bi bi-truck"></i> Доставка
+                            {% else %}
+                                <i class="bi bi-geo-alt"></i> Самовывоз
+                            {% endif %}
+                        </span>
                     </div>
                     <div class="card-body">
                         <table class="table">
