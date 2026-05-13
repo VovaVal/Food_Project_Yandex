@@ -18,10 +18,10 @@
                         <li class="list-group-item d-flex justify-content-between align-items-center"
                             data-lat="{{ shop_data.lat }}"
                             data-lng="{{ shop_data.lng }}"
-                            data-radius="{{ shop_data.delivery_radius }}"
+                            data-radius="{{ shop_data.radius }}"
                             data-shop-id="{{ shop_id }}">
                             <div>
-                                {{ shop_data.shop_name }}
+                                <span class="shop-name-text">{{ shop_data.shop_name }}</span>
                                 <div class="mt-1 delivery-options" id="delivery-options-{{ shop_id }}">
                                     <label>
                                         <input type="radio" name="delivery-{{ shop_id }}" value="pickup" checked>
@@ -76,7 +76,7 @@ shopItems.forEach(item => {
     const lat = parseFloat(item.dataset.lat);
     const lng = parseFloat(item.dataset.lng);
     const shopId = item.dataset.shopId;
-    const name = item.childNodes[0].nodeValue.trim();
+    const name = item.querySelector('.shop-name-text').textContent.trim();
     const deliveryRadius = parseFloat(item.dataset.radius) || 3000;
 
     const marker = L.marker([lat, lng]).bindPopup(name).addTo(map);
@@ -89,7 +89,7 @@ shopItems.forEach(item => {
     let distance = null;
     if (userCoords) {
         distance = getDistance(userCoords[0], userCoords[1], lat, lng);
-        item.querySelector('span').textContent = distance.toFixed(2) + ' км';
+        document.getElementById(`distance-${shopId}`).textContent = distance.toFixed(2) + ' км';
     }
 
     const deliveryDiv = document.getElementById(`delivery-options-${shopId}`);

@@ -26,6 +26,10 @@
                         {% endfor %}
                     </ul>
                     <div class="d-flex justify-content-between mt-4">
+                        <h5>Использовано бонусов:</h5>
+                        <h4 class="text-success">{{ order.user_bonuses }} ₽</h4>
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
                         <h5>Итого к оплате:</h5>
                         <h4 class="text-primary">{{ order.price }} ₽</h4>
                     </div>

@@ -470,6 +470,7 @@ def cart_page():
                             'shop_name': shop.name,
                             'is_active': is_open,
                             'timetable': shop.timetable,
+                            'radius': shop.delivery_radius,
                             'items': []
                         }
 
@@ -533,6 +534,7 @@ def checkout():
                             'shop_name': shop.name,
                             'is_active': is_open,
                             'timetable': shop.timetable,
+                            'radius': shop.delivery_radius,
                             'items': [],
                             'lat': lat,
                             'lng': lng
@@ -606,6 +608,7 @@ def final_checkout():
                             'shop_name': shop.name,
                             'is_active': is_open,
                             'timetable': shop.timetable,
+                            'radius': shop.delivery_radius,
                             'items': [],
                             'lat': lat,
                             'lng': lng
@@ -658,6 +661,7 @@ def create_order():
             discount_to_use = user.user_bonuses
 
         user.user_bonuses -= discount_to_use
+        sess.add(user)
 
         created_orders = []
         for shop_id, items in items_by_shop.items():
@@ -674,6 +678,15 @@ def create_order():
 
             method = delivery_data.get(str(shop_id), 'pickup')
 
+            if discount_to_use <= shop_total:
+                bonuses = discount_to_use
+                discount_to_use = 0
+                shop_total -= bonuses
+            else:
+                bonuses = shop_total
+                discount_to_use -= bonuses
+                shop_total = 0
+
             if current_user.coords:
                 order = Orders(
                     user_id=current_user.id,
@@ -685,7 +698,8 @@ def create_order():
                     type_of_payment='cash',
                     address=current_user.address,
                     coords=current_user.coords,
-                    confirm_code=uuid.uuid4().hex[:6]
+                    confirm_code=uuid.uuid4().hex[:6],
+                    user_bonuses=bonuses
                 )
             else:
                 order = Orders(
@@ -696,7 +710,8 @@ def create_order():
                     delivery_type=method,
                     created_date=datetime.datetime.now(),
                     type_of_payment='cash',
-                    confirm_code=uuid.uuid4().hex[:6]
+                    confirm_code=uuid.uuid4().hex[:6],
+                    user_bonuses=bonuses
                 )
 
             sess.add(order)
@@ -764,11 +779,16 @@ def cancel_order(order_id: int):
 
         order.status = 'cancelled'
 
+        user = sess.get(User, current_user.id)
+
+        if user:
+            user.user_bonuses += order.user_bonuses
+
         order_items = order.order_items
         for item in order_items:
             product = sess.get(Products, item.product_id)
 
-            # возвращаем тоары, которые заказали
+            # возвращаем товары, которые заказали
             if product:
                 product.quantity += item.quantity
 

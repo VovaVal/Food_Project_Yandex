@@ -66,6 +66,11 @@ class Orders(SqlAlchemyBase, SerializerMixin):
     confirm_code = sqlalchemy.Column(
         sqlalchemy.String
     )
+    # бонусы пользователя, которые мы использовали
+    user_bonuses = sqlalchemy.Column(
+        sqlalchemy.Integer,
+        default=0
+    )
 
     order_items = orm.relationship('OrderItems', back_populates='order')
     shop = orm.relationship('Shops', back_populates='orders')
