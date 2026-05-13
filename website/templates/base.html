@@ -7,6 +7,7 @@
           href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
           crossorigin="anonymous">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='imgs/icon.png') }}" type="image/x-icon">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -135,8 +136,14 @@
 <header>
     <nav class="navbar navbar-light bg-light">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{{ url_for('common.dashboard') }}">
-            <h1 class="mb-0">Food Delivery</h1>
+        <a class="navbar-brand d-flex align-items-center gap-3" href="{{ url_for('common.dashboard') }}">
+            <img src="{{ url_for('static', filename='imgs/icon.png') }}"
+                 height="50"
+                 width="50"
+                 class="rounded-circle"
+                 alt="Logo"
+                 style="object-fit: cover;">
+            <h1 class="mb-0 h2">Cup & Bite</h1>
         </a>
 
         <div class="d-flex align-items-center gap-3">
