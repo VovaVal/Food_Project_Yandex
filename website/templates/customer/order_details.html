@@ -88,6 +88,8 @@
     // Коэффициент: 1.5 минуты на 1 км (или 90 секунд на 1000 метров)
     const TIME_PER_METER = (1.5 * 60 * 1000) / 1000;
 
+    let arrivedRequestSent = {{ 'true' if order.delivery_arrived else 'false' }};
+
     document.addEventListener('DOMContentLoaded', function() {
         const shopCoordsStr = "{{ order.shop.coords }}";
         const userCoordsStr = "{{ order.coords }}";
@@ -167,6 +169,24 @@
                         requestAnimationFrame(animate);
                     } else {
                         courierMarker.bindPopup("<b>Курьер приехал! 🚲</b>").openPopup();
+
+                        if (!arrivedRequestSent) {
+                            arrivedRequestSent = true; // Сразу ставим true, чтобы не спамить запросами
+
+                            fetch(`/customer/order/arrived/{{ order.id }}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    console.log("Статус 'Прибыл' обновлен в БД");
+                                }
+                            })
+                            .catch(error => console.error('Ошибка при обновлении статуса:', error));
+                        }
                     }
                 }
 

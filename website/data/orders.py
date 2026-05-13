@@ -71,6 +71,10 @@ class Orders(SqlAlchemyBase, SerializerMixin):
         sqlalchemy.Integer,
         default=0
     )
+    delivery_arrived = sqlalchemy.Column(
+        sqlalchemy.Boolean,
+        default=False
+    )
 
     order_items = orm.relationship('OrderItems', back_populates='order')
     shop = orm.relationship('Shops', back_populates='orders')

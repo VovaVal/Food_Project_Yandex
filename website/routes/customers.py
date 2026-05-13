@@ -797,3 +797,18 @@ def cancel_order(order_id: int):
         sess.commit()
 
         return jsonify({'success': True})
+
+
+@login_required
+@customer_bp.route('/order/arrived/<int:order_id>', methods=['POST'])
+def order_arrived(order_id):
+    print(order_id, 'order_id')
+    with db_session.create_session() as sess:
+        order = sess.query(Orders).filter(Orders.id == order_id, Orders.user_id == current_user.id).first()
+        if order:
+            order.delivery_arrived = True  # если курьер доехал
+            sess.commit()
+
+            return {"success": True}
+
+        return {"success": False, "message": "Order not found"}, 404
