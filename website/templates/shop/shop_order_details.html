@@ -63,6 +63,20 @@
             </div>
 
             {% if order.status == 'active' %}
+                <div class="card border-primary mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary"><i class="bi bi-shield-lock"></i> Проверка клиента</h5>
+                        <p class="small text-muted">Введите код подтверждения, предоставленный клиентом, чтобы завершить заказ.</p>
+                        <div class="input-group">
+                            <input type="text" id="confirmCodeInput" class="form-control" placeholder="6-значный код" maxlength="6">
+                            <button class="btn btn-primary" onclick="verifyClient({{ order.id }})">Подтвердить</button>
+                        </div>
+                        <div id="verifyStatus" class="mt-2 small d-none"></div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if order.status == 'active' %}
             <div class="mt-4 pt-3 border-top">
                 <button class="btn btn-outline-danger btn-block" onclick="cancelOrder({{ order.id }})">
                     <i class="bi bi-x-circle"></i> Отменить заказ
@@ -230,6 +244,44 @@
             alert('Произошла ошибка при отмене заказа');
         });
     }
+}
+</script>
+
+<script>
+    function verifyClient(orderId) {
+    const codeInput = document.getElementById('confirmCodeInput');
+    const statusDiv = document.getElementById('verifyStatus');
+    const code = codeInput.value.trim();
+
+    if (!code) {
+        alert('Пожалуйста, введите код');
+        return;
+    }
+
+    fetch(`/shop/order/verify_code/${orderId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code: code })
+    })
+    .then(response => response.json())
+    .then(data => {
+        statusDiv.classList.remove('d-none', 'text-success', 'text-danger');
+
+        if (data.success) {
+            statusDiv.classList.add('text-success');
+            statusDiv.innerHTML = '<i class="bi bi-check-circle"></i> Код верен! Заказ завершен.';
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            statusDiv.classList.add('text-danger');
+            statusDiv.innerHTML = '<i class="bi bi-exclamation-triangle"></i> ' + (data.message || 'Неверный код');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Ошибка при выполнении запроса');
+    });
 }
 </script>
 {% endblock %}

@@ -800,3 +800,31 @@ def cancel_order(order_id: int, shop_id: int):
         sess.commit()
 
         return jsonify({'success': True})
+
+
+@login_required
+@shop_bp.route('/order/verify_code/<int:order_id>', methods=['POST'])
+def verify_code(order_id):
+    data = request.get_json()
+    input_code = data.get('code')
+
+    with db_session.create_session() as sess:
+        order = sess.query(Orders).filter(Orders.id == order_id).first()
+
+        if not order:
+            return jsonify({'success': False, 'message': 'Заказ не найден'}), 404
+
+        if order.status != 'active':
+            return jsonify({'success': False, 'message': 'Заказ уже обработан'}), 400
+
+        c_code = order.confirm_code
+
+        if c_code.lower().strip() == input_code.lower().strip():
+            order.status = 'completed'
+
+            sess.add(order)
+            sess.commit()
+            return jsonify({'success': True})
+
+        else:
+            return jsonify({'success': False, 'message': 'Неверный код подтверждения'})
