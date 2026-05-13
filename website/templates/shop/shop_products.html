@@ -28,10 +28,12 @@
         <a href="{{ url_for('shop.add_product', shop_id=shop_id) }}" class="btn btn-primary">Добавить товар</a>
     </div>
 
+    {% if shop_prodcuts %}
     <div id="noResultsMessage" class="text-center py-5 d-none">
-        <i class="bi bi-search" style="font-size: 48px; color: #6c757d;"></i>
-        <p class="lead text-secondary mt-3">Ничего не найдено по вашему запросу</p>
+            <i class="bi bi-search" style="font-size: 48px; color: #6c757d;"></i>
+            <p class="lead text-secondary mt-3">Ничего не найдено по вашему запросу</p>
     </div>
+    {% endif %}
 
     <div class="row" id="productsGrid">
         {% if shop_products %}

@@ -63,6 +63,9 @@ class Orders(SqlAlchemyBase, SerializerMixin):
     coords = sqlalchemy.Column(
         sqlalchemy.String
     )
+    confirm_code = sqlalchemy.Column(
+        sqlalchemy.String
+    )
 
     order_items = orm.relationship('OrderItems', back_populates='order')
     shop = orm.relationship('Shops', back_populates='orders')
