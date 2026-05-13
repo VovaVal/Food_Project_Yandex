@@ -21,9 +21,19 @@
                         </span>
                     </div>
                     <div>
-                        <span class="badge {% if order.status == 'active' %}bg-success{% else %}bg-primary{% endif %}">
-                            {{ 'Активен' if order.status == 'active' else 'Завершен' }}
-                        </span>
+                        {% if order.status == 'active' %}
+                            <span class="badge bg-success">
+                                Активен
+                            </span>
+                        {% elif order.status == 'cancelled' %}
+                            <span class="badge bg-danger">
+                                Отменен
+                            </span>
+                        {% else %}
+                            <span class="badge bg-primary">
+                                Завершен
+                            </span>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="card-body">

@@ -53,6 +53,14 @@
                         <button class="btn btn-sm btn-outline-warning mt-2" onclick="toggleCode()">Показать код</button>
                     </div>
                 </div>
+            <div class="mt-4 pt-3 border-top">
+                <button class="btn btn-outline-danger btn-block" onclick="cancelOrder({{ order.id }})">
+                    <i class="bi bi-x-circle"></i> Отменить заказ
+                </button>
+                <small class="text-muted d-block mt-2 text-center">
+                    Внимание: отмена заказа необратима.
+                </small>
+            </div>
             {% endif %}
         </div>
 
@@ -119,5 +127,30 @@
             map.setView([55.75, 37.61], 10); // Дефолт (Москва)
         }
     });
+</script>
+
+<script>
+    function cancelOrder(orderId) {
+    if (confirm('Вы уверены, что хотите отменить этот заказ?')) {
+        fetch(`/customer/order/cancel/${orderId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Ошибка: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при отмене заказа');
+        });
+    }
+}
 </script>
 {% endblock %}

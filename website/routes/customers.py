@@ -746,3 +746,32 @@ def order_page(order_id: int):
                                title=f'Заказ №{order.id}',
                                order=order,
                                secret_code=order.confirm_code)
+
+
+@login_required
+@customer_bp.route('/order/cancel/<int:order_id>', methods=['POST'])
+def cancel_order(order_id: int):
+    with db_session.create_session() as sess:
+        order = sess.query(Orders).filter(Orders.id == order_id, Orders.user_id == current_user.id).first()
+
+        if not order:
+            return jsonify({'success': False, 'message': 'Заказ не найден'}), 404
+
+        if order.status != 'active':
+            return jsonify({'success': False, 'message': 'Можно отменить только активный заказ'}), 400
+
+        order.status = 'cancelled'
+
+        order_items = order.order_items
+        for item in order_items:
+            product = sess.get(Products, item.product_id)
+
+            # возвращаем тоары, которые заказали
+            if product:
+                product.quantity += item.quantity
+
+                sess.add(product)
+
+        sess.commit()
+
+        return jsonify({'success': True})
