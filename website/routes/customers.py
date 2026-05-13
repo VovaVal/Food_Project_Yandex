@@ -710,4 +710,7 @@ def create_order():
 @login_required
 @customer_bp.route('/orders')
 def orders():
-    ...
+    with db_session.create_session() as sess:
+        orders = sess.query(Orders).order_by(Orders.created_date.desc()).all()
+
+        return render_template('customer/orders_page.html', title='Заказы', orders=orders)

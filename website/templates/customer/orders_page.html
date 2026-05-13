@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-clock-history"></i> История моих заказов</h2>
+        <a href="{{ url_for('customer.dashboard') }}" class="btn btn-primary btn-sm">За покупками</a>
+    </div>
+
+    {% if orders %}
+        {% for order in orders %}
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header d-flex justify-content-between align-items-center 
+                    {% if order.status == 'active' %}bg-light text-dark{% else %}bg-secondary text-white{% endif %}">
+                    <div>
+                        <strong>Заказ №{{ loop.index }}</strong>
+                        <span class="ms-2 {% if order.status == 'active' %}text-muted{% else %}text-white-50{% endif %}">
+                            {{ order.created_date.strftime('%d.%m.%Y %H:%M') }}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="badge {% if order.status == 'active' %}bg-success{% else %}bg-primary{% endif %}">
+                            {{ 'Активен' if order.status == 'active' else 'Завершен' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="text-muted mb-3">Состав заказа:</h6>
+                            <ul class="list-group list-group-flush mb-3">
+                                {% for item in order.order_items %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                        {{ item.product.name }}
+                                        <span>{{ item.quantity }} шт. × {{ item.product.price }} ₽</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-4 border-start">
+                            <p class="mb-1"><strong>Магазин:</strong> {{ order.shop.name }}</p>
+                            <p class="mb-1"><strong>Доставка:</strong> 
+                                {% if order.delivery_type == 'delivery' %}
+                                    <span class="text-primary"><i class="bi bi-truck"></i> Курьером</span>
+                                {% else %}
+                                    <span class="text-secondary"><i class="bi bi-geo-alt"></i> Самовывоз</span>
+                                {% endif %}
+                            </p>
+                            {% if order.address %}
+                                <p class="small text-muted mb-1"><strong>Адрес:</strong> {{ order.address }}</p>
+                            {% endif %}
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="h5 mb-0">Итого:</span>
+                                <span class="h4 mb-0 text-primary">{{ order.price }} ₽</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-cart-x text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3 text-muted">Вы еще не сделали ни одного заказа</h4>
+            <p>Самое время что-нибудь выбрать!</p>
+            <a href="{{ url_for('customer.dashboard') }}" class="btn btn-lg btn-outline-primary mt-2">Перейти в каталог</a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .card:hover {
+        transform: translateY(-3px);
+    }
+    .list-group-item {
+        border-color: rgba(0,0,0,0.05);
+        font-size: 0.95rem;
+    }
+</style>
+{% endblock %}
