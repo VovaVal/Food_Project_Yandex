@@ -706,7 +706,9 @@ def create_order():
                 order_item = OrderItems(
                     product_id=cart_item.product_id,
                     order_id=order.id,
-                    quantity=cart_item.quantity
+                    quantity=cart_item.quantity,
+                    name=cart_item.product.name,
+                    price=cart_item.product.price
                 )
                 sess.add(order_item)
 
