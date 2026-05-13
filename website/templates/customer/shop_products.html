@@ -16,6 +16,14 @@
                        placeholder="Поиск по названию товара..."
                        onkeyup="filterProducts()">
             </div>
+
+            <select id="categoryFilter" class="form-select w-auto" onchange="filterProducts()">
+                <option value="all">Все категории</option>
+                <option value="drink">Напитки</option>
+                <option value="bakery">Выпечка</option>
+                <option value="dessert">Десерты</option>
+                <option value="other">Другое</option>
+            </select>
         </div>
     </div>
 
@@ -28,7 +36,7 @@
         {% if shop_products %}
         {% for product in shop_products %}
         <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow-sm">
+            <div class="card h-100 shadow-sm product-item" data-type="{{ product.product_type }}">
                 {% set images = product.imgs.split(',') if product.imgs else [] %}
 {% if images %}
 <div id="carousel{{ product.id }}" class="carousel slide" data-bs-ride="carousel">
@@ -76,7 +84,7 @@
                             {% endfor %}
                             ({{ product.rate or '0' }})</p>
                     <p class="card-text mb-1"><strong>Описание</strong>: {{ product.description or 'Отсутствует описание' }}</p>
-                    {% set d = {'drink': 'напиток', 'bakery': 'выпечка', 'dessert': 'десерт', 'other': 'другое'} %}
+                    {% set d = {'drink': 'Напиток', 'bakery': 'Выпечка', 'dessert': 'Десерт', 'other': 'Другое'} %}
                     <p class="card-text mb-1"><strong>Тип продукта</strong>: {{ d[product.product_type] }}</p>
                     <p class="card-text mb-1"><strong>Количество</strong>: {{ product.quantity or 0 }}</p>
                     {% set d = {'kg': 'кг', 'g': 'гр', 'l': 'л', 'ml': 'мл'} %}
@@ -275,29 +283,33 @@ function syncCartWithServer(productId, quantity) {
 
 <script>
     function filterProducts() {
-    // Получаем значение из строки поиска
-    const input = document.getElementById('productSearch');
-    const filter = input.value.toLowerCase();
-
-    // Получаем все карточки товаров
+    const searchText = document.getElementById('productSearch').value.toLowerCase();
+    const selectedCategory = document.getElementById('categoryFilter').value;
     const grid = document.getElementById('productsGrid');
-    const cards = grid.getElementsByClassName('col-md-4');
 
+    if (!grid) return;
+
+    // Ищем все колонки (родители карточек)
+    const columns = grid.getElementsByClassName('col-md-4');
     let visibleCount = 0;
 
-    for (let i = 0; i < cards.length; i++) {
-        // Ищем заголовок внутри карточки
-        const title = cards[i].querySelector('.card-title').textContent;
+    for (let i = 0; i < columns.length; i++) {
+        const col = columns[i];
+        const card = col.querySelector('.product-item'); // Ваша карточка с data-type
+        const title = col.querySelector('.card-title').textContent.toLowerCase();
+        const productType = card.getAttribute('data-type');
 
-        if (title.toLowerCase().indexOf(filter) > -1) {
-            cards[i].style.display = ""; // Показываем
+        const matchesSearch = title.includes(searchText);
+        const matchesCategory = (selectedCategory === 'all' || productType === selectedCategory);
+
+        if (matchesSearch && matchesCategory) {
+            col.style.setProperty('display', '', 'important');
             visibleCount++;
         } else {
-            cards[i].style.display = "none"; // Скрываем
+            col.style.setProperty('display', 'none', 'important');
         }
     }
 
-    // Показываем сообщение "Ничего не найдено", если все карточки скрыты
     const noResults = document.getElementById('noResultsMessage');
     if (visibleCount === 0) {
         noResults.classList.remove('d-none');
