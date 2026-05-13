@@ -3,10 +3,10 @@
 {% block content %}
 
 <div class="container mt-4">
-    <div class="d-flex justify-content-between mb-4">
+    <div class="d-flex justify-content-between mb-4 gap-3">
         <a href="{{ url_for('shop.shop_id_settings', shop_id=shop_id) }}" class="btn btn-outline-secondary">← Назад</a>
 
-        <div class="d-flex flex-grow-1">
+        <div class="d-flex flex-grow-1 mx-3">
                     <span class="input-group-text bg-white border-end-0">
                         <i class="bi bi-search text-muted"></i>
                     </span>
@@ -15,15 +15,15 @@
                            class="form-control border-start-0 ps-0"
                            placeholder="Поиск по названию товара..."
                            onkeyup="filterProducts()">
-                </div>
 
-        <select id="categoryFilter" class="form-select w-auto rounded" style="max-width: 160px;" onchange="filterProducts()">
+                    <select id="categoryFilter" class="form-select w-auto rounded" style="max-width: 160px;" onchange="filterProducts()">
                     <option value="all">Все категории</option>
                     <option value="drink">Напитки</option>
                     <option value="bakery">Выпечка</option>
                     <option value="dessert">Десерты</option>
                     <option value="other">Другое</option>
                 </select>
+                </div>
 
         <a href="{{ url_for('shop.add_product', shop_id=shop_id) }}" class="btn btn-primary">Добавить товар</a>
     </div>
