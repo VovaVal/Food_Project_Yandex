@@ -12,6 +12,7 @@ from website.data import db_session
 from website.data.order_items import OrderItems
 from website.data.orders import Orders
 from website.data.products import Products
+from website.data.reviews_shop import ReviewsShop
 from website.data.shops import Shops
 from website.data.users import User
 from website.forms.add_product import AddProduct
@@ -126,10 +127,21 @@ def shop_id_settings(shop_id: int):
         'sunday': 'Воскресенье'
     }
 
+    with db_session.create_session() as sess:
+        shop = sess.get(Shops, shop_id)
+
+        if not shop:
+            return redirect(url_for('shop.dashboard'))
+
+        reviews = sess.query(ReviewsShop).filter(
+            ReviewsShop.shop_id == shop_id
+        ).options(joinedload(ReviewsShop.user)).all()
+        reviews = sorted(reviews, key=lambda x: x.created_date, reverse=True)
+
     shop_data = shop_data.json()['shop']
     return render_template('shop/shop_settings.html', title=shop_data['name'],
                            shop=shop_data, days_ru=days_ru, is_shop_open=is_shop_open, get_next_closing_time=get_next_closing_time,
-                           get_next_opening_time=get_next_opening_time)
+                           get_next_opening_time=get_next_opening_time, reviews=reviews)
 
 
 def get_current_day_name():
