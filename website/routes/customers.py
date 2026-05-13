@@ -638,6 +638,7 @@ def final_checkout():
 def create_order():
     data = request.get_json()
     delivery_data = session.get('delivery_data', {})
+    print(data)
 
     if not delivery_data:
         return jsonify({'success': False, 'message': 'Данные о доставке потеряны'})
@@ -687,6 +688,8 @@ def create_order():
                 discount_to_use -= bonuses
                 shop_total = 0
 
+            description = data['description'].get(str(shop_id), '')
+
             if current_user.coords:
                 order = Orders(
                     user_id=current_user.id,
@@ -699,7 +702,8 @@ def create_order():
                     address=current_user.address,
                     coords=current_user.coords,
                     confirm_code=uuid.uuid4().hex[:6],
-                    user_bonuses=bonuses
+                    user_bonuses=bonuses,
+                    description=description
                 )
             else:
                 order = Orders(
@@ -711,7 +715,8 @@ def create_order():
                     created_date=datetime.datetime.now(),
                     type_of_payment='cash',
                     confirm_code=uuid.uuid4().hex[:6],
-                    user_bonuses=bonuses
+                    user_bonuses=bonuses,
+                    description=description
                 )
 
             sess.add(order)

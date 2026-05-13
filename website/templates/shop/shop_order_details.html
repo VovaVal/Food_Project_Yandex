@@ -55,6 +55,13 @@
                 </div>
             </div>
 
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="bi bi-chat-dots"></i> Комментарий к продавцу</h5>
+                    <textarea id="orderComment" class="form-control" readonly placeholder="Комментарий к продавцу (не обязательно)" rows="3">{{ order.description or '' }}</textarea>
+                </div>
+            </div>
+
             {% if order.status == 'active' %}
             <div class="mt-4 pt-3 border-top">
                 <button class="btn btn-outline-danger btn-block" onclick="cancelOrder({{ order.id }})">

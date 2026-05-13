@@ -58,15 +58,6 @@
                                     <span class="text-secondary"><i class="bi bi-geo-alt"></i> Самовывоз</span>
                                 {% endif %}
                             </p>
-                            {% if order.delivery_type == 'delivery' %}
-                                <p class="mb-1"><strong>Доехал курьер:</strong>
-                                    {% if order.delivery_arrived %}
-                                        <span class="text-success"> ДА </span>
-                                    {% else %}
-                                        <span class="text-danger"> НЕТ </span>
-                                    {% endif %}
-                                </p>
-                            {% endif %}
 
                             {% if order.address %}
                                 <p class="small text-muted mb-1"><strong>Адрес:</strong> {{ order.address }}</p>
