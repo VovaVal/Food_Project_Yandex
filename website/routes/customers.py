@@ -718,3 +718,22 @@ def orders():
         orders = sess.query(Orders).order_by(Orders.created_date.desc()).all()
 
         return render_template('customer/orders_page.html', title='Заказы', orders=orders)
+
+
+@login_required
+@customer_bp.route('/order/<int:order_id>')
+def order_page(order_id: int):
+    with db_session.create_session() as sess:
+        order = sess.query(Orders).options(
+            joinedload(Orders.order_items).joinedload(OrderItems.product),
+            joinedload(Orders.shop)
+        ).filter(Orders.id == order_id, Orders.user_id == current_user.id).first()
+
+        if not order:
+            flash("Заказ не найден", "danger")
+            return redirect(url_for('customer.orders'))
+
+        return render_template('customer/order_details.html',
+                               title=f'Заказ №{order.id}',
+                               order=order,
+                               secret_code=order.confirm_code)

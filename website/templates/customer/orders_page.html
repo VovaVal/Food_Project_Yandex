@@ -13,7 +13,9 @@
                 <div class="card-header d-flex justify-content-between align-items-center 
                     {% if order.status == 'active' %}bg-light text-dark{% else %}bg-secondary text-white{% endif %}">
                     <div>
-                        <strong>Заказ №{{ loop.index }}</strong>
+                        <a href="{{ url_for('customer.order_page', order_id=order.id) }}">
+                            <strong>Заказ №{{ loop.index }}</strong>
+                        </a>
                         <span class="ms-2 {% if order.status == 'active' %}text-muted{% else %}text-white-50{% endif %}">
                             {{ order.created_date.strftime('%d.%m.%Y %H:%M') }}
                         </span>

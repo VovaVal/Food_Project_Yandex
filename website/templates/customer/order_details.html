@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('customer.orders') }}">Мои заказы</a></li>
+            <li class="breadcrumb-item active">Заказ №{{ order.id }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <h4 class="card-title mb-4">Детали заказа</h4>
+                    <ul class="list-group list-group-flush">
+                        {% for item in order.order_items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div>
+                                <h6>{{ item.product.name }}</h6>
+                                <small class="text-muted">{{ item.product.price }} ₽ за шт.</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">{{ item.quantity }} шт.</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="d-flex justify-content-between mt-4">
+                        <h5>Итого к оплате:</h5>
+                        <h4 class="text-primary">{{ order.price }} ₽</h4>
+                    </div>
+                </div>
+            </div>
+
+            {% if order.status == 'active' %}
+                <div class="card border-warning mb-4">
+                    <div class="card-body text-center">
+                        <h6>Код подтверждения заказа</h6>
+                        <div class="mt-2">
+                            <span id="secretCode" class="h3 d-none text-monospace">{{ secret_code }}</span>
+                            <span id="codePlaceholder" class="h3 text-monospace text-muted">••••••••</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-warning mt-2" onclick="toggleCode()">Показать код</button>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="mb-3"><i class="bi bi-map"></i> Маршрут доставки</h5>
+                    <div id="orderMap" style="height: 400px; border-radius: 10px;"></div>
+                    <div class="mt-3 small">
+                        <p class="mb-1"><strong>Откуда:</strong> {{ order.shop.address or "Адрес магазина" }}</p>
+                        <p class="mb-1"><strong>Куда:</strong> {{ order.address or "Самовывоз" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleCode() {
+        const code = document.getElementById('secretCode');
+        const placeholder = document.getElementById('codePlaceholder');
+        if (code.classList.contains('d-none')) {
+            code.classList.remove('d-none');
+            placeholder.classList.add('d-none');
+        } else {
+            code.classList.add('d-none');
+            placeholder.classList.remove('d-none');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const shopCoords = "{{ order.shop.coords }}".split(',').map(c => parseFloat(c.trim()));
+        const userCoords = "{{ order.coords }}".split(',').map(c => parseFloat(c.trim()));
+
+        const map = L.map('orderMap');
+        map.attributionControl.remove(); // Убирает флаг
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        const markers = [];
+
+        if (shopCoords.length === 2) {
+            const shopMarker = L.marker(shopCoords).addTo(map).bindPopup('Магазин: {{ order.shop.name }}');
+            markers.push(shopMarker);
+        }
+
+        if (userCoords.length === 2) {
+            const userMarker = L.marker(userCoords, {
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41]
+                })
+            }).addTo(map).bindPopup('Ваш адрес доставки');
+            markers.push(userMarker);
+        }
+
+        if (markers.length > 0) {
+            const group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.2));
+        } else {
+            map.setView([55.75, 37.61], 10); // Дефолт (Москва)
+        }
+    });
+</script>
+{% endblock %}
