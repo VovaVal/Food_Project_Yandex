@@ -85,7 +85,8 @@
 
 <script>
     const orderStartTime = new Date("{{ order.created_date.isoformat() }}").getTime();
-    const deliveryDuration = 20 * 60 * 1000; // Планируемое время (30 мин)
+    // Коэффициент: 1.5 минуты на 1 км (или 90 секунд на 1000 метров)
+    const TIME_PER_METER = (1.5 * 60 * 1000) / 1000;
 
     document.addEventListener('DOMContentLoaded', function() {
         const shopCoordsStr = "{{ order.shop.coords }}";
@@ -141,6 +142,9 @@
                 const routes = e.routes[0];
                 const routePoints = routes.coordinates; // Все точки дорожного пути
 
+                const distanceInMeters = routes.summary.totalDistance;
+                const dynamicDuration = distanceInMeters * TIME_PER_METER;
+
                 // Создаем маркер курьера в начальной точке, если его еще нет
                 if (!courierMarker) {
                     courierMarker = L.marker(routePoints[0], { icon: courierIcon }).addTo(map);
@@ -149,7 +153,7 @@
                 function animate() {
                     const now = Date.now();
                     const elapsed = now - orderStartTime;
-                    let progress = elapsed / deliveryDuration;
+                    let progress = elapsed / dynamicDuration;
 
                     if (progress > 1) progress = 1;
                     if (progress < 0) progress = 0;
@@ -179,5 +183,30 @@
             map.setView(shopCoords, 15);
         }
     });
+</script>
+
+<script>
+    function cancelOrder(orderId) {
+    if (confirm('Вы уверены, что хотите отменить этот заказ?')) {
+        fetch(`/customer/order/cancel/${orderId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Ошибка: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при отмене заказа');
+        });
+    }
+}
 </script>
 {% endblock %}
