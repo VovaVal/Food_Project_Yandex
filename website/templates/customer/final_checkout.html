@@ -87,7 +87,7 @@
                 </p>
             </div>
 
-            <button type="submit" class="btn btn-success btn-lg w-100 shadow-sm">Оплатить заказ</button>
+            <button type="submit" class="btn btn-success btn-lg w-100 shadow-sm">Оплатить заказ (наличными)</button>
         </form>
     {% else %}
         <div class="alert alert-info text-center py-5">
@@ -97,4 +97,36 @@
         </div>
     {% endif %}
 </div>
+
+<script>
+document.getElementById('final-checkout-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const totalSum = document.getElementById('total-sum').dataset.value;
+    const discount = document.getElementById('user-discount').dataset.value;
+
+    // Отправляем запрос на создание заказа
+    fetch("{{ url_for('customer.create_order') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            total_sum: totalSum,
+            discount_used: discount,
+            payment_method: 'cash'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Заказ успешно оформлен!');
+            window.location.href = "{{ url_for('customer.orders') }}";
+        } else {
+            alert('Ошибка: ' + data.message);
+        }
+    })
+    .catch(err => console.error('Ошибка:', err));
+});
+</script>
 {% endblock %}

@@ -5,6 +5,8 @@ from flask_login import login_required, current_user
 from sqlalchemy.orm import joinedload
 
 from website.data.cart import Cart
+from website.data.order_items import OrderItems
+from website.data.orders import Orders
 from website.data.products import Products
 from website.data.shops import Shops
 from website.data.users import User
@@ -610,3 +612,88 @@ def final_checkout():
         print(delivery_data)
         return render_template('customer/final_checkout.html', delivery_data=delivery_data,
                                title='Заказ', grouped_cart=grouped_cart)
+
+
+@customer_bp.route('/create_order', methods=['POST'])
+@login_required
+def create_order():
+    data = request.get_json()
+    delivery_data = session.get('delivery_data', {})
+
+    if not delivery_data:
+        return jsonify({'success': False, 'message': 'Данные о доставке потеряны'})
+
+    with db_session.create_session() as sess:
+        cart_items = sess.query(Cart).filter(Cart.user_id == current_user.id,
+                                             Cart.active == True).all()
+        if not cart_items:
+            return jsonify({'success': False, 'message': 'Корзина пуста'})
+
+        items_by_shop = {}
+        for item in cart_items:
+            sid = item.product.shop_id
+            if sid not in items_by_shop:
+                items_by_shop[sid] = []
+            items_by_shop[sid].append(item)
+
+        user = sess.get(User, current_user.id)
+        discount_to_use = float(data.get('discount_used', 0))
+        if discount_to_use > user.user_bonuses:
+            discount_to_use = user.user_bonuses
+
+        user.user_bonuses -= discount_to_use
+
+        created_orders = []
+        for shop_id, items in items_by_shop.items():
+            shop_total = sum(item.quantity * item.product.price for item in items)
+
+            method = delivery_data.get(str(shop_id), 'pickup')
+
+            if method == 'delivery':
+                order = Orders(
+                    user_id=current_user.id,
+                    shop_id=shop_id,
+                    price=shop_total,
+                    status='active',
+                    delivery_type=method,
+                    created_date=datetime.datetime.now(),
+                    type_of_payment='cash',
+                    address=current_user.address,
+                    coords=current_user.coords
+                )
+            else:
+                order = Orders(
+                    user_id=current_user.id,
+                    shop_id=shop_id,
+                    price=shop_total,
+                    status='active',
+                    delivery_type=method,
+                    created_date=datetime.datetime.now(),
+                    type_of_payment='cash'
+                )
+
+            sess.add(order)
+            sess.flush()
+
+            for cart_item in items:
+                order_item = OrderItems(
+                    product_id=cart_item.product_id,
+                    order_id=order.id,
+                    quantity=cart_item.quantity
+                )
+                sess.add(order_item)
+
+            created_orders.append(order)
+
+        sess.query(Cart).filter(Cart.user_id == current_user.id, Cart.active == True).delete()
+
+        session.pop('delivery_data', None)
+        sess.commit()
+
+    return jsonify({'success': True})
+
+
+@login_required
+@customer_bp.route('/orders')
+def orders():
+    ...
