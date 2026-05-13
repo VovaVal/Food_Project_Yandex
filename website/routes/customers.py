@@ -869,6 +869,7 @@ def update_order_comment(order_id):
 def add_shop_review(shop_id):
     data = request.get_json()
     text = data.get('review_text')
+    rating = data.get('rating', 5)
 
     if not text:
         return jsonify({'success': False, 'message': 'Текст пустой'}), 400
@@ -887,11 +888,14 @@ def add_shop_review(shop_id):
         new_review = ReviewsShop(
             shop_id=shop_id,
             user_id=current_user.id,
-            review_text=text
+            review_text=text,
+            rate=int(rating)
         )
 
         sess.add(new_review)
         sess.commit()
+
+    recount_shop_rate(shop_id)
 
     return jsonify({'success': True})
 
@@ -901,6 +905,7 @@ def add_shop_review(shop_id):
 def edit_review(review_id):
     data = request.get_json()
     text = data.get('review_text')
+    rating = data.get('rating')
 
     with db_session.create_session() as sess:
         review = sess.get(ReviewsShop, review_id)
@@ -908,8 +913,15 @@ def edit_review(review_id):
         if review and review.user_id == current_user.id:
             review.review_text = text
 
+            if rating:
+                review.rate = int(rating)
+
+            shop_id = review.shop_id
+
             sess.add(review)
             sess.commit()
+
+            recount_shop_rate(shop_id)
 
             return jsonify({'success': True})
 
@@ -926,6 +938,30 @@ def delete_review(review_id):
             sess.delete(review)
             sess.commit()
 
+            shop_id = review.shop_id
+
+            recount_shop_rate(shop_id)
+
             return jsonify({'success': True})
 
     return jsonify({'success': False, 'message': 'Доступ запрещен или отзыв не найден'}), 403
+
+
+def recount_shop_rate(shop_id: int):
+    with db_session.create_session() as sess:
+        shop = sess.get(Shops, shop_id)
+
+        if not shop:
+            return jsonify({'success': False})
+
+        reviews = shop.reviews
+        if len(reviews) == 0:
+            rate = 0
+        else:
+            rate = round(sum(i.rate for i in reviews) / len(reviews), 1)
+
+        shop.rate = rate
+        sess.add(shop)
+        sess.commit()
+
+    return jsonify({'success': True})

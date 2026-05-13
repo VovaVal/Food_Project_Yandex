@@ -31,6 +31,10 @@ class ReviewsShop(SqlAlchemyBase, SerializerMixin):
         sqlalchemy.Date,
         default=datetime.date.today
     )
+    rate = sqlalchemy.Column(
+        sqlalchemy.Integer,
+        default=4
+    )
 
     shop = orm.relationship('Shops', back_populates='reviews')
     user = orm.relationship('User', back_populates='shop_reviews')

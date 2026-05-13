@@ -30,6 +30,10 @@ class ReviewsProduct(SqlAlchemyBase, SerializerMixin):
         sqlalchemy.Date,
         default=datetime.date.today
     )
+    rate = sqlalchemy.Column(
+        sqlalchemy.Integer,
+        default=4
+    )
 
     product = orm.relationship('Products', back_populates='reviews')
     user = orm.relationship('User', back_populates='product_reviews')
