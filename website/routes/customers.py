@@ -10,6 +10,7 @@ from website.data.cart import Cart
 from website.data.order_items import OrderItems
 from website.data.orders import Orders
 from website.data.products import Products
+from website.data.reviews_product import ReviewsProduct
 from website.data.reviews_shop import ReviewsShop
 from website.data.shops import Shops
 from website.data.users import User
@@ -154,6 +155,8 @@ def shop_products(shop_id: int):
 @login_required
 @customer_bp.route('/shop_products/<int:shop_id>/product/<int:product_id>')
 def product_page(shop_id: int, product_id: int):
+    fl = False
+
     with db_session.create_session() as sess:
         product = sess.get(Products, product_id)
 
@@ -182,15 +185,31 @@ def product_page(shop_id: int, product_id: int):
         if shop.id != product.shop_id:
             return redirect(url_for('customer.dashboard'))
 
-        reviews = product.reviews
+        reviews = sess.query(ReviewsProduct).filter(
+            ReviewsProduct.product_id == product_id
+        ).options(joinedload(ReviewsProduct.user)).all()
+
+        reviews = sorted(
+            reviews,
+            key=lambda x: (x.user_id != current_user.id, x.created_date),
+            reverse=True
+        )
+
+        p_review = sess.query(ReviewsProduct).filter(
+            ReviewsProduct.product_id == product_id, ReviewsProduct.user_id == current_user.id
+        ).first()
+
+        if p_review:
+            fl = True
 
         cart_item = sess.query(Cart).filter(Cart.user_id == current_user.id,
                                              Cart.product_id == product_id).first()
         quantity = cart_item.quantity if cart_item else 0
         user_cart = {product_id: quantity}
 
-    return render_template('customer/product_page.html', shop_id=shop_id,
-                           product=product, title=product.name, reviews=reviews, user_cart=user_cart)
+        return render_template('customer/product_page.html', shop_id=shop_id,
+                               product=product, title=product.name, user_cart=user_cart,
+                               fl=fl, reviews=reviews)
 
 
 @login_required
@@ -962,6 +981,109 @@ def recount_shop_rate(shop_id: int):
 
         shop.rate = rate
         sess.add(shop)
+        sess.commit()
+
+    return jsonify({'success': True})
+
+
+@login_required
+@customer_bp.route('/api/products/<int:product_id>/reviews', methods=['POST'])
+def add_product_review(product_id):
+    data = request.get_json()
+    text = data.get('review_text')
+    rating = data.get('rating', 5)
+
+    if not text:
+        return jsonify({'success': False, 'message': 'Текст пустой'}), 400
+
+    with db_session.create_session() as sess:
+        product = sess.get(Products, product_id)
+        if not product:
+            return jsonify({'success': False})
+
+        user_already_has_review = sess.query(ReviewsProduct).filter(ReviewsProduct.user_id == current_user.id,
+                                                                 ReviewsProduct.product_id == product_id).first()
+
+        if user_already_has_review:
+            return jsonify({'success': False})
+
+        new_review = ReviewsProduct(
+            product_id=product_id,
+            user_id=current_user.id,
+            review_text=text,
+            rate=int(rating)
+        )
+
+        sess.add(new_review)
+        sess.commit()
+
+    recount_product_rate(product_id)
+
+    return jsonify({'success': True})
+
+
+@login_required
+@customer_bp.route('/api/product/reviews/<int:review_id>/edit', methods=['POST'])
+def edit_product_review(review_id):
+    data = request.get_json()
+    text = data.get('review_text')
+    rating = data.get('rating')
+
+    with db_session.create_session() as sess:
+        review = sess.get(ReviewsProduct, review_id)
+
+        if review and review.user_id == current_user.id:
+            review.review_text = text
+
+            if rating:
+                review.rate = int(rating)
+
+            product_id = review.product_id
+
+            sess.add(review)
+            sess.commit()
+
+            recount_product_rate(product_id)
+
+            return jsonify({'success': True})
+
+    return jsonify({'success': False}), 403
+
+
+@login_required
+@customer_bp.route('/api/product/reviews/<int:review_id>/delete', methods=['POST'])
+def delete_product_review(review_id):
+    with db_session.create_session() as sess:
+        review = sess.get(ReviewsProduct, review_id)
+
+        if review and review.user_id == current_user.id:
+            sess.delete(review)
+            sess.commit()
+
+            product_id = review.product_id
+
+            recount_product_rate(product_id)
+
+            return jsonify({'success': True})
+
+    return jsonify({'success': False, 'message': 'Доступ запрещен или отзыв не найден'}), 403
+
+
+def recount_product_rate(product_id: int):
+    with db_session.create_session() as sess:
+        product = sess.get(Products, product_id)
+
+        if not product:
+            return jsonify({'success': False})
+
+        reviews = product.reviews
+        if len(reviews) == 0:
+            rate = 0
+        else:
+            rate = round(sum(i.rate for i in reviews) / len(reviews), 1)
+
+        product.rate = rate
+        sess.add(product)
         sess.commit()
 
     return jsonify({'success': True})

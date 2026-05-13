@@ -107,18 +107,94 @@
     <hr>
 
     <!-- Отзывы -->
-    <div class="mt-4">
-        <h4>Отзывы</h4>
-        {% if reviews %}
-            {% for review in reviews %}
-            <div class="mb-3 p-3 border rounded">
-                <p><strong>{{ review.user_name }}</strong> - {{ review.date }}</p>
-                <p>{{ review.text }}</p>
+    <div class="mt-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-chat-left-dots-fill text-primary me-2"></i> Отзывы</h5>
+                <span class="badge rounded-pill bg-primary px-3">{{ reviews|length }}</span>
             </div>
-            {% endfor %}
-        {% else %}
-            <p>Нет отзывов о товаре.</p>
-        {% endif %}
+
+            <div class="card-body">
+                {% if not fl %}
+                <div class="add-review-section p-3 bg-light rounded-3 mb-4">
+                    <label class="form-label fw-bold small text-uppercase text-muted">Ваша оценка и отзыв</label>
+
+                    <div class="rating-selection mb-2" id="starRatingSelect">
+                        {% for i in range(5, 0, -1) %}
+                        <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" {% if i == 5 %}checked{% endif %}>
+                        <label for="star{{ i }}"><i class="bi bi-star-fill"></i></label>
+                        {% endfor %}
+                    </div>
+
+                    <div class="input-group">
+                        <textarea id="reviewTextInput" class="form-control border-0 shadow-none"
+                                  placeholder="Расскажите о вашем опыте..." rows="2" style="resize: none;"></textarea>
+                        <button class="btn btn-primary px-4" type="button" onclick="sendReview({{ product.id }})">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
+                    <div id="reviewStatus" class="small mt-2 d-none"></div>
+                </div>
+                {% endif %}
+
+                <div class="reviews-list" style="max-height: 500px; overflow-y: auto;">
+                    {% if reviews %}
+                        {% for review in reviews %}
+                        <div class="review-card mb-3 p-3 rounded-3 {% if review.user_id == current_user.id %}bg-primary-subtle border border-primary-subtle{% else %}border{% endif %}">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; font-size: 1rem;">
+                                        {{ review.user.name[0]|upper if review.user.name else 'U' }}
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold d-block">{{ review.user.name or 'Пользователь' }}</span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="text-warning small">
+                                                {% for i in range(5) %}
+                                                    <i class="bi bi-star{{ '-fill' if i < (review.rate|default(0)|int) else '' }}"></i>
+                                                {% endfor %}
+                                            </div>
+                                            <small class="text-muted" style="font-size: 0.75rem;">{{ review.created_date.strftime('%d.%m.%Y') }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% if review.user_id == current_user.id %}
+                                    <div class="d-flex gap-1">
+                                        <button class="btn btn-sm btn-outline-primary border-0" type="button" onclick="toggleEdit({{ review.id }})">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger border-0" type="button" onclick="deleteReview({{ review.id }})">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <p class="review-text mb-0 mt-2 text-dark" id="text-{{ review.id }}">{{ review.review_text }}</p>
+
+                            <div id="edit-box-{{ review.id }}" class="d-none mt-3 p-2 bg-white rounded border">
+                                <label class="small fw-bold text-muted text-uppercase">Изменить оценку:</label>
+                                <div class="rating-selection mb-2 justify-content-start flex-row-reverse">
+                                    {% for i in range(5, 0, -1) %}
+                                    <input type="radio" name="rating-{{ review.id }}" value="{{ i }}" id="star-{{ review.id }}-{{ i }}" {% if i == review.rate|int %}checked{% endif %}>
+                                    <label for="star-{{ review.id }}-{{ i }}"><i class="bi bi-star-fill"></i></label>
+                                    {% endfor %}
+                                </div>
+                                <textarea id="input-{{ review.id }}" class="form-control form-control-sm mb-2" rows="3">{{ review.review_text }}</textarea>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-success px-3" onclick="saveEdit({{ review.id }})">Сохранить</button>
+                                    <button class="btn btn-sm btn-light border" onclick="toggleEdit({{ review.id }})">Отмена</button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-muted py-4">Отзывов пока нет. Будьте первым!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -170,6 +246,59 @@
         width: 16px;
         height: 16px;
     }
+}
+
+    .rating-selection {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 5px;
+    }
+
+    .rating-selection input { display: none; }
+
+    .rating-selection label {
+        cursor: pointer;
+        font-size: 1.2rem;
+        color: #dee2e6; /* Серый цвет пустой звезды */
+        transition: color 0.2s;
+    }
+
+    /* При наведении и для выбранной звезды */
+    .rating-selection label:hover,
+    .rating-selection label:hover ~ label,
+    .rating-selection input:checked ~ label {
+        color: #ffc107; /* Желтый цвет заполненной звезды */
+    }
+
+    /* Общий стиль для всех блоков рейтинга (и создания, и редактирования) */
+.rating-selection {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 4px;
+}
+
+.rating-selection input { display: none; }
+
+.rating-selection label {
+    cursor: pointer;
+    font-size: 1.3rem; /* Чуть крупнее */
+    color: #e9ecef;
+    transition: transform 0.1s, color 0.2s;
+}
+
+.rating-selection label:hover { transform: scale(1.2); }
+
+.rating-selection label:hover,
+.rating-selection label:hover ~ label,
+.rating-selection input:checked ~ label {
+    color: #ffc107;
+}
+
+/* Смещение для аватара и текста */
+.review-card .avatar-sm {
+    flex-shrink: 0;
 }
 </style>
 
@@ -228,5 +357,109 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateUI();
 });
+</script>
+
+<script>
+    function sendReview(shopId) {
+    const textInput = document.getElementById('reviewTextInput');
+    const statusDiv = document.getElementById('reviewStatus');
+    const text = textInput.value.trim();
+
+    // Получаем выбранный рейтинг
+    const ratingActive = document.querySelector('input[name="rating"]:checked');
+    const ratingValue = ratingActive ? ratingActive.value : 5;
+
+    if (!text) {
+        textInput.classList.add('is-invalid');
+        return;
+    }
+
+    textInput.disabled = true;
+
+    fetch(`/customer/api/products/${shopId}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            review_text: text,
+            rating: ratingValue  // Отправляем рейтинг
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            statusDiv.textContent = 'Отзыв и оценка добавлены!';
+            statusDiv.className = 'small mt-1 text-success d-block';
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            throw new Error('Ошибка при отправке');
+        }
+    })
+    .catch(error => {
+        statusDiv.textContent = 'Ошибка: ' + error.message;
+        statusDiv.className = 'small mt-1 text-danger d-block';
+        textInput.disabled = false;
+    });
+}
+</script>
+
+<script>
+    // Переключение режима редактирования
+function toggleEdit(id) {
+    const textEl = document.getElementById(`text-${id}`);
+    const editBox = document.getElementById(`edit-box-${id}`);
+    textEl.classList.toggle('d-none');
+    editBox.classList.toggle('d-none');
+}
+
+// Сохранение отредактированного отзыва
+function saveEdit(id) {
+    const newText = document.getElementById(`input-${id}`).value;
+
+    // Ищем выбранную звезду именно для этого отзыва (по имени группы rating-ID)
+    const ratingActive = document.querySelector(`input[name="rating-${id}"]:checked`);
+    const newRating = ratingActive ? ratingActive.value : 5;
+
+    fetch(`/customer/api/product/reviews/${id}/edit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            review_text: newText,
+            rating: newRating // Передаем новую оценку
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка при сохранении');
+        }
+    });
+}
+
+function deleteReview(id) {
+    if (!confirm('Вы уверены, что хотите удалить этот отзыв?')) {
+        return;
+    }
+
+    fetch(`/customer/api/product/reviews/${id}/delete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка при удалении: ' + (data.message || 'неизвестная ошибка'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при соединении с сервером');
+    });
+}
 </script>
 {% endblock %}
