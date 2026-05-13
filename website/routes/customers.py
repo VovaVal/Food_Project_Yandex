@@ -674,7 +674,7 @@ def create_order():
 
             method = delivery_data.get(str(shop_id), 'pickup')
 
-            if method == 'delivery':
+            if current_user.coords:
                 order = Orders(
                     user_id=current_user.id,
                     shop_id=shop_id,
