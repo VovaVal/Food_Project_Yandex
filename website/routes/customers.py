@@ -499,6 +499,7 @@ def checkout():
         ).filter(Cart.user_id == current_user.id).all()
 
         grouped_cart = {}
+        is_product_active = False  # есть ли хотя бы один активный товар(открыт ли магазин сейчас)
 
         for item in cart_items:
             if item.product:
@@ -538,9 +539,15 @@ def checkout():
                     if item.active != is_open:
                         item.active = is_open
 
+                    if item.active:
+                        is_product_active = True
+
                     grouped_cart[shop.id]['items'].append(item)
 
         sess.commit()
+
+        if not is_product_active:  # если нет активных товаров
+            return redirect(url_for('customer.cart_page'))
 
         return render_template('customer/checkout.html',
                                grouped_cart=grouped_cart,
@@ -565,6 +572,7 @@ def final_checkout():
         ).filter(Cart.user_id == current_user.id).all()
 
         grouped_cart = {}
+        is_product_active = False  # есть ли хотя бы один активный товар(открыт ли магазин сейчас)
 
         for item in cart_items:
             if item.product:
@@ -604,9 +612,15 @@ def final_checkout():
                     if item.active != is_open:
                         item.active = is_open
 
+                    if item.active:
+                        is_product_active = True
+
                     grouped_cart[shop.id]['items'].append(item)
 
         sess.commit()
+
+        if not is_product_active:
+            return redirect(url_for('customer.cart_page'))
 
         delivery_data = session.get('delivery_data', {})
         print(delivery_data)
@@ -687,7 +701,7 @@ def create_order():
 
         sess.query(Cart).filter(Cart.user_id == current_user.id, Cart.active == True).delete()
 
-        session.pop('delivery_data', None)
+        session.pop('delivery_data', None)  # удаляем из сесси инфо о доставке
         sess.commit()
 
     return jsonify({'success': True})
