@@ -1,4 +1,6 @@
 import datetime
+import uuid
+
 import requests
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, session
 from flask_login import login_required, current_user
@@ -673,7 +675,8 @@ def create_order():
                     created_date=datetime.datetime.now(),
                     type_of_payment='cash',
                     address=current_user.address,
-                    coords=current_user.coords
+                    coords=current_user.coords,
+                    confirm_code=uuid.uuid4().hex[:6]
                 )
             else:
                 order = Orders(
@@ -683,7 +686,8 @@ def create_order():
                     status='active',
                     delivery_type=method,
                     created_date=datetime.datetime.now(),
-                    type_of_payment='cash'
+                    type_of_payment='cash',
+                    confirm_code=uuid.uuid4().hex[:6]
                 )
 
             sess.add(order)
