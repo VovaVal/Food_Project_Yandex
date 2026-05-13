@@ -14,7 +14,7 @@
                     {% if order.status == 'active' %}bg-light text-dark{% else %}bg-secondary text-white{% endif %}">
                     <div>
                         <a href="{{ url_for('customer.order_page', order_id=order.id) }}">
-                            <strong>Заказ №{{ loop.index }}</strong>
+                            <strong>Заказ №{{ loop.length - loop.index + 1 }}</strong>
                         </a>
                         <span class="ms-2 {% if order.status == 'active' %}text-muted{% else %}text-white-50{% endif %}">
                             {{ order.created_date.strftime('%d.%m.%Y %H:%M') }}

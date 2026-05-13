@@ -661,7 +661,16 @@ def create_order():
 
         created_orders = []
         for shop_id, items in items_by_shop.items():
-            shop_total = sum(item.quantity * item.product.price for item in items)
+            shop_total = 0
+
+            for item in items:
+                shop_total += item.quantity * item.product.price
+                product = sess.get(Products, item.product.id)
+
+                # уменьшаем кол.-во товаров
+                if product:
+                    product.quantity -= item.quantity
+                    sess.add(product)
 
             method = delivery_data.get(str(shop_id), 'pickup')
 
