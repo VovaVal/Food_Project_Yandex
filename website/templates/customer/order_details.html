@@ -59,6 +59,13 @@
                 <div class="card-body">
                     <h5 class="card-title mb-3"><i class="bi bi-chat-dots"></i> Комментарий к продавцу</h5>
                     <textarea id="orderComment" class="form-control" placeholder="Комментарий к продавцу (не обязательно)" rows="3">{{ order.description or '' }}</textarea>
+
+                    <div id="commentActions" class="mt-2 d-none">
+                        <button id="saveCommentBtn" class="btn btn-sm btn-primary">
+                            <i class="bi bi-check-circle"></i> Сохранить изменения
+                        </button>
+                        <span id="saveStatus" class="ms-2 small text-success"></span>
+                    </div>
                 </div>
             </div>
 
@@ -241,5 +248,52 @@
         });
     }
 }
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const commentArea = document.getElementById('orderComment');
+    const actionDiv = document.getElementById('commentActions');
+    const saveBtn = document.getElementById('saveCommentBtn');
+    const statusMsg = document.getElementById('saveStatus');
+
+    // Запоминаем начальное значение, чтобы скрывать кнопку, если текст вернули в исходный вид
+    const originalValue = commentArea.value;
+
+    commentArea.addEventListener('input', function() {
+        if (commentArea.value !== originalValue) {
+            actionDiv.classList.remove('d-none'); // Показываем кнопку
+        } else {
+            actionDiv.classList.add('d-none');    // Прячем, если текст не изменился
+        }
+    });
+
+    saveBtn.addEventListener('click', function() {
+        const newText = commentArea.value;
+
+        fetch(`/customer/order/update_comment/{{ order.id }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ description: newText })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Обновляем "оригинальное значение" и скрываем кнопку
+                location.reload(); // Или просто скрыть кнопку:
+                // actionDiv.classList.add('d-none');
+                // originalValue = newText;
+            } else {
+                alert('Ошибка при сохранении: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Сетевая ошибка');
+        });
+    });
+});
 </script>
 {% endblock %}

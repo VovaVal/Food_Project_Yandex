@@ -817,3 +817,29 @@ def order_arrived(order_id):
             return {"success": True}
 
         return {"success": False, "message": "Order not found"}, 404
+
+
+@login_required
+@customer_bp.route('/order/update_comment/<int:order_id>', methods=['POST'])
+def update_order_comment(order_id):
+    data = request.get_json()
+    new_description = data.get('description', '')
+
+    with db_session.create_session() as sess:
+        order = sess.query(Orders).filter(
+            Orders.id == order_id,
+            Orders.user_id == current_user.id
+        ).first()
+
+        if not order:
+            return jsonify({'success': False, 'message': 'Заказ не найден'}), 404
+
+        if order.status != 'active':
+             return jsonify({'success': False, 'message': 'Нельзя менять комментарий завершенного заказа'}), 400
+
+        order.description = new_description
+
+        sess.add(order)
+        sess.commit()
+
+    return jsonify({'success': True})
