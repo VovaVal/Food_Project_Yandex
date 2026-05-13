@@ -5,9 +5,26 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between mb-4">
         <a href="{{ url_for('customer.shop_page', shop_id=shop_id) }}" class="btn btn-outline-secondary">← Назад</a>
+        <div class="search-box w-50">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text"
+                       id="productSearch"
+                       class="form-control border-start-0 ps-0"
+                       placeholder="Поиск по названию товара..."
+                       onkeyup="filterProducts()">
+            </div>
+        </div>
     </div>
 
-    <div class="row">
+    <div id="noResultsMessage" class="text-center py-5 d-none">
+        <i class="bi bi-search" style="font-size: 48px; color: #6c757d;"></i>
+        <p class="lead text-secondary mt-3">Ничего не найдено по вашему запросу</p>
+    </div>
+
+    <div class="row" id="productsGrid">
         {% if shop_products %}
         {% for product in shop_products %}
         <div class="col-md-4 mb-4">
@@ -253,6 +270,40 @@ function syncCartWithServer(productId, quantity) {
     .catch(err => {
         console.error('Ошибка сети:', err);
     });
+}
+</script>
+
+<script>
+    function filterProducts() {
+    // Получаем значение из строки поиска
+    const input = document.getElementById('productSearch');
+    const filter = input.value.toLowerCase();
+
+    // Получаем все карточки товаров
+    const grid = document.getElementById('productsGrid');
+    const cards = grid.getElementsByClassName('col-md-4');
+
+    let visibleCount = 0;
+
+    for (let i = 0; i < cards.length; i++) {
+        // Ищем заголовок внутри карточки
+        const title = cards[i].querySelector('.card-title').textContent;
+
+        if (title.toLowerCase().indexOf(filter) > -1) {
+            cards[i].style.display = ""; // Показываем
+            visibleCount++;
+        } else {
+            cards[i].style.display = "none"; // Скрываем
+        }
+    }
+
+    // Показываем сообщение "Ничего не найдено", если все карточки скрыты
+    const noResults = document.getElementById('noResultsMessage');
+    if (visibleCount === 0) {
+        noResults.classList.remove('d-none');
+    } else {
+        noResults.classList.add('d-none');
+    }
 }
 </script>
 {% endblock %}
