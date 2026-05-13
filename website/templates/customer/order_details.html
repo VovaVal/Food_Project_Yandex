@@ -296,4 +296,18 @@
     });
 });
 </script>
+
+<script>
+    function toggleCode() {
+        const code = document.getElementById('secretCode');
+        const placeholder = document.getElementById('codePlaceholder');
+        if (code.classList.contains('d-none')) {
+            code.classList.remove('d-none');
+            placeholder.classList.add('d-none');
+        } else {
+            code.classList.add('d-none');
+            placeholder.classList.remove('d-none');
+        }
+    }
+</script>
 {% endblock %}
