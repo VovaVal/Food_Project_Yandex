@@ -218,6 +218,10 @@
         Товары заведения
     </a>
 
+    <a href="{{ url_for('shop.orders', shop_id=shop['id']) }}" class="btn btn-success">
+        Заказы заведения
+    </a>
+
     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
         Удалить заведение
     </button>

@@ -10,7 +10,7 @@
     {% if orders %}
         {% for order in orders %}
             <div class="card mb-4 shadow-sm border-0">
-                <div class="card-header d-flex justify-content-between align-items-center 
+                <div class="card-header d-flex justify-content-between align-items-center
                     {% if order.status == 'active' %}bg-light text-dark{% else %}bg-secondary text-white{% endif %}">
                     <div>
                         <a href="{{ url_for('customer.order_page', order_id=order.id) }}">
@@ -51,14 +51,13 @@
                         </div>
                         <div class="col-md-4 border-start">
                             <p class="mb-1"><strong>Магазин:</strong> {{ order.shop.name }}</p>
-                            <p class="mb-1"><strong>Доставка:</strong> 
+                            <p class="mb-1"><strong>Доставка:</strong>
                                 {% if order.delivery_type == 'delivery' %}
                                     <span class="text-primary"><i class="bi bi-truck"></i> Курьером</span>
                                 {% else %}
                                     <span class="text-secondary"><i class="bi bi-geo-alt"></i> Самовывоз</span>
                                 {% endif %}
                             </p>
-
                             {% if order.delivery_type == 'delivery' %}
                                 <p class="mb-1"><strong>Доехал курьер:</strong>
                                     {% if order.delivery_arrived %}

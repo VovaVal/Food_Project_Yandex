@@ -1,12 +1,14 @@
 import datetime
 
 import requests
+from docutils.nodes import title
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required, current_user
 
 from website.bucket_requests import upload_logo_shop, upload_img_shop, delete_by_key, upload_img_user, \
     upload_img_product
 from website.data import db_session
+from website.data.orders import Orders
 from website.data.products import Products
 from website.data.shops import Shops
 from website.data.users import User
@@ -727,3 +729,17 @@ def edit_product(shop_id: int, product_id: int):
 
     return render_template('shop/edit_product.html', form=form,
                            title='Редактирование', shop_id=shop_id)
+
+
+@login_required
+@shop_bp.route('/<int:shop_id>/orders')
+def orders(shop_id: int):
+    with db_session.create_session() as sess:
+        shop = sess.get(Shops, shop_id)
+
+        if not shop:
+            return redirect(url_for('shop.dashboard'))
+
+        orders = sess.query(Orders).filter(Orders.shop_id == shop_id).order_by(Orders.created_date.desc()).all()
+
+        return render_template('shop/shop_orders.html', title='Заказы', orders=orders)
