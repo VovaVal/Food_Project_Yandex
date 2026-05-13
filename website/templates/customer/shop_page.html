@@ -66,6 +66,71 @@
                     </p>
                 {% endif %}
             </div>
+            <div class="card mb-4 shadow-sm border-0">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-chat-left-dots-fill text-primary me-2"></i> Отзывы</h5>
+        <span class="badge rounded-pill bg-primary px-3">{{ reviews|length }}</span>
+    </div>
+
+    <div class="card-body">
+        {% if not fl%}
+            <div class="add-review-section p-3 bg-light rounded-3 mb-4">
+                <label class="form-label fw-bold small text-uppercase text-muted">Ваше мнение</label>
+                <div class="input-group">
+                    <textarea id="reviewTextInput" class="form-control border-0 shadow-none"
+                              placeholder="Расскажите о вашем опыте..." rows="2" style="resize: none;"></textarea>
+                    <button class="btn btn-primary px-4" type="button" onclick="sendReview({{ shop.id }})">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </div>
+                <div id="reviewStatus" class="small mt-2 d-none"></div>
+            </div>
+        {% endif %}
+
+        <div class="reviews-list" style="max-height: 500px; overflow-y: auto;">
+            {% if reviews %}
+                {% for review in reviews %}
+                <div class="review-card mb-3 p-3 rounded-3 {% if review.user_id == current_user.id %}bg-primary-subtle border border-primary-subtle{% else %}border{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                {{ review.user.name[0]|upper if review.user.name else 'U' }}
+                            </div>
+                            <div>
+                                <span class="fw-bold d-block">{{ review.user.name or 'Пользователь' }}</span>
+                                <small class="text-muted" style="font-size: 0.75rem;">{{ review.created_date.strftime('%d.%m.%Y') }}</small>
+                            </div>
+                        </div>
+
+                        {% if review.user_id == current_user.id %}
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-link text-primary p-0" type="button" onclick="toggleEdit({{ review.id }})">
+                                <i class="bi bi-pencil-square"></i> Редактировать
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <p class="review-text mb-0 small text-dark" id="text-{{ review.id }}">{{ review.review_text }}</p>
+
+                    <div id="edit-box-{{ review.id }}" class="d-none mt-2">
+                        <textarea id="input-{{ review.id }}" class="form-control form-control-sm mb-2">{{ review.review_text }}</textarea>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-success" onclick="saveEdit({{ review.id }})">Сохранить</button>
+                            <button class="btn btn-sm btn-light" onclick="toggleEdit({{ review.id }})">Отмена</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5">
+                    <img src="https://cdn-icons-png.flaticon.com/512/4072/4072217.png" width="60" class="opacity-25 mb-3">
+                    <p class="text-muted">Здесь пока пусто. Станьте первым!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
         </div>
 
         <!-- Правая колонка: информация о магазине -->
@@ -339,4 +404,73 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 }
 </style>
+
+<script>
+    function sendReview(shopId) {
+    const textInput = document.getElementById('reviewTextInput');
+    const statusDiv = document.getElementById('reviewStatus');
+    const text = textInput.value.trim();
+
+    if (!text) {
+        textInput.classList.add('is-invalid');
+        return;
+    }
+
+    // Блокируем ввод на время отправки
+    textInput.disabled = true;
+
+    fetch(`/customer/api/shops/${shopId}/reviews`, { // Убедитесь, что эндпоинт совпадает с вашим API
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ review_text: text })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success || data.id) { // Зависит от того, что возвращает ваш API
+            statusDiv.textContent = 'Отзыв успешно добавлен!';
+            statusDiv.className = 'small mt-1 text-success d-block';
+            textInput.value = '';
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            throw new Error(data.message || 'Ошибка при отправке');
+        }
+    })
+    .catch(error => {
+        statusDiv.textContent = 'Ошибка: ' + error.message;
+        statusDiv.className = 'small mt-1 text-danger d-block';
+        textInput.disabled = false;
+    });
+}
+</script>
+
+<script>
+    // Переключение режима редактирования
+function toggleEdit(id) {
+    const textEl = document.getElementById(`text-${id}`);
+    const editBox = document.getElementById(`edit-box-${id}`);
+    textEl.classList.toggle('d-none');
+    editBox.classList.toggle('d-none');
+}
+
+// Сохранение отредактированного отзыва
+function saveEdit(id) {
+    const newText = document.getElementById(`input-${id}`).value;
+
+    fetch(`/customer/api/reviews/${id}/edit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ review_text: newText })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Перезагружаем для обновления порядка и текста
+        } else {
+            alert('Ошибка при сохранении');
+        }
+    });
+}
+</script>
 {% endblock %}

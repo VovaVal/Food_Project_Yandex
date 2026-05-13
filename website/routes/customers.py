@@ -10,6 +10,7 @@ from website.data.cart import Cart
 from website.data.order_items import OrderItems
 from website.data.orders import Orders
 from website.data.products import Products
+from website.data.reviews_shop import ReviewsShop
 from website.data.shops import Shops
 from website.data.users import User
 from website.forms.edit_user_settings import EditFormUser
@@ -77,12 +78,30 @@ def shop_page(shop_id: int):
 
     if resp.status_code == 200:
         shop = resp.json()['shop']
+        fl = False  # есть ли отзыв
 
         if (not shop['address'] or shop['address'] is None) or (not shop['coords'] or shop['coords'] is None):
             return redirect(url_for('customer.dashboard'))
 
         with db_session.create_session() as sess:
             user = sess.get(User, shop['user_id'])
+
+            reviews = sess.query(ReviewsShop).filter(
+                ReviewsShop.shop_id == shop_id
+            ).options(joinedload(ReviewsShop.user)).all()
+
+            reviews = sorted(
+                reviews,
+                key=lambda x: (x.user_id != current_user.id, x.created_date),
+                reverse=True
+            )
+
+            p_review = sess.query(ReviewsShop).filter(
+                ReviewsShop.shop_id == shop_id, ReviewsShop.user_id == current_user.id
+            ).first()
+
+            if p_review:
+                fl = True
 
         if shop.get('coords'):
             try:
@@ -98,8 +117,8 @@ def shop_page(shop_id: int):
             shop['lat'] = 55.751244
             shop['lng'] = 37.618423
 
-        return render_template('customer/shop_page.html', title=shop['name'],
-                               shop=shop, email=user.email, days_ru=days_ru, is_shop_open=is_shop_open,
+        return render_template('customer/shop_page.html', title=shop['name'], reviews=reviews,
+                               shop=shop, email=user.email, days_ru=days_ru, is_shop_open=is_shop_open, fl=fl,
                                get_next_closing_time=get_next_closing_time, get_next_opening_time=get_next_opening_time)
     else:
         print('Error occurred!!!')
@@ -843,3 +862,55 @@ def update_order_comment(order_id):
         sess.commit()
 
     return jsonify({'success': True})
+
+
+@login_required
+@customer_bp.route('/api/shops/<int:shop_id>/reviews', methods=['POST'])
+def add_shop_review(shop_id):
+    data = request.get_json()
+    text = data.get('review_text')
+
+    if not text:
+        return jsonify({'success': False, 'message': 'Текст пустой'}), 400
+
+    with db_session.create_session() as sess:
+        shop = sess.get(Shops, shop_id)
+        if not shop:
+            return jsonify({'success': False})
+
+        user_already_has_review = sess.query(ReviewsShop).filter(ReviewsShop.user_id == current_user.id,
+                                                                 ReviewsShop.shop_id == shop_id).first()
+
+        if user_already_has_review:
+            return jsonify({'success': False})
+
+        new_review = ReviewsShop(
+            shop_id=shop_id,
+            user_id=current_user.id,
+            review_text=text
+        )
+
+        sess.add(new_review)
+        sess.commit()
+
+    return jsonify({'success': True})
+
+
+@login_required
+@customer_bp.route('/api/reviews/<int:review_id>/edit', methods=['POST'])
+def edit_review(review_id):
+    data = request.get_json()
+    text = data.get('review_text')
+
+    with db_session.create_session() as sess:
+        review = sess.get(ReviewsShop, review_id)
+
+        if review and review.user_id == current_user.id:
+            review.review_text = text
+
+            sess.add(review)
+            sess.commit()
+
+            return jsonify({'success': True})
+
+    return jsonify({'success': False}), 403
