@@ -3,8 +3,8 @@
 {% block content %}
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-clock-history"></i> История моих заказов</h2>
-        <a href="{{ url_for('customer.dashboard') }}" class="btn btn-primary btn-sm">За покупками</a>
+        <h2><i class="bi bi-clock-history"></i> История заказов</h2>
+        <a href="{{ url_for('shop.shop_id_settings', shop_id=shop_id) }}" class="btn btn-primary btn-sm">Обратно в заведение</a>
     </div>
 
     {% if orders %}
@@ -13,7 +13,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center
                     {% if order.status == 'active' %}bg-light text-dark{% else %}bg-secondary text-white{% endif %}">
                     <div>
-                        <a href="{{ url_for('customer.order_page', order_id=order.id) }}">
+                        <a href="{{ url_for('shop.order_page', order_id=order.id, shop_id=shop_id) }}">
                             <strong>Заказ №{{ loop.length - loop.index + 1 }}</strong>
                         </a>
                         <span class="ms-2 {% if order.status == 'active' %}text-muted{% else %}text-white-50{% endif %}">

@@ -4,10 +4,12 @@ import requests
 from docutils.nodes import title
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required, current_user
+from sqlalchemy.orm import joinedload
 
 from website.bucket_requests import upload_logo_shop, upload_img_shop, delete_by_key, upload_img_user, \
     upload_img_product
 from website.data import db_session
+from website.data.order_items import OrderItems
 from website.data.orders import Orders
 from website.data.products import Products
 from website.data.shops import Shops
@@ -742,4 +744,25 @@ def orders(shop_id: int):
 
         orders = sess.query(Orders).filter(Orders.shop_id == shop_id).order_by(Orders.created_date.desc()).all()
 
-        return render_template('shop/shop_orders.html', title='Заказы', orders=orders)
+        return render_template('shop/shop_orders.html', title='Заказы',
+                               orders=orders, shop_id=shop_id)
+
+
+@login_required
+@shop_bp.route('/<int:shop_id>/order/<int:order_id>')
+def order_page(order_id: int, shop_id: int):
+    with db_session.create_session() as sess:
+        order = sess.query(Orders).options(
+            joinedload(Orders.order_items).joinedload(OrderItems.product),
+            joinedload(Orders.shop)
+        ).filter(Orders.id == order_id, Orders.shop_id == shop_id).first()
+
+        if not order:
+            flash("Заказ не найден", "danger")
+            return redirect(url_for('shop.orders'))
+
+        return render_template('shop/shop_order_details.html',
+                               title=f'Заказ №{order.id}',
+                               order=order,
+                               shop_id=shop_id
+                               )
