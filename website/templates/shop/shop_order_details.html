@@ -204,7 +204,7 @@
 <script>
     function cancelOrder(orderId) {
     if (confirm('Вы уверены, что хотите отменить этот заказ?')) {
-        fetch(`/shop/order/cancel/${orderId}`, {
+        fetch(`/shop/{{ shop_id }}/order/cancel/${orderId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

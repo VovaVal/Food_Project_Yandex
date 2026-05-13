@@ -2,7 +2,7 @@ import datetime
 
 import requests
 from docutils.nodes import title
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import login_required, current_user
 from sqlalchemy.orm import joinedload
 
@@ -766,3 +766,37 @@ def order_page(order_id: int, shop_id: int):
                                order=order,
                                shop_id=shop_id
                                )
+
+
+@login_required
+@shop_bp.route('/<int:shop_id>/order/cancel/<int:order_id>', methods=['POST'])
+def cancel_order(order_id: int, shop_id: int):
+    with db_session.create_session() as sess:
+        order = sess.query(Orders).filter(Orders.id == order_id, Orders.shop_id == shop_id).first()
+
+        if not order:
+            return jsonify({'success': False, 'message': 'Заказ не найден'}), 404
+
+        if order.status != 'active':
+            return jsonify({'success': False, 'message': 'Можно отменить только активный заказ'}), 400
+
+        order.status = 'cancelled'
+
+        user = sess.get(User, current_user.id)
+
+        if user:
+            user.user_bonuses += order.user_bonuses
+
+        order_items = order.order_items
+        for item in order_items:
+            product = sess.get(Products, item.product_id)
+
+            # возвращаем товары, которые заказали
+            if product:
+                product.quantity += item.quantity
+
+                sess.add(product)
+
+        sess.commit()
+
+        return jsonify({'success': True})
