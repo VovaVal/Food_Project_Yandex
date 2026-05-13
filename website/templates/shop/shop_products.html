@@ -5,14 +5,39 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between mb-4">
         <a href="{{ url_for('shop.shop_id_settings', shop_id=shop_id) }}" class="btn btn-outline-secondary">← Назад</a>
+
+        <div class="d-flex flex-grow-1">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="text"
+                           id="productSearch"
+                           class="form-control border-start-0 ps-0"
+                           placeholder="Поиск по названию товара..."
+                           onkeyup="filterProducts()">
+                </div>
+
+        <select id="categoryFilter" class="form-select w-auto rounded" style="max-width: 160px;" onchange="filterProducts()">
+                    <option value="all">Все категории</option>
+                    <option value="drink">Напитки</option>
+                    <option value="bakery">Выпечка</option>
+                    <option value="dessert">Десерты</option>
+                    <option value="other">Другое</option>
+                </select>
+
         <a href="{{ url_for('shop.add_product', shop_id=shop_id) }}" class="btn btn-primary">Добавить товар</a>
     </div>
 
-    <div class="row">
+    <div id="noResultsMessage" class="text-center py-5 d-none">
+        <i class="bi bi-search" style="font-size: 48px; color: #6c757d;"></i>
+        <p class="lead text-secondary mt-3">Ничего не найдено по вашему запросу</p>
+    </div>
+
+    <div class="row" id="productsGrid">
         {% if shop_products %}
         {% for product in shop_products %}
         <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow-sm">
+            <div class="card h-100 shadow-sm product-item" data-type="{{ product.product_type }}">
                 {% set images = product.imgs.split(',') if product.imgs else [] %}
         {% if images %}
         <div id="carousel{{ product.id }}" class="carousel slide" data-bs-ride="carousel">
@@ -303,5 +328,43 @@
             if (input) input.value = '';
         });
         {% endfor %}
+</script>
+
+<script>
+    function filterProducts() {
+    const searchText = document.getElementById('productSearch').value.toLowerCase();
+    const selectedCategory = document.getElementById('categoryFilter').value;
+    const grid = document.getElementById('productsGrid');
+
+    if (!grid) return;
+
+    // Ищем все колонки (родители карточек)
+    const columns = grid.getElementsByClassName('col-md-4');
+    let visibleCount = 0;
+
+    for (let i = 0; i < columns.length; i++) {
+        const col = columns[i];
+        const card = col.querySelector('.product-item'); // Ваша карточка с data-type
+        const title = col.querySelector('.card-title').textContent.toLowerCase();
+        const productType = card.getAttribute('data-type');
+
+        const matchesSearch = title.includes(searchText);
+        const matchesCategory = (selectedCategory === 'all' || productType === selectedCategory);
+
+        if (matchesSearch && matchesCategory) {
+            col.style.setProperty('display', '', 'important');
+            visibleCount++;
+        } else {
+            col.style.setProperty('display', 'none', 'important');
+        }
+    }
+
+    const noResults = document.getElementById('noResultsMessage');
+    if (visibleCount === 0) {
+        noResults.classList.remove('d-none');
+    } else {
+        noResults.classList.add('d-none');
+    }
+}
 </script>
 {% endblock %}
