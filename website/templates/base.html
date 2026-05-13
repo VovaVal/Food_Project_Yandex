@@ -148,6 +148,12 @@
                     <span class="bonus-value">{{ current_user.user_bonuses }}</span>
                 </div>
 
+                <div class="orders-display position-relative">
+                    <a href="{{ url_for('customer.orders') }}" title="Мои заказы">
+                        <i class="bi bi-card-list" style="font-size: 24px; color: black;"></i>
+                    </a>
+                </div>
+
                 <!-- Корзина -->
                 <div class="cart-display position-relative">
                     <a href="{{ url_for('customer.cart_page') }}">
