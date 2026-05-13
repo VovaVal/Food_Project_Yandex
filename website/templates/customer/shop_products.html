@@ -5,26 +5,29 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between mb-4">
         <a href="{{ url_for('customer.shop_page', shop_id=shop_id) }}" class="btn btn-outline-secondary">← Назад</a>
-        <div class="search-box w-50">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="bi bi-search text-muted"></i>
-                </span>
-                <input type="text"
-                       id="productSearch"
-                       class="form-control border-start-0 ps-0"
-                       placeholder="Поиск по названию товара..."
-                       onkeyup="filterProducts()">
-            </div>
+        <div class="search-box flex-grow-1 ms-3">
+    <div class="input-group gap-2">
 
-            <select id="categoryFilter" class="form-select w-auto" onchange="filterProducts()">
-                <option value="all">Все категории</option>
-                <option value="drink">Напитки</option>
-                <option value="bakery">Выпечка</option>
-                <option value="dessert">Десерты</option>
-                <option value="other">Другое</option>
-            </select>
+        <div class="d-flex flex-grow-1">
+            <span class="input-group-text bg-white border-end-0">
+                <i class="bi bi-search text-muted"></i>
+            </span>
+            <input type="text"
+                   id="productSearch"
+                   class="form-control border-start-0 ps-0"
+                   placeholder="Поиск по названию товара..."
+                   onkeyup="filterProducts()">
         </div>
+
+        <select id="categoryFilter" class="form-select w-auto rounded" style="max-width: 160px;" onchange="filterProducts()">
+            <option value="all">Все категории</option>
+            <option value="drink">Напитки</option>
+            <option value="bakery">Выпечка</option>
+            <option value="dessert">Десерты</option>
+            <option value="other">Другое</option>
+        </select>
+    </div>
+</div>
     </div>
 
     <div id="noResultsMessage" class="text-center py-5 d-none">
