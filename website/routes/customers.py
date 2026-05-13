@@ -914,3 +914,18 @@ def edit_review(review_id):
             return jsonify({'success': True})
 
     return jsonify({'success': False}), 403
+
+
+@login_required
+@customer_bp.route('/api/reviews/<int:review_id>/delete', methods=['POST'])
+def delete_review(review_id):
+    with db_session.create_session() as sess:
+        review = sess.get(ReviewsShop, review_id)
+
+        if review and review.user_id == current_user.id:
+            sess.delete(review)
+            sess.commit()
+
+            return jsonify({'success': True})
+
+    return jsonify({'success': False, 'message': 'Доступ запрещен или отзыв не найден'}), 403

@@ -103,11 +103,17 @@
                         </div>
 
                         {% if review.user_id == current_user.id %}
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-link text-primary p-0" type="button" onclick="toggleEdit({{ review.id }})">
-                                <i class="bi bi-pencil-square"></i> Редактировать
-                            </button>
-                        </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary border-0 p-1" type="button"
+                                        onclick="toggleEdit({{ review.id }})" title="Редактировать">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+
+                                <button class="btn btn-sm btn-outline-danger border-0 p-1" type="button"
+                                        onclick="deleteReview({{ review.id }})" title="Удалить">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </div>
                         {% endif %}
                     </div>
 
@@ -466,10 +472,36 @@ function saveEdit(id) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            location.reload(); // Перезагружаем для обновления порядка и текста
+            location.reload();
         } else {
             alert('Ошибка при сохранении');
         }
+    });
+}
+
+    // Функция удаления отзыва
+function deleteReview(id) {
+    if (!confirm('Вы уверены, что хотите удалить этот отзыв?')) {
+        return;
+    }
+
+    fetch(`/customer/api/reviews/${id}/delete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка при удалении: ' + (data.message || 'неизвестная ошибка'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при соединении с сервером');
     });
 }
 </script>
