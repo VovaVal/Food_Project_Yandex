@@ -117,11 +117,11 @@
                     L.latLng(shopCoords[0], shopCoords[1]),
                     L.latLng(userCoords[0], userCoords[1])
                 ],
+                show: false,
                 routeWhileDragging: false,
                 addWaypoints: false,
                 draggableWaypoints: false,
                 createMarker: function(i, wp) {
-                    // Кастомные маркеры для старта и финиша
                     if (i === 0) return L.marker(wp.latLng).bindPopup("Магазин");
                     return L.marker(wp.latLng, {
                         icon: L.icon({
@@ -145,7 +145,6 @@
                 const distanceInMeters = routes.summary.totalDistance;
                 const dynamicDuration = distanceInMeters * TIME_PER_METER;
 
-                // Создаем маркер курьера в начальной точке, если его еще нет
                 if (!courierMarker) {
                     courierMarker = L.marker(routePoints[0], { icon: courierIcon }).addTo(map);
                 }
@@ -173,12 +172,10 @@
 
                 animate();
 
-                // Автоматически масштабируем карту под маршрут
                 const bounds = L.latLngBounds([shopCoords, userCoords]);
                 map.fitBounds(bounds.pad(0.2));
             });
         } else {
-            // Если самовывоз - просто ставим маркеры
             L.marker(shopCoords).addTo(map).bindPopup("Магазин");
             map.setView(shopCoords, 15);
         }
