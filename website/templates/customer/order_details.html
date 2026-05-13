@@ -84,77 +84,100 @@
 </div>
 
 <script>
-    function toggleCode() {
-        const code = document.getElementById('secretCode');
-        const placeholder = document.getElementById('codePlaceholder');
-        if (code.classList.contains('d-none')) {
-            code.classList.remove('d-none');
-            placeholder.classList.add('d-none');
-        } else {
-            code.classList.add('d-none');
-            placeholder.classList.remove('d-none');
-        }
-    }
+    const orderStartTime = new Date("{{ order.created_date.isoformat() }}").getTime();
+    const deliveryDuration = 20 * 60 * 1000; // Планируемое время (30 мин)
 
     document.addEventListener('DOMContentLoaded', function() {
-        const shopCoords = "{{ order.shop.coords }}".split(',').map(c => parseFloat(c.trim()));
-        const userCoords = "{{ order.coords }}".split(',').map(c => parseFloat(c.trim()));
+        const shopCoordsStr = "{{ order.shop.coords }}";
+        const userCoordsStr = "{{ order.coords }}";
+        if (!shopCoordsStr || !userCoordsStr) return;
+
+        const shopCoords = shopCoordsStr.split(',').map(c => parseFloat(c.trim()));
+        const userCoords = userCoordsStr.split(',').map(c => parseFloat(c.trim()));
 
         const map = L.map('orderMap');
-        map.attributionControl.remove(); // Убирает флаг
-
+        map.attributionControl.remove();
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        const markers = [];
+        // Иконка велосипеда
+        const courierIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/3198/3198336.png',
+            iconSize: [40, 40],
+            iconAnchor: [20, 20]
+        });
 
-        if (shopCoords.length === 2) {
-            const shopMarker = L.marker(shopCoords).addTo(map).bindPopup('Магазин: {{ order.shop.name }}');
-            markers.push(shopMarker);
-        }
+        const isDelivery = "{{ order.delivery_type }}" === "delivery";
+        const isActive = "{{ order.status }}" === "active";
 
-        if (userCoords.length === 2) {
-            const userMarker = L.marker(userCoords, {
-                icon: L.icon({
-                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                    iconSize: [25, 41],
-                    iconAnchor: [12, 41]
-                })
-            }).addTo(map).bindPopup('Ваш адрес доставки');
-            markers.push(userMarker);
-        }
+        if (isDelivery && isActive) {
+            // Инициализируем роутинг
+            const control = L.Routing.control({
+                waypoints: [
+                    L.latLng(shopCoords[0], shopCoords[1]),
+                    L.latLng(userCoords[0], userCoords[1])
+                ],
+                routeWhileDragging: false,
+                addWaypoints: false,
+                draggableWaypoints: false,
+                createMarker: function(i, wp) {
+                    // Кастомные маркеры для старта и финиша
+                    if (i === 0) return L.marker(wp.latLng).bindPopup("Магазин");
+                    return L.marker(wp.latLng, {
+                        icon: L.icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41]
+                        })
+                    }).bindPopup("Ваш адрес");
+                },
+                lineOptions: {
+                    styles: [{ color: '#0d6efd', opacity: 0.6, weight: 4 }]
+                }
+            }).addTo(map);
 
-        if (markers.length > 0) {
-            const group = new L.featureGroup(markers);
-            map.fitBounds(group.getBounds().pad(0.2));
+            let courierMarker = null;
+
+            control.on('routesfound', function(e) {
+                const routes = e.routes[0];
+                const routePoints = routes.coordinates; // Все точки дорожного пути
+
+                // Создаем маркер курьера в начальной точке, если его еще нет
+                if (!courierMarker) {
+                    courierMarker = L.marker(routePoints[0], { icon: courierIcon }).addTo(map);
+                }
+
+                function animate() {
+                    const now = Date.now();
+                    const elapsed = now - orderStartTime;
+                    let progress = elapsed / deliveryDuration;
+
+                    if (progress > 1) progress = 1;
+                    if (progress < 0) progress = 0;
+
+                    // Находим индекс точки маршрута, наиболее близкой к текущему прогрессу
+                    const targetIndex = Math.floor((routePoints.length - 1) * progress);
+                    const currentPos = routePoints[targetIndex];
+
+                    courierMarker.setLatLng([currentPos.lat, currentPos.lng]);
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        courierMarker.bindPopup("<b>Курьер приехал! 🚲</b>").openPopup();
+                    }
+                }
+
+                animate();
+
+                // Автоматически масштабируем карту под маршрут
+                const bounds = L.latLngBounds([shopCoords, userCoords]);
+                map.fitBounds(bounds.pad(0.2));
+            });
         } else {
-            map.setView([55.75, 37.61], 10); // Дефолт (Москва)
+            // Если самовывоз - просто ставим маркеры
+            L.marker(shopCoords).addTo(map).bindPopup("Магазин");
+            map.setView(shopCoords, 15);
         }
     });
-</script>
-
-<script>
-    function cancelOrder(orderId) {
-    if (confirm('Вы уверены, что хотите отменить этот заказ?')) {
-        fetch(`/customer/order/cancel/${orderId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.reload();
-            } else {
-                alert('Ошибка: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Произошла ошибка при отмене заказа');
-        });
-    }
-}
 </script>
 {% endblock %}
