@@ -77,6 +77,8 @@ class ProductsResource(Resource):
         with db_session.create_session() as sess:
             product_imgs = product.imgs
 
+            product = sess.get(Products, product_id)
+
             if product_imgs and product_imgs != None:
                 for img in product_imgs.split(','):
                     if img != 'products/imgs/product_img_default.png':

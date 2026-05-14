@@ -82,6 +82,8 @@ class ShopsResource(Resource):
         with db_session.create_session() as sess:
             products = sess.query(Products).filter(Products.shop_id == shop_id)
 
+            shop = sess.get(Shops, shop_id)
+
             print('product')
             for product in products:
                 api_url = 'http://127.0.0.1:5000/' + f'api/products/{product.id}'
