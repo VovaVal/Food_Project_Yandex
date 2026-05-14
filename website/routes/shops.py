@@ -326,7 +326,7 @@ def edit_settings_shop(shop_id: int):
             'address': address,
             'coords': coords,
             'description': description,
-            'delivery_radius': int(delivery_radius) if (isinstance(delivery_radius, float)) else 0,
+            'delivery_radius': float(delivery_radius),
             'timetable': schedule
         }
 
