@@ -837,6 +837,13 @@ def verify_code(order_id):
         if c_code.lower().strip() == input_code.lower().strip():
             order.status = 'completed'
 
+            bonuses = int(order.price * 0.1)
+
+            user = sess.get(User, order.user_id)
+            if user:
+                user.user_bonuses += bonuses
+                sess.add(user)
+
             sess.add(order)
             sess.commit()
             return jsonify({'success': True})
