@@ -82,6 +82,9 @@ class ProductsResource(Resource):
                     if img != 'products/imgs/product_img_default.png':
                         delete_by_key(img)
 
+            for review in product.reviews:
+                sess.delete(review)
+
             sess.delete(product)
             sess.commit()
 
