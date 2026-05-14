@@ -151,7 +151,7 @@ class UsersListResource(Resource):
         with db_session.create_session() as sess:
             user_exist = sess.query(User).filter(User.email == args['email']).first()
             if user_exist:
-                abort(400, message=f'Пользователь с почтой {args['email']} уже существует!')
+                abort(400, message=f"Пользователь с почтой {args['email']} уже существует!")
 
             if len(args['password']) < 6:
                 abort(400, message='Пароль должен быть не менее 6 символов длиной!')
