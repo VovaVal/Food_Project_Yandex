@@ -20,13 +20,13 @@ def global_init(db_file: str):
     conn_str = f'{db_file}'
     print(f"Подключение к базе данных по адресу {conn_str}")
 
-    engine = sa.create_engine(conn_str, echo=True)
+    engine = sa.create_engine(conn_str, echo=False, pool_pre_ping=True)
     __factory = orm.sessionmaker(bind=engine)
 
     import website.data.__all_models
 
     # Alembic сам додумает
-    SqlAlchemyBase.metadata.create_all(engine)  # убрать при деплое в сеть!!!
+    # SqlAlchemyBase.metadata.create_all(engine)  # убрать при деплое в сеть!!!
 
 
 def create_session() -> Session:
