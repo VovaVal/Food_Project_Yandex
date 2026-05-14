@@ -33,7 +33,7 @@ def check_role():
 @login_required
 @customer_bp.route('/dashboard')
 def dashboard():
-    api_url = '127.0.0.1:5000/' + f'api/shops/'
+    api_url = 'http://127.0.0.1:5000/' + f'api/shops/'
     resp = requests.get(
         api_url,
         cookies=request.cookies,
@@ -62,7 +62,7 @@ def dashboard():
 @login_required
 @customer_bp.route('/shop_page/<int:shop_id>')
 def shop_page(shop_id: int):
-    api_url = '127.0.0.1:5000/' + f'api/shops/{shop_id}'
+    api_url = 'http://127.0.0.1:5000/' + f'api/shops/{shop_id}'
     resp = requests.get(
         api_url,
         cookies=request.cookies,
@@ -273,7 +273,7 @@ def edit_settings():
         if email and current_user.email != email.strip():
             change_data['email'] = email
 
-        api_url = '127.0.0.1:5000/' + f'api/users/{current_user.id}'
+        api_url = 'http://127.0.0.1:5000/' + f'api/users/{current_user.id}'
         resp = requests.patch(
             api_url,
             json=change_data,
