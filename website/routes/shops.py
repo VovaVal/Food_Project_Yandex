@@ -112,7 +112,7 @@ def add_shop():
 @shop_bp.route('/<int:shop_id>')
 def shop_id_settings(shop_id: int):
     api_url = request.url_root + f'api/shops/{shop_id}'
-    shop_data = requests.get(api_url, cookies=request.cookies, verify=False)
+    shop_data = requests.get(api_url, cookies=request.cookies, verify=False, allow_redirects=True)
     if shop_data.status_code != 200:
         redirect(url_for('shop.dashboard'))
 
@@ -346,7 +346,7 @@ def edit_settings_shop(shop_id: int):
             data['imgs'] = (','.join('' if not shop.imgs or shop.imgs is None else shop.imgs.split(',')) + ',' + ','.join(img_names)).strip(',')
 
         api_url = request.url_root + f'api/shops/{shop_id}'
-        shop_data = requests.patch(api_url, json=data, cookies=request.cookies, verify=False)
+        shop_data = requests.patch(api_url, json=data, cookies=request.cookies, verify=False, allow_redirects=True)
         if shop_data.status_code != 200:
             print('Ошибка при изменении данных!!!')
 
@@ -441,7 +441,7 @@ def upload_logo(shop_id):
 @shop_bp.route('/delete_shop/<int:shop_id>')
 def delete_shop(shop_id: int):
     api_url = request.url_root + f'api/shops/{shop_id}'
-    shop_data = requests.delete(api_url, cookies=request.cookies, verify=False)
+    shop_data = requests.delete(api_url, cookies=request.cookies, verify=False, allow_redirects=True)
 
     if shop_data.status_code != 200:
         print(shop_data.status_code)
@@ -527,7 +527,8 @@ def edit_settings():
             api_url,
             json=change_data,
             cookies=request.cookies,
-            verify=False
+            verify=False,
+            allow_redirects=True
         )
 
         if resp.status_code == 200:
@@ -667,7 +668,7 @@ def upload_product_images(product_id: int, shop_id: int):
 @shop_bp.route('/<int:shop_id>/delete_product/<int:product_id>')
 def delete_product(shop_id: int, product_id: int):
     api_url = request.url_root + f'api/products/{product_id}'
-    product_data = requests.delete(api_url, cookies=request.cookies, verify=False)
+    product_data = requests.delete(api_url, cookies=request.cookies, verify=False, allow_redirects=True)
 
     if product_data.status_code != 200:
         print(product_data.status_code)
@@ -728,7 +729,8 @@ def edit_product(shop_id: int, product_id: int):
             api_url,
             json=data,
             cookies=request.cookies,
-            verify=False
+            verify=False,
+            allow_redirects=True
         )
 
         if resp.status_code == 200:

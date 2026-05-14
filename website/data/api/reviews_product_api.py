@@ -112,8 +112,8 @@ class ReviewsProductListResource(Resource):
             no_review_before = sess.query(ReviewsProduct).filter(ReviewsProduct.user_id == current_user.id,
                                                               ReviewsProduct.product_id == args['product_id']).first()
             if no_review_before:
-                abort(400, message=f'Review for Product with id: {args['product_id']};'
-                                   f' by the user with id: {args['user_id']} has already been written')
+                abort(400, message=f"Review for Product with id: {args['product_id']};"
+                                   f" by the user with id: {args['user_id']} has already been written")
 
             reviews_product = ReviewsProduct(
                 product_id=args['product_id'],

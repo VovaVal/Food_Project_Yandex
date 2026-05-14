@@ -61,7 +61,8 @@ def register():
                 'password': password,
                 'role': role
             },
-            verify=False
+            verify=False,
+            allow_redirects=True
         )
         print(resp.json())
 
