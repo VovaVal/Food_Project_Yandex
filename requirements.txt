@@ -11,3 +11,4 @@ alembic
 email_validator
 pillow
 boto3
+waitress
