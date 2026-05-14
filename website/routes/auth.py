@@ -53,7 +53,7 @@ def register():
             flash(message='Пароли не совпадают!', category='danger')
             return render_template('auth/register.html', title='Регистрация', form=form)
 
-        api_url = request.url_root + 'api/users'
+        api_url = '127.0.0.1:5000/' + 'api/users'
         resp = requests.post(
             api_url,
             json={

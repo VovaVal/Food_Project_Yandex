@@ -84,7 +84,7 @@ class ShopsResource(Resource):
 
             print('product')
             for product in products:
-                api_url = request.url_root + f'api/products/{product.id}'
+                api_url = '127.0.0.1:5000' + f'api/products/{product.id}'
                 requests.delete(api_url, cookies=request.cookies, verify=False, allow_redirects=True)
 
             sess.delete(shop)
