@@ -85,7 +85,7 @@ class ShopsResource(Resource):
             print('product')
             for product in products:
                 api_url = request.url_root + f'api/products/{product.id}'
-                requests.delete(api_url, cookies=request.cookies)
+                requests.delete(api_url, cookies=request.cookies, verify=False)
 
             sess.delete(shop)
             sess.commit()

@@ -60,7 +60,8 @@ def register():
                 'email': email,
                 'password': password,
                 'role': role
-            }
+            },
+            verify=False
         )
         print(resp.json())
 

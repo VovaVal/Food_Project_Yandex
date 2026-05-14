@@ -17,7 +17,6 @@ parser_patch_args = reqparse.RequestParser()
 parser_patch_args.add_argument('quantity', type=int)
 
 
-
 def abort_if_order_item_not_found(order_item_id: int):
     with db_session.create_session() as sess:
         order_item = sess.get(OrderItems, order_item_id)

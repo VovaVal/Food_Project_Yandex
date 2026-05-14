@@ -36,7 +36,8 @@ def dashboard():
     api_url = request.url_root + f'api/shops/'
     resp = requests.get(
         api_url,
-        cookies=request.cookies
+        cookies=request.cookies,
+        verify=False
     )
 
     if resp.status_code == 200:
@@ -63,7 +64,8 @@ def shop_page(shop_id: int):
     api_url = request.url_root + f'api/shops/{shop_id}'
     resp = requests.get(
         api_url,
-        cookies=request.cookies
+        cookies=request.cookies,
+        verify=False
     )
     print(resp)
 
@@ -273,7 +275,8 @@ def edit_settings():
         resp = requests.patch(
             api_url,
             json=change_data,
-            cookies=request.cookies
+            cookies=request.cookies,
+            verify=False
         )
 
         if resp.status_code == 200:
