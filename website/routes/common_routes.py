@@ -41,3 +41,5 @@ def dashboard():
                 return redirect(url_for('customer.dashboard'))
             case 'shop':
                 return redirect(url_for('shop.dashboard'))
+    else:
+        return redirect(url_for('auth.login'))
